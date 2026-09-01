@@ -1,0 +1,968 @@
+{% extends 'base.html' %}
+
+{% block title %}Cổng Vận Hành Soát Vé QR - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-qrcode text-info me-2"></i>Cổng Vận Hành Soát Vé Chuyên Nghiệp</h2>
+            <p class="text-muted small mb-0">Hệ thống quét mã QR tự động qua Camera, phân tích tệp ảnh vé và kiểm soát danh sách người tham dự theo thời gian thực</p>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span id="cameraStatusBadge" class="badge bg-secondary py-2 px-3 fs-6">
+                <i class="fa-solid fa-camera me-1"></i> <span id="cameraStatusText">Camera: Chưa mở</span>
+            </span>
+            <span class="badge bg-primary bg-opacity-25 border border-primary text-info py-2 px-3 fs-6">
+                <i class="fa-solid fa-users me-1"></i> Tổng vé: <strong>{{ total_regs }}</strong>
+            </span>
+            <span class="badge bg-success bg-opacity-25 border border-success text-success py-2 px-3 fs-6">
+                <i class="fa-solid fa-circle-check me-1"></i> Đã vào: <strong>{{ total_checked }}</strong> ({{ overall_rate }}%)
+            </span>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2 p-2 rounded-3 border border-secondary border-opacity-25" id="checkinTabs" role="tablist" style="background: var(--spec-box-bg);">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-4 py-2 fw-semibold" id="scanner-tab" data-bs-toggle="pill" data-bs-target="#scannerPane" type="button" role="tab" aria-controls="scannerPane" aria-selected="true">
+                <i class="fa-solid fa-camera-viewfinder me-2"></i>1. Quét QR & Camera Soát Vé
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2 fw-semibold" id="roster-tab" data-bs-toggle="pill" data-bs-target="#rosterPane" type="button" role="tab" aria-controls="rosterPane" aria-selected="false">
+                <i class="fa-solid fa-clipboard-user me-2"></i>2. Danh Sách & Soát Vé Theo Sự Kiện
+            </button>
+        </li>
+    </ul>
+
+    <!-- Insecure Origin Warning Banner (Auto-detected if opened via LAN IP HTTP) -->
+    <div id="insecureContextAlert" class="alert alert-warning d-none border-warning border-opacity-50 p-3 mb-4 rounded-3 shadow-sm" style="background: rgba(255, 193, 7, 0.1);">
+        <div class="d-flex align-items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-warning fs-3 mt-1"></i>
+            <div class="flex-grow-1">
+                <h6 class="fw-bold text-warning mb-1">Trình duyệt chặn truy cập Camera trên địa chỉ IP nội bộ (HTTP không bảo mật)</h6>
+                <p class="small mb-2 text-light text-opacity-75">
+                    Các trình duyệt hiện đại (Chrome, Edge, Safari) chỉ cho phép cấp quyền Camera trên <strong>HTTPS</strong> hoặc địa chỉ <strong>localhost / 127.0.0.1</strong>.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a id="redirectLocalhostBtn" href="http://localhost:5000/checkin/" class="btn btn-warning btn-sm text-dark fw-bold">
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Chuyển sang http://localhost:5000
+                    </a>
+                    <a id="redirect127Btn" href="http://127.0.0.1:5000/checkin/" class="btn btn-outline-warning btn-sm">
+                        <i class="fa-solid fa-link me-1"></i> Chuyển sang http://127.0.0.1:5000
+                    </a>
+                    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('chromeFlagsGuide').classList.toggle('d-none')">
+                        <i class="fa-solid fa-gear me-1"></i> Hướng dẫn bật quyền trên điện thoại/IP LAN
+                    </button>
+                </div>
+                <!-- Collapsible Chrome Flags Guide -->
+                <div id="chromeFlagsGuide" class="d-none mt-3 p-3 rounded-2 bg-dark bg-opacity-75 small text-light border border-secondary border-opacity-25">
+                    <p class="fw-bold text-info mb-1"><i class="fa-brands fa-chrome me-1"></i> Cách cho phép Camera qua IP LAN trên Google Chrome / Edge:</p>
+                    <ol class="ps-3 mb-0 text-muted">
+                        <li>Truy cập vào: <code class="text-warning">chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></li>
+                        <li>Bật <strong>Enabled</strong> và dán URL: <code class="text-warning" id="currentOriginCode">http://192.168.1.157:5000</code></li>
+                        <li>Nhấn <strong>Relaunch</strong> trình duyệt để áp dụng.</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="checkinTabsContent">
+
+        <!-- ========================================== -->
+        <!-- TAB 1: LIVE SCANNER & REALTIME RESULT -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade show active" id="scannerPane" role="tabpanel" aria-labelledby="scanner-tab">
+            <div class="row">
+                <!-- QR Scanner Box -->
+                <div class="col-lg-6 mb-4">
+                    <div class="glass-panel p-4 h-100 d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fa-solid fa-camera text-primary me-2"></i>Quét Mã QR Vé</h5>
+                            <!-- Camera device selector dropdown -->
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="cameraSelect" class="form-select form-select-sm bg-dark border-secondary text-light" style="max-width: 180px;">
+                                    <option value="">Đang tìm camera...</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Camera Viewfinder Box -->
+                        <div class="position-relative mb-3">
+                            <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #0b0f19; min-height: 280px; border: 2px dashed rgba(255, 255, 255, 0.15);" class="d-flex align-items-center justify-content-center">
+                                <div id="scannerPlaceholder" class="text-center p-4">
+                                    <i class="fa-solid fa-camera-viewfinder text-primary fs-1 mb-2 opacity-75"></i>
+                                    <p class="text-muted small mb-0">Nhấn nút <strong>"Mở Camera Quét"</strong> bên dưới để bắt đầu quét mã vé</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Controls -->
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            <button id="startScanBtn" class="btn btn-primary-gradient btn-sm flex-grow-1 py-2">
+                                <i class="fa-solid fa-play me-1"></i> Mở Camera Quét
+                            </button>
+                            <button id="switchCameraBtn" class="btn btn-info btn-sm px-3 py-2 text-dark fw-bold d-none">
+                                <i class="fa-solid fa-camera-rotate me-1"></i> Đổi Cam
+                            </button>
+                            <button id="stopScanBtn" class="btn btn-secondary-glass btn-sm flex-grow-1 py-2" disabled>
+                                <i class="fa-solid fa-stop me-1"></i> Tắt Camera
+                            </button>
+                        </div>
+
+                        <!-- Alternative Scan Method: Image Upload & File Scan -->
+                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15);">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="text-light small fw-bold"><i class="fa-solid fa-image text-warning me-1"></i> Tải hoặc Kéo thả ảnh mã QR vé:</span>
+                                <small class="text-muted">SVG, PNG, JPG, WebP</small>
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="file" id="qrImageInput" class="form-control bg-dark border-secondary text-light" accept="image/*">
+                                <button id="scanImageBtn" class="btn btn-outline-warning" type="button">
+                                    <i class="fa-solid fa-magnifying-glass me-1"></i> Quét Ảnh
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Ticket Input -->
+                        <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
+                            <label class="form-label text-muted small fw-bold"><i class="fa-solid fa-keyboard text-info me-1"></i> Hoặc nhập mã vé / dán liên kết vé:</label>
+                            <form id="manualCheckinForm" class="d-flex gap-2">
+                                <input type="text" id="manualTicketInput" class="form-control bg-dark border-secondary text-light text-uppercase font-monospace" placeholder="TCK-001-0001-XXXX" required>
+                                <button type="submit" class="btn btn-info text-dark fw-bold px-3">Xác Thực</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Check-in Verification Result -->
+                <div class="col-lg-6 mb-4">
+                    <div class="glass-panel p-4 h-100 d-flex flex-column">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-id-card-clip text-warning me-2"></i>Kết Quả Xác Thực Thời Gian Thực</h5>
+
+                        <div id="checkinResultContainer" class="flex-grow-1 d-flex align-items-center justify-content-center text-center p-4 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255, 255, 255, 0.1);">
+                            <div>
+                                <i class="fa-solid fa-qrcode text-muted fs-1 mb-2 opacity-50"></i>
+                                <p class="text-muted small mb-0">Hướng camera vào mã QR của vé, tải ảnh vé hoặc nhập mã để kiểm tra.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Check-ins Table -->
+            <div class="glass-panel p-4 mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Danh Sách Vừa Check-in</h5>
+                    <span class="badge bg-dark border border-secondary text-muted">Tự động cập nhật tức thì</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>MÃ VÉ</th>
+                                <th>HỌ TÊN KHÁCH HÀNG</th>
+                                <th>SỰ KIỆN</th>
+                                <th>HẠNG VÉ</th>
+                                <th>THỜI ĐIỂM CHECK-IN</th>
+                                <th>NHÂN VIÊN DUYỆT</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentCheckinsBody">
+                            {% for r in recent_checkins %}
+                            <tr>
+                                <td><code class="text-info">{{ r.ticket_number }}</code></td>
+                                <td><strong class="text-light">{{ r.attendee.full_name }}</strong></td>
+                                <td class="text-muted">{{ r.event.title }}</td>
+                                <td><span class="badge {% if r.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase">{{ r.ticket.name }}</span></td>
+                                <td class="text-success small">{{ r.checked_in_at.strftime('%H:%M:%S • %d/%m/%Y') if r.checked_in_at else '-' }}</td>
+                                <td><small class="text-muted">{{ r.checked_in_by or 'Hệ thống' }}</small></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: LIVE ATTENDEE ROSTER & EVENT STATS -->
+        <!-- ========================================== -->
+        <div class="tab-pane fade" id="rosterPane" role="tabpanel" aria-labelledby="roster-tab">
+            <div class="glass-panel p-4 mb-4">
+                <div class="row align-items-center g-3 mb-4">
+                    <div class="col-md-6 col-lg-5">
+                        <label class="form-label text-light small fw-bold"><i class="fa-solid fa-calendar-check text-info me-1"></i> Chọn Sự Kiện Để Quản Lý Soát Vé:</label>
+                        <select id="eventSelector" class="form-select bg-dark border-secondary text-light">
+                            {% for e in events %}
+                            <option value="{{ e.id }}">{{ e.title }} ({{ e.start_date.strftime('%d/%m/%Y') }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 col-lg-7 text-md-end">
+                        <button id="refreshRosterBtn" class="btn btn-outline-info btn-sm">
+                            <i class="fa-solid fa-arrows-rotate me-1"></i> Làm Mới Dữ Liệu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Event Statistics Cards -->
+                <div class="row g-3 mb-4" id="eventStatsCards">
+                    <div class="col-6 col-md-3">
+                        <div class="checkout-spec-box p-3 rounded-3 border border-secondary border-opacity-50 text-center">
+                            <small class="text-muted d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Tổng Vé Đăng Ký</small>
+                            <h3 class="fw-extrabold text-light mb-0" id="statTotalRegs">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="checkout-spec-box p-3 rounded-3 border border-success border-opacity-50 text-center">
+                            <small class="text-success d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Đã Check-in</small>
+                            <h3 class="fw-extrabold text-success mb-0" id="statTotalChecked">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="checkout-spec-box p-3 rounded-3 border border-warning border-opacity-50 text-center">
+                            <small class="text-warning d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Chưa Đến</small>
+                            <h3 class="fw-extrabold text-warning mb-0" id="statTotalRemaining">0</h3>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="checkout-spec-box p-3 rounded-3 border border-info border-opacity-50 text-center">
+                            <small class="text-info d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Tỷ Lệ Có Mặt</small>
+                            <h3 class="fw-extrabold text-info mb-0" id="statCheckinRate">0%</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+                    <div class="input-group" style="max-width: 380px;">
+                        <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="rosterSearchInput" class="form-control bg-dark border-secondary text-light" placeholder="Tìm tên, email, SĐT, mã vé...">
+                    </div>
+                    <div class="d-flex gap-2">
+                        <select id="statusFilter" class="form-select form-select-sm bg-dark border-secondary text-light" style="width: auto;">
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="checked">Đã check-in</option>
+                            <option value="unchecked">Chưa check-in</option>
+                            <option value="vip">Hạng VIP</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Attendee Table -->
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                        <thead>
+                            <tr class="text-muted small">
+                                <th>MÃ VÉ & QR</th>
+                                <th>KHÁCH HÀNG</th>
+                                <th>LIÊN HỆ & ĐƠN VỊ</th>
+                                <th>HẠNG VÉ</th>
+                                <th>THANH TOÁN</th>
+                                <th>TRẠNG THÁI CHECK-IN</th>
+                                <th class="text-end">HÀNH ĐỘNG</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendeeRosterBody">
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                                    Đang tải danh sách người tham dự...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: XEM VÀ THỬ QUÉT MÃ QR CỦA KHÁCH -->
+<!-- ========================================== -->
+<div class="modal fade" id="attendeeQrModal" tabindex="-1" aria-labelledby="attendeeQrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-panel border-info border-opacity-50 text-light" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px);">
+            <div class="modal-header border-secondary border-opacity-25">
+                <h5 class="modal-title fw-bold text-light" id="attendeeQrModalLabel">
+                    <i class="fa-solid fa-qrcode text-info me-2"></i>Thẻ QR Vé Tham Dự
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-4 text-center">
+                <!-- QR Frame Container -->
+                <div class="ticket-qr-frame mb-3 d-inline-block p-3 rounded-3 bg-white shadow">
+                    <img id="modalQrImage" src="" alt="Mã QR Vé" width="200" height="200" style="display: block;">
+                </div>
+                
+                <h5 class="fw-bold text-light mb-1" id="modalAttendeeName">Nguyễn Văn A</h5>
+                <p class="text-info small mb-2" id="modalOrganization">Đơn vị</p>
+                
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <span class="badge bg-primary text-uppercase" id="modalTicketType">STANDARD</span>
+                    <span class="badge bg-dark border border-secondary text-info font-monospace" id="modalTicketCode">TCK-001-0001-XXXX</span>
+                </div>
+
+                <div class="p-3 rounded-2 text-start small mb-3" style="background: rgba(255,255,255,0.05);">
+                    <div class="mb-1"><strong>Sự kiện:</strong> <span class="text-light" id="modalEventTitle">-</span></div>
+                    <div class="mb-1"><strong>Email:</strong> <span class="text-muted" id="modalEmail">-</span></div>
+                    <div class="mb-1"><strong>SĐT:</strong> <span class="text-muted" id="modalPhone">-</span></div>
+                    <div><strong>Trạng thái vé:</strong> <span id="modalCheckinStatus" class="badge bg-success">Hợp lệ</span></div>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2">
+                    <a id="modalDownloadQrBtn" href="#" class="btn btn-outline-light btn-sm" download>
+                        <i class="fa-solid fa-download me-1"></i> Tải Ảnh QR
+                    </a>
+                    <button id="modalTestScanBtn" type="button" class="btn btn-primary-gradient btn-sm fw-bold">
+                        <i class="fa-solid fa-bolt me-1"></i> Quét & Check-in Mã Này
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- HTML5-QRCode Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+let html5QrCode = null;
+let currentCameraId = null;
+let availableCameras = [];
+let currentEventAttendees = [];
+let activeModalAttendee = null;
+
+const resultContainer = document.getElementById('checkinResultContainer');
+const startBtn = document.getElementById('startScanBtn');
+const stopBtn = document.getElementById('stopScanBtn');
+const switchBtn = document.getElementById('switchCameraBtn');
+const cameraSelect = document.getElementById('cameraSelect');
+const cameraBadge = document.getElementById('cameraStatusBadge');
+const cameraText = document.getElementById('cameraStatusText');
+const eventSelector = document.getElementById('eventSelector');
+const rosterBody = document.getElementById('attendeeRosterBody');
+const rosterSearch = document.getElementById('rosterSearchInput');
+const statusFilter = document.getElementById('statusFilter');
+
+// Check Secure Context & Setup on DOM Load
+window.addEventListener('DOMContentLoaded', () => {
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const isHttps = location.protocol === 'https:';
+    const isSecure = window.isSecureContext || isLocal || isHttps;
+
+    if (!isSecure) {
+        const alertBox = document.getElementById('insecureContextAlert');
+        if (alertBox) {
+            alertBox.classList.remove('d-none');
+            const originCode = document.getElementById('currentOriginCode');
+            if (originCode) originCode.textContent = window.location.origin;
+            
+            const btn1 = document.getElementById('redirectLocalhostBtn');
+            if (btn1) btn1.href = `http://localhost:${location.port || 5000}/checkin/`;
+            const btn2 = document.getElementById('redirect127Btn');
+            if (btn2) btn2.href = `http://127.0.0.1:${location.port || 5000}/checkin/`;
+        }
+    }
+
+    enumerateCameras();
+
+    // Load initial event roster
+    if (eventSelector && eventSelector.value) {
+        loadEventRoster(eventSelector.value);
+    }
+});
+
+// Event Selector change
+eventSelector.addEventListener('change', (e) => {
+    loadEventRoster(e.target.value);
+});
+
+document.getElementById('refreshRosterBtn').addEventListener('click', () => {
+    if (eventSelector.value) {
+        loadEventRoster(eventSelector.value);
+    }
+});
+
+// Enumerate connected cameras
+async function enumerateCameras() {
+    try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+            cameraSelect.innerHTML = '<option value="">Camera không khả dụng</option>';
+            return;
+        }
+
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+            availableCameras = devices;
+            cameraSelect.innerHTML = '';
+            devices.forEach((dev, idx) => {
+                const opt = document.createElement('option');
+                opt.value = dev.id;
+                opt.textContent = dev.label || `Camera ${idx + 1}`;
+                cameraSelect.appendChild(opt);
+            });
+            currentCameraId = devices[0].id;
+            if (devices.length > 1) {
+                switchBtn.classList.remove('d-none');
+            }
+        } else {
+            cameraSelect.innerHTML = '<option value="">Không tìm thấy camera</option>';
+        }
+    } catch (err) {
+        console.warn('Lỗi lấy danh sách camera:', err);
+        cameraSelect.innerHTML = '<option value="">Camera mặc định</option>';
+    }
+}
+
+// Start Camera Scanner
+startBtn.addEventListener('click', async () => {
+    try {
+        const placeholder = document.getElementById('scannerPlaceholder');
+        if (placeholder) placeholder.style.display = 'none';
+
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("qr-reader");
+        }
+
+        cameraText.textContent = "Camera: Đang khởi động...";
+        cameraBadge.className = "badge bg-warning text-dark py-2 px-3 fs-6";
+
+        const selectedCamId = cameraSelect.value || currentCameraId;
+        const config = {
+            fps: 15,
+            qrbox: (viewfinderWidth, viewfinderHeight) => {
+                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                const qrboxSize = Math.floor(minEdge * 0.75);
+                return { width: Math.max(qrboxSize, 200), height: Math.max(qrboxSize, 200) };
+            },
+            aspectRatio: 1.0
+        };
+
+        if (selectedCamId) {
+            await html5QrCode.start(selectedCamId, config, onScanSuccess, onScanFailure);
+        } else {
+            try {
+                await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure);
+            } catch (e) {
+                await html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, onScanFailure);
+            }
+        }
+
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        cameraText.textContent = "Camera: Đang quét...";
+        cameraBadge.className = "badge bg-success py-2 px-3 fs-6";
+
+        enumerateCameras();
+
+    } catch (err) {
+        console.error("Camera Start Error:", err);
+        handleCameraError(err);
+    }
+});
+
+// Switch Camera Handler
+switchBtn.addEventListener('click', async () => {
+    if (!html5QrCode || availableCameras.length < 2) return;
+    try {
+        await html5QrCode.stop();
+        const currentIndex = availableCameras.findIndex(c => c.id === currentCameraId);
+        const nextIndex = (currentIndex + 1) % availableCameras.length;
+        currentCameraId = availableCameras[nextIndex].id;
+        cameraSelect.value = currentCameraId;
+        
+        await html5QrCode.start(currentCameraId, { fps: 15, qrbox: 250 }, onScanSuccess, onScanFailure);
+    } catch (e) {
+        console.error("Lỗi chuyển camera:", e);
+    }
+});
+
+// Camera Select Change
+cameraSelect.addEventListener('change', async (e) => {
+    currentCameraId = e.target.value;
+    if (html5QrCode && html5QrCode.isScanning) {
+        await html5QrCode.stop();
+        await html5QrCode.start(currentCameraId, { fps: 15, qrbox: 250 }, onScanSuccess, onScanFailure);
+    }
+});
+
+// Stop Camera Scanner
+stopBtn.addEventListener('click', async () => {
+    await stopCamera();
+});
+
+async function stopCamera() {
+    if (html5QrCode) {
+        try {
+            await html5QrCode.stop();
+        } catch (e) {
+            console.log("Stop camera note:", e);
+        }
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        cameraText.textContent = "Camera: Đã tắt";
+        cameraBadge.className = "badge bg-secondary py-2 px-3 fs-6";
+        const placeholder = document.getElementById('scannerPlaceholder');
+        if (placeholder) placeholder.style.display = 'block';
+    }
+}
+
+// Detailed Camera Error Diagnostic
+function handleCameraError(err) {
+    let errorTitle = "Không thể mở Camera";
+    let errorDetail = err.message || err.name || String(err);
+    let solution = "Vui lòng cấp quyền truy cập Camera trong trình duyệt hoặc sử dụng ô nhập mã vé thủ công.";
+
+    if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        errorTitle = "Trình duyệt chưa được cấp quyền Camera";
+        solution = "Vui lòng bấm vào biểu tượng máy quay/ổ khóa trên thanh địa chỉ URL của trình duyệt và chọn 'Cho phép (Allow)' quyền Camera.";
+    } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+        errorTitle = "Không tìm thấy thiết bị Camera";
+        solution = "Vui lòng cắm Webcam hoặc kiểm tra lại driver máy ảnh của máy tính.";
+    } else if (err.name === "NotReadableError" || err.name === "TrackStartError") {
+        errorTitle = "Camera đang bị ứng dụng khác chiếm dụng";
+        solution = "Vui lòng tắt các ứng dụng đang dùng camera (Zoom, Teams, Camera App, v.v.) và thử lại.";
+    } else if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        errorTitle = "Trình duyệt chặn Camera trên kết nối HTTP không an toàn";
+        solution = `Vui lòng truy cập qua <a href="http://localhost:5000/checkin/" class="text-warning fw-bold">http://localhost:5000/checkin/</a> để sử dụng camera.`;
+    }
+
+    resultContainer.innerHTML = `
+        <div class="text-center p-3 text-danger">
+            <i class="fa-solid fa-camera-slash fs-1 mb-3"></i>
+            <h5 class="fw-bold text-danger mb-2">${errorTitle}</h5>
+            <p class="text-light small mb-3 text-opacity-75">${errorDetail}</p>
+            <div class="p-2 rounded bg-dark border border-secondary border-opacity-50 small text-warning mb-3">
+                <strong><i class="fa-solid fa-lightbulb me-1"></i> Khắc phục:</strong> ${solution}
+            </div>
+            <button class="btn btn-outline-light btn-sm" onclick="startBtn.click()">
+                <i class="fa-solid fa-arrow-rotate-right me-1"></i> Thử lại
+            </button>
+        </div>
+    `;
+
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    cameraText.textContent = "Camera: Lỗi quyền";
+    cameraBadge.className = "badge bg-danger py-2 px-3 fs-6";
+}
+
+// QR Code Scanned Callback
+function onScanSuccess(decodedText) {
+    if (!decodedText) return;
+    playBeepAudio('success');
+    handleVerifyTicket(decodedText);
+}
+
+function onScanFailure(error) {
+    // Ignore frame parsing noise
+}
+
+// Rich Audio Feedback
+function playBeepAudio(type = 'success') {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(880, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
+            gain.gain.setValueAtTime(0.15, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.18);
+        } else if (type === 'warning') {
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(440, ctx.currentTime);
+            osc.frequency.setValueAtTime(330, ctx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.25);
+        } else {
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(220, ctx.currentTime);
+            gain.gain.setValueAtTime(0.25, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.3);
+        }
+    } catch (e) {}
+}
+
+// Image File QR Scan Handler
+document.getElementById('scanImageBtn').addEventListener('click', () => {
+    const fileInput = document.getElementById('qrImageInput');
+    if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Vui lòng chọn một tệp ảnh chứa mã QR vé!');
+        return;
+    }
+    scanQRCodeFromImageFile(fileInput.files[0]);
+});
+
+document.getElementById('qrImageInput').addEventListener('change', (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+        scanQRCodeFromImageFile(e.target.files[0]);
+    }
+});
+
+async function scanQRCodeFromImageFile(file) {
+    resultContainer.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-warning mb-2" role="status"></div>
+            <p class="text-light mb-0">Đang phân tích hình ảnh mã QR...</p>
+        </div>
+    `;
+    try {
+        const scanner = new Html5Qrcode("qr-reader");
+        const decodedText = await scanner.scanFile(file, true);
+        playBeepAudio('success');
+        handleVerifyTicket(decodedText);
+    } catch (err) {
+        playBeepAudio('error');
+        resultContainer.innerHTML = `
+            <div class="text-center p-3 text-warning">
+                <i class="fa-solid fa-triangle-exclamation fs-1 mb-2"></i>
+                <h5 class="fw-bold mb-1">Không nhận diện được mã QR</h5>
+                <p class="small text-muted mb-0">Hình ảnh không chứa mã QR rõ nét hoặc bị mờ. Vui lòng chọn ảnh khác hoặc nhập mã thủ công.</p>
+            </div>
+        `;
+    }
+}
+
+// Manual form submit
+document.getElementById('manualCheckinForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const code = document.getElementById('manualTicketInput').value.trim();
+    if (code) {
+        handleVerifyTicket(code);
+    }
+});
+
+// Verification API Dispatcher
+let isProcessing = false;
+async function handleVerifyTicket(ticketCode) {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    resultContainer.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary mb-2" role="status"></div>
+            <p class="text-light mb-0">Đang kiểm tra vé <strong>${ticketCode}</strong> trên hệ thống...</p>
+        </div>
+    `;
+
+    try {
+        const response = await fetch('/checkin/verify-api', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ticket_number: ticketCode })
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200 && data.success) {
+            playBeepAudio('success');
+            // SUCCESS CHECK-IN
+            resultContainer.innerHTML = `
+                <div class="text-center w-100 p-3 rounded-3" style="background: rgba(40, 167, 69, 0.1); border: 2px solid #28a745;">
+                    <div class="d-inline-flex p-3 rounded-circle bg-success bg-opacity-25 text-success fs-1 mb-2">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h4 class="text-success fw-bold mb-1">CHECK-IN HỢP LỆ!</h4>
+                    <h5 class="text-light fw-bold mb-1">${data.attendee_name}</h5>
+                    <p class="text-muted small mb-2">${data.organization} • SĐT: ${data.phone}</p>
+                    <div class="p-2 rounded-2 bg-dark d-inline-block text-start small mb-2 text-light">
+                        <div><strong>Hạng vé:</strong> <span class="badge ${data.ticket_tier === 'vip' ? 'bg-warning text-dark' : 'bg-primary'} text-uppercase">${data.ticket_type}</span></div>
+                        <div><strong>Mã vé:</strong> <code class="text-info">${data.ticket_number}</code></div>
+                        <div><strong>Sự kiện:</strong> ${data.event_title}</div>
+                        <div><strong>Thời điểm:</strong> <span class="text-info">${data.checked_in_at}</span></div>
+                    </div>
+                </div>
+            `;
+
+            // Prepend row to recent checkins
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><code class="text-info">${data.ticket_number}</code></td>
+                <td><strong class="text-light">${data.attendee_name}</strong></td>
+                <td class="text-muted">${data.event_title}</td>
+                <td><span class="badge ${data.ticket_tier === 'vip' ? 'bg-warning text-dark' : 'bg-primary'} text-uppercase">${data.ticket_type}</span></td>
+                <td class="text-success small">${data.checked_in_at}</td>
+                <td><small class="text-muted">Bạn (Staff)</small></td>
+            `;
+            const tbody = document.getElementById('recentCheckinsBody');
+            if (tbody) tbody.prepend(row);
+
+            // Refresh attendee roster if active
+            if (eventSelector.value) {
+                loadEventRoster(eventSelector.value);
+            }
+
+        } else if (response.status === 409) {
+            playBeepAudio('warning');
+            // DUPLICATE CHECK-IN WARNING
+            resultContainer.innerHTML = `
+                <div class="text-center w-100 p-3 rounded-3" style="background: rgba(220, 53, 69, 0.1); border: 2px solid #dc3545;">
+                    <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-25 text-danger fs-1 mb-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <h4 class="text-danger fw-bold mb-1">CẢNH BÁO: VÉ ĐÃ CHECK-IN TRƯỚC ĐÓ!</h4>
+                    <p class="text-light mb-2">${data.message}</p>
+                    <div class="small text-muted">Khách hàng: <strong class="text-light">${data.attendee_name || 'N/A'}</strong></div>
+                </div>
+            `;
+        } else {
+            playBeepAudio('error');
+            // INVALID OR UNPAID
+            resultContainer.innerHTML = `
+                <div class="text-center w-100 p-3 rounded-3" style="background: rgba(255, 193, 7, 0.1); border: 2px solid #ffc107;">
+                    <div class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-25 text-warning fs-1 mb-2">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <h4 class="text-warning fw-bold mb-1">TỪ CHỐI CHECK-IN</h4>
+                    <p class="text-light mb-0">${data.message}</p>
+                </div>
+            `;
+        }
+    } catch (err) {
+        playBeepAudio('error');
+        resultContainer.innerHTML = `
+            <div class="text-center text-danger p-3">
+                <i class="fa-solid fa-circle-exclamation fs-1 mb-2"></i>
+                <p class="mb-0">Lỗi kết nối máy chủ. Vui lòng thử lại!</p>
+            </div>
+        `;
+    } finally {
+        setTimeout(() => { isProcessing = false; }, 1000);
+    }
+}
+
+// ==========================================
+// TAB 2: ROSTER & EVENT ATTENDEE MANAGEMENT
+// ==========================================
+async function loadEventRoster(eventId) {
+    if (!eventId) return;
+    rosterBody.innerHTML = `
+        <tr>
+            <td colspan="7" class="text-center py-4 text-muted">
+                <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                Đang tải dữ liệu người tham dự sự kiện...
+            </td>
+        </tr>
+    `;
+
+    try {
+        const res = await fetch(`/checkin/api/event-attendees/${eventId}`);
+        const data = await res.json();
+        if (data.success) {
+            currentEventAttendees = data.attendees || [];
+            
+            // Update Stats Cards
+            document.getElementById('statTotalRegs').textContent = data.total_registered;
+            document.getElementById('statTotalChecked').textContent = data.total_checked_in;
+            document.getElementById('statTotalRemaining').textContent = data.total_remaining;
+            document.getElementById('statCheckinRate').textContent = `${data.checkin_rate}%`;
+
+            renderRosterTable();
+        } else {
+            rosterBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">${data.message || 'Lỗi tải danh sách'}</td></tr>`;
+        }
+    } catch (e) {
+        rosterBody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Lỗi kết nối máy chủ khi tải danh sách người tham dự.</td></tr>`;
+    }
+}
+
+function renderRosterTable() {
+    const query = rosterSearch.value.toLowerCase().trim();
+    const filter = statusFilter.value;
+
+    let filtered = currentEventAttendees.filter(item => {
+        const matchesQuery = !query || 
+            item.attendee_name.toLowerCase().includes(query) ||
+            item.email.toLowerCase().includes(query) ||
+            item.phone.toLowerCase().includes(query) ||
+            item.ticket_number.toLowerCase().includes(query) ||
+            item.organization.toLowerCase().includes(query);
+
+        let matchesFilter = true;
+        if (filter === 'checked') matchesFilter = item.checked_in;
+        else if (filter === 'unchecked') matchesFilter = !item.checked_in && item.registration_status !== 'cancelled';
+        else if (filter === 'vip') matchesFilter = item.ticket_type === 'vip';
+
+        return matchesQuery && matchesFilter;
+    });
+
+    if (filtered.length === 0) {
+        rosterBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                    <i class="fa-solid fa-users-slash fs-2 mb-2 d-block opacity-50"></i>
+                    Không tìm thấy người tham dự nào phù hợp với bộ lọc.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    rosterBody.innerHTML = filtered.map(item => {
+        const isVip = item.ticket_type === 'vip';
+        const isCancelled = item.registration_status === 'cancelled';
+        
+        let checkinBadge = '';
+        let actionButtons = '';
+
+        if (isCancelled) {
+            checkinBadge = '<span class="badge bg-danger">ĐÃ HỦY VÉ</span>';
+            actionButtons = '<small class="text-muted">Vé bị hủy</small>';
+        } else if (item.checked_in) {
+            checkinBadge = `
+                <span class="badge bg-success mb-1"><i class="fa-solid fa-circle-check me-1"></i>Đã Check-in</span>
+                <small class="d-block text-muted" style="font-size: 0.72rem;">${item.checked_in_at || ''}</small>
+            `;
+            actionButtons = `
+                <button class="btn btn-outline-secondary btn-sm py-0 px-2" onclick="undoCheckin(${item.reg_id})" title="Hoàn tác check-in">
+                    <i class="fa-solid fa-rotate-left"></i> Hoàn tác
+                </button>
+            `;
+        } else {
+            checkinBadge = '<span class="badge bg-secondary">Chưa đến</span>';
+            actionButtons = `
+                <button class="btn btn-success btn-sm py-1 px-2 fw-semibold" onclick="quickCheckin(${item.reg_id})">
+                    <i class="fa-solid fa-check me-1"></i> Check-in
+                </button>
+            `;
+        }
+
+        return `
+            <tr class="${isCancelled ? 'opacity-50' : ''}">
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-outline-info py-0 px-2" onclick="openAttendeeQrModal(${item.reg_id})" title="Xem mã QR vé">
+                            <i class="fa-solid fa-qrcode me-1"></i> Xem QR
+                        </button>
+                        <code class="text-info">${item.ticket_number}</code>
+                    </div>
+                </td>
+                <td>
+                    <strong class="text-light d-block">${item.attendee_name}</strong>
+                    <small class="text-muted">${item.email}</small>
+                </td>
+                <td>
+                    <div class="text-light small">${item.organization}</div>
+                    <small class="text-muted">${item.phone || '-'}</small>
+                </td>
+                <td>
+                    <span class="badge ${isVip ? 'bg-warning text-dark' : 'bg-primary'} text-uppercase">${item.ticket_name}</span>
+                </td>
+                <td>
+                    <span class="badge ${item.payment_status === 'paid' ? 'bg-success' : (item.payment_status === 'free' ? 'bg-info text-dark' : 'bg-warning text-dark')} text-uppercase">
+                        ${item.payment_status}
+                    </span>
+                </td>
+                <td>
+                    ${checkinBadge}
+                </td>
+                <td class="text-end">
+                    ${actionButtons}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+rosterSearch.addEventListener('input', renderRosterTable);
+statusFilter.addEventListener('change', renderRosterTable);
+
+// Quick Check-in from Table
+async function quickCheckin(regId) {
+    try {
+        const res = await fetch(`/checkin/api/quick-checkin/${regId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            playBeepAudio('success');
+            loadEventRoster(eventSelector.value);
+        } else {
+            alert(data.message || 'Lỗi khi thực hiện check-in');
+        }
+    } catch (e) {
+        alert('Lỗi kết nối máy chủ.');
+    }
+}
+
+// Undo Check-in
+async function undoCheckin(regId) {
+    if (!confirm('Bạn có chắc chắn muốn hoàn tác trạng thái check-in cho vé này?')) return;
+    try {
+        const res = await fetch(`/checkin/api/undo-checkin/${regId}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            loadEventRoster(eventSelector.value);
+        }
+    } catch (e) {}
+}
+
+// Open Attendee QR Modal
+function openAttendeeQrModal(regId) {
+    const attendee = currentEventAttendees.find(a => a.reg_id === regId);
+    if (!attendee) return;
+    activeModalAttendee = attendee;
+
+    document.getElementById('modalQrImage').src = attendee.qr_code_url;
+    document.getElementById('modalAttendeeName').textContent = attendee.attendee_name;
+    document.getElementById('modalOrganization').textContent = attendee.organization;
+    document.getElementById('modalTicketType').textContent = attendee.ticket_name;
+    document.getElementById('modalTicketCode').textContent = attendee.ticket_number;
+    document.getElementById('modalEventTitle').textContent = eventSelector.options[eventSelector.selectedIndex].text;
+    document.getElementById('modalEmail').textContent = attendee.email;
+    document.getElementById('modalPhone').textContent = attendee.phone || 'Chưa cập nhật';
+    
+    const downloadBtn = document.getElementById('modalDownloadQrBtn');
+    downloadBtn.href = `/tickets/download-qr/${attendee.reg_id}`;
+
+    const statusBadge = document.getElementById('modalCheckinStatus');
+    if (attendee.registration_status === 'cancelled') {
+        statusBadge.className = 'badge bg-danger';
+        statusBadge.textContent = 'Vé Đã Bị Hủy';
+    } else if (attendee.checked_in) {
+        statusBadge.className = 'badge bg-success';
+        statusBadge.textContent = `Đã Check-in (${attendee.checked_in_at})`;
+    } else {
+        statusBadge.className = 'badge bg-info text-dark';
+        statusBadge.textContent = 'Vé Hợp Lệ (Chưa Check-in)';
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('attendeeQrModal'));
+    modal.show();
+}
+
+// Test Scan button in Modal
+document.getElementById('modalTestScanBtn').addEventListener('click', () => {
+    if (!activeModalAttendee) return;
+    const modalEl = document.getElementById('attendeeQrModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+    if (modalInstance) modalInstance.hide();
+
+    // Switch to Scanner Tab
+    const tabTrigger = new bootstrap.Tab(document.getElementById('scanner-tab'));
+    tabTrigger.show();
+
+    // Dispatch verification
+    handleVerifyTicket(activeModalAttendee.ticket_number);
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,370 @@
+{% extends 'base.html' %}
+
+{% block title %}Trợ Lý Cố Vấn AI - EventAI Pro Workspace{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3 px-md-4">
+    <div class="row g-3" style="min-height: calc(100vh - 160px);">
+        
+        <!-- Left Sidebar: Event Focus & Topics -->
+        <div class="col-lg-3 col-md-4">
+            <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between shadow-sm">
+                <div>
+                    <!-- Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                        <div class="d-flex align-items-center gap-2 text-primary">
+                            <i class="fa-solid fa-sparkles fs-5"></i>
+                            <strong class="text-light">EventAI Studio</strong>
+                        </div>
+                        <button type="button" class="btn btn-xs btn-outline-secondary text-light" id="clearChatBtn" title="Làm mới đoạn hội thoại">
+                            <i class="fa-solid fa-rotate-right me-1"></i> Mới
+                        </button>
+                    </div>
+
+                    <!-- Target Event Selector -->
+                    <div class="mb-3">
+                        <label class="checkout-label mb-1 d-block"><i class="fa-solid fa-bullseye me-1 text-info"></i> Phạm Vi Dữ Liệu Sự Kiện:</label>
+                        <select id="workspaceEventSelector" class="form-select form-select-sm bg-dark text-light border-secondary">
+                            <option value="">🌐 Tất cả sự kiện trên hệ thống</option>
+                            {% for e in events %}
+                                <option value="{{ e.id }}" {% if selected_event_id == e.id %}selected{% endif %}>
+                                    📅 {{ e.title[:45] }}...
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Quick Prompt Suggestions -->
+                    <div class="mb-3">
+                        <label class="checkout-label mb-2 d-block"><i class="fa-solid fa-bolt me-1 text-warning"></i> Gợi Ý Câu Hỏi Nhanh:</label>
+                        <div class="d-flex flex-column gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-info text-start py-2 px-3 rounded-3 prompt-quick-btn" data-prompt="Hướng dẫn tôi quy trình đặt vé và các hạng vé có quyền lợi gì?">
+                                <i class="fa-solid fa-ticket me-1 text-warning"></i> Tư vấn đặt vé & Hạng vé VIP
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-start py-2 px-3 rounded-3 prompt-quick-btn" data-prompt="Lễ tốt nghiệp 2026 của trường Đại học CNTT & TT Thái Nguyên (ICTU) diễn ra lúc nào và ở đâu?">
+                                <i class="fa-solid fa-graduation-cap me-1 text-success"></i> Lễ tốt nghiệp ICTU 2026
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-start py-2 px-3 rounded-3 prompt-quick-btn" data-prompt="ICTU AI Hackathon 2026 có thể lệ và giải thưởng như thế nào?">
+                                <i class="fa-solid fa-code me-1 text-info"></i> ICTU AI Hackathon 2026
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-start py-2 px-3 rounded-3 prompt-quick-btn" data-prompt="Agentic AI và RAG là gì? Có sự kiện nào về chủ đề này không?">
+                                <i class="fa-solid fa-robot me-1 text-primary"></i> Tìm hiểu Agentic AI & RAG
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-start py-2 px-3 rounded-3 prompt-quick-btn" data-prompt="Làm sao để hủy vé tham dự sự kiện nếu tôi bận việc?">
+                                <i class="fa-solid fa-shield-halved me-1 text-danger"></i> Quy trình hủy vé & Hoàn quota
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Status -->
+                <div class="pt-3 border-top border-secondary border-opacity-25 small text-muted">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-success rounded-circle p-1"> </span>
+                        <span>Động cơ: <strong>Gemini 2.0 + SQLite RAG</strong></span>
+                    </div>
+                    <div>Chống ảo giác • Grounded Context 100%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Main: Full-size Chat Arena -->
+        <div class="col-lg-9 col-md-8">
+            <div class="glass-panel p-0 h-100 d-flex flex-column justify-content-between shadow-lg overflow-hidden position-relative">
+                
+                <!-- Chat Workspace Header -->
+                <div class="p-3 px-4 d-flex justify-content-between align-items-center border-bottom border-secondary border-opacity-25" style="background: var(--spec-box-bg); backdrop-filter: blur(12px);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle p-2 d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #6366f1, #ec4899); width: 42px; height: 42px;">
+                            <i class="fa-solid fa-robot text-white fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">EventAI Concierge & Booking Advisor</h5>
+                            <small class="text-muted">Hỏi đáp tự do về sự kiện, diễn giả, tư vấn đặt vé & giải đáp công nghệ</small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50 px-3 py-2">
+                            <i class="fa-solid fa-bolt me-1"></i> Trực Tuyến 24/7
+                        </span>
+                        <a href="{{ url_for('main.index') }}" class="btn btn-sm btn-outline-secondary" title="Về trang chủ">
+                            <i class="fa-solid fa-house"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Chat Messages Scroll Container -->
+                <div id="workspaceChatMessages" class="p-4 flex-grow-1 overflow-y-auto" style="max-height: calc(100vh - 300px); min-height: 420px;">
+                    
+                    <!-- Welcome AI Message -->
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: linear-gradient(135deg, #6366f1, #ec4899); width: 38px; height: 38px;">
+                            <i class="fa-solid fa-robot text-white"></i>
+                        </div>
+                        <div class="glass-panel p-3 rounded-4" style="max-width: 82%;">
+                            <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-secondary border-opacity-25">
+                                <strong class="text-primary small"><i class="fa-solid fa-sparkles me-1"></i>EventAI Concierge</strong>
+                                <span class="badge bg-primary bg-opacity-25 text-primary small">Hệ Thống</span>
+                            </div>
+                            <div class="chat-markdown-body">
+                                Xin chào bạn! Tôi là <strong>EventAI Concierge</strong> - Cố vấn Trí tuệ Nhân tạo thông minh của hệ thống.
+                                <br><br>
+                                Tôi có thể hỗ trợ bạn mọi điều:
+                                <ul>
+                                    <li>🎟️ <strong>Tư vấn & Hướng dẫn đặt vé</strong> (vé VIP, vé tiêu chuẩn, vé sinh viên ICTU, thanh toán qua QR).</li>
+                                    <li>🎓 <strong>Thông tin Lễ tốt nghiệp & Sự kiện Đại học CNTT & TT Thái Nguyên (ICTU)</strong>.</li>
+                                    <li>💡 <strong>Giải đáp kiến thức công nghệ</strong> (Agentic AI, RAG chống ảo giác, Cloud, DevOps, Bảo mật Zero Trust).</li>
+                                    <li>📅 <strong>Tra cứu lịch trình, diễn giả & phòng họp</strong> theo thời gian thực.</li>
+                                </ul>
+                                Bạn hãy gõ câu hỏi vào ô bên dưới hoặc chọn các chủ đề gợi ý ở cột bên trái nhé!
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Input Box Container -->
+                <div class="p-3 px-4 border-top border-secondary border-opacity-25" style="background: rgba(15, 23, 42, 0.85);">
+                    <form id="workspaceChatForm" class="d-flex gap-2 align-items-center">
+                        <div class="input-group hero-search-wrapper flex-grow-1">
+                            <div class="hero-search-box-inner p-2 d-flex align-items-center w-100">
+                                <input type="text" id="workspaceQueryInput" class="form-control bg-transparent border-0 hero-search-input shadow-none" placeholder="Nhập bất kỳ câu hỏi nào: Đặt vé ra sao? Lễ tốt nghiệp ICTU? Agentic AI là gì?..." autocomplete="off">
+                                <button type="submit" id="workspaceSendBtn" class="btn btn-search-glow px-4 py-2 text-nowrap">
+                                    <i class="fa-solid fa-paper-plane me-1"></i> Gửi Câu Hỏi
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="d-flex justify-content-between align-items-center mt-2 px-1 text-muted small" style="font-size: 0.76rem;">
+                        <span><i class="fa-solid fa-keyboard me-1"></i> Nhấn <strong>Enter</strong> để gửi câu hỏi nhanh</span>
+                        <span><i class="fa-solid fa-shield-check text-success me-1"></i> Dữ liệu bảo mật & Không chia sẻ thông tin cá nhân</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chatContainer = document.getElementById('workspaceChatMessages');
+    const form = document.getElementById('workspaceChatForm');
+    const input = document.getElementById('workspaceQueryInput');
+    const sendBtn = document.getElementById('workspaceSendBtn');
+    const eventSelector = document.getElementById('workspaceEventSelector');
+    const clearBtn = document.getElementById('clearChatBtn');
+    const quickBtns = document.querySelectorAll('.prompt-quick-btn');
+
+    // Quick buttons click handler
+    quickBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (input) {
+                input.value = btn.getAttribute('data-prompt');
+                handleSendMessage();
+            }
+        });
+    });
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+            chatContainer.innerHTML = `
+                <div class="d-flex gap-3 mb-4">
+                    <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: linear-gradient(135deg, #6366f1, #ec4899); width: 38px; height: 38px;">
+                        <i class="fa-solid fa-robot text-white"></i>
+                    </div>
+                    <div class="glass-panel p-3 rounded-4" style="max-width: 82%; background: rgba(30, 41, 59, 0.75);">
+                        <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-secondary border-opacity-25">
+                            <strong class="text-primary small"><i class="fa-solid fa-sparkles me-1"></i>EventAI Concierge</strong>
+                            <span class="badge bg-primary bg-opacity-25 text-primary small">Hệ Thống</span>
+                        </div>
+                        <div class="chat-markdown-body text-light">
+                            Đoạn hội thoại đã được làm mới! Bạn muốn hỏi về sự kiện, đặt vé hay kiến thức công nghệ nào?
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleSendMessage();
+        });
+    }
+
+    async function handleSendMessage() {
+        const query = input.value.trim();
+        if (!query) return;
+
+        const eventId = eventSelector ? eventSelector.value : null;
+
+        // 1. Render User Message
+        appendUserMessage(query);
+        input.value = '';
+        sendBtn.disabled = true;
+        scrollToBottom();
+
+        // 2. Render Loading State
+        const loadingId = 'loading-' + Date.now();
+        appendLoadingMessage(loadingId);
+        scrollToBottom();
+
+        try {
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: query,
+                    event_id: eventId ? parseInt(eventId) : null
+                })
+            });
+
+            const data = await response.json();
+            removeElement(loadingId);
+
+            if (data.success) {
+                appendAiMessage(data.response, data.mode, data.latency_ms);
+            } else {
+                appendErrorMessage(data.message || 'Không thể nhận phản hồi từ AI.');
+            }
+        } catch (err) {
+            removeElement(loadingId);
+            appendErrorMessage('Lỗi kết nối đến dịch vụ AI. Vui lòng kiểm tra lại đường truyền mạng.');
+        } finally {
+            sendBtn.disabled = false;
+            scrollToBottom();
+            if (input) input.focus();
+        }
+    }
+
+    function appendUserMessage(text) {
+        const div = document.createElement('div');
+        div.className = 'd-flex gap-3 mb-4 justify-content-end';
+        div.innerHTML = `
+            <div class="p-3 rounded-4 text-white shadow-sm" style="max-width: 80%; background: linear-gradient(135deg, #4f46e5, #6366f1);">
+                <div class="small fw-semibold mb-1 opacity-75 text-end"><i class="fa-solid fa-user me-1"></i>Bạn</div>
+                <div style="font-size: 0.95rem; line-height: 1.5;">${escapeHtml(text)}</div>
+            </div>
+            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: rgba(99, 102, 241, 0.3); width: 38px; height: 38px; border: 1px solid #6366f1;">
+                <i class="fa-solid fa-user text-light"></i>
+            </div>
+        `;
+        chatContainer.appendChild(div);
+    }
+
+    function appendAiMessage(rawMarkdown, mode, latency) {
+        const div = document.createElement('div');
+        div.className = 'd-flex gap-3 mb-4';
+
+        const badgeHtml = mode === 'live' 
+            ? '<span class="badge bg-success" style="font-size:0.65rem;"><i class="fa-solid fa-cloud me-1"></i>Gemini Live (' + latency + 'ms)</span>'
+            : '<span class="badge bg-info text-dark" style="font-size:0.65rem;"><i class="fa-solid fa-database me-1"></i>Local RAG (' + latency + 'ms)</span>';
+
+        const formattedHtml = parseMarkdownToHtml(rawMarkdown);
+
+        div.innerHTML = `
+            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: linear-gradient(135deg, #6366f1, #ec4899); width: 38px; height: 38px;">
+                <i class="fa-solid fa-robot text-white"></i>
+            </div>
+            <div class="glass-panel p-3 rounded-4 shadow-sm" style="max-width: 85%;">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-25">
+                    <strong class="text-primary small"><i class="fa-solid fa-sparkles me-1"></i>EventAI Concierge</strong>
+                    <div class="d-flex align-items-center gap-2">
+                        ${badgeHtml}
+                        <button type="button" class="btn btn-xs btn-outline-secondary copy-btn py-0 px-2" style="font-size:0.7rem;" title="Sao chép nội dung">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="chat-markdown-body" style="font-size: 0.95rem; line-height: 1.6;">
+                    ${formattedHtml}
+                </div>
+            </div>
+        `;
+
+        const copyBtn = div.querySelector('.copy-btn');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(rawMarkdown);
+                copyBtn.innerHTML = '<i class="fa-solid fa-check text-success"></i>';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i>';
+                }, 2000);
+            });
+        }
+
+        chatContainer.appendChild(div);
+    }
+
+    function appendLoadingMessage(id) {
+        const div = document.createElement('div');
+        div.id = id;
+        div.className = 'd-flex gap-3 mb-4';
+        div.innerHTML = `
+            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style="background: linear-gradient(135deg, #6366f1, #ec4899); width: 38px; height: 38px;">
+                <i class="fa-solid fa-robot text-white"></i>
+            </div>
+            <div class="glass-panel p-3 rounded-4 text-info small d-flex align-items-center gap-2">
+                <i class="fa-solid fa-spinner fa-spin fs-5 text-primary"></i>
+                <span>Đang truy xuất dữ liệu sự kiện, phân tích ngữ cảnh và xử lý cùng AI...</span>
+            </div>
+        `;
+        chatContainer.appendChild(div);
+    }
+
+    function appendErrorMessage(msg) {
+        const div = document.createElement('div');
+        div.className = 'd-flex gap-3 mb-4';
+        div.innerHTML = `
+            <div class="rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0 bg-danger text-white" style="width: 38px; height: 38px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="alert alert-danger p-3 rounded-4 mb-0" style="max-width: 80%;">
+                <strong>Lỗi phản hồi:</strong> ${escapeHtml(msg)}
+            </div>
+        `;
+        chatContainer.appendChild(div);
+    }
+
+    function parseMarkdownToHtml(md) {
+        if (!md) return '';
+        let html = md;
+        
+        // Bold
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Italic
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        // Links: [text](url)
+        html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" class="btn btn-xs btn-primary-gradient px-2 py-1 my-1 text-decoration-none d-inline-block fw-semibold" target="_self">$1</a>');
+        // Bullet list
+        html = html.replace(/\n- (.*?)/g, '<br>• $1');
+        html = html.replace(/\n\+ (.*?)/g, '<br>&nbsp;&nbsp;+ $1');
+        // Line breaks
+        html = html.replace(/\n/g, '<br>');
+
+        return html;
+    }
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function removeElement(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    function scrollToBottom() {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

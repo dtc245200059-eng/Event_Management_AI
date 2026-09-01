@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  event-management-ai:
+    build: .
+    container_name: event_mgmt_ai_app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=event_mgmt_ai_secret_super_key_2026
+      - DATABASE_URI=sqlite:///event_management.db
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GEMINI_MODEL=gemini-2.0-flash
+      - ENABLE_AI_FALLBACK_MOCK=True
+    volumes:
+      - ./app/static/qr_codes:/app/app/static/qr_codes
+      - ./app/static/uploads:/app/app/static/uploads
+    restart: unless-stopped

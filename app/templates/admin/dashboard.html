@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard & AI Analytics - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-chart-line text-primary me-2"></i>Bảng Điều Khiển Quản Trị & AI Analytics</h2>
+            <p class="text-muted small mb-0">Thống kê vận hành thời gian thực, dự báo người tham dự và phân tích cảm xúc phản hồi sự kiện</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin.users_list') }}" class="btn btn-secondary-glass btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-users me-1"></i> Quản Lý Users
+            </a>
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary-gradient btn-sm rounded-pill px-3">
+                <i class="fa-solid fa-plus me-1"></i> Thêm Sự Kiện
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 CORE METRIC CARDS -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-primary bg-opacity-25 text-primary">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div class="metric-value text-primary">{{ total_events }}</div>
+                <div class="text-muted small fw-semibold">TỔNG SỰ KIỆN</div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-info bg-opacity-25 text-info">
+                    <i class="fa-solid fa-ticket"></i>
+                </div>
+                <div class="metric-value text-info">{{ total_registrations }}</div>
+                <div class="text-muted small fw-semibold">LƯỢT ĐĂNG KÝ VÉ</div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-success bg-opacity-25 text-success">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                </div>
+                <div class="metric-value text-success">{{ "{:,.0f}".format(total_revenue) }} đ</div>
+                <div class="text-muted small fw-semibold">DOANH THU BÁN VÉ</div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-3">
+            <div class="metric-card">
+                <div class="metric-icon bg-warning bg-opacity-25 text-warning">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div class="metric-value text-warning">{{ checkin_rate }}%</div>
+                <div class="text-muted small fw-semibold">TỶ LỆ CHECK-IN ({{ total_checked_in }}/{{ total_registrations }})</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS & PREDICTIVE ANALYTICS ROW -->
+    <div class="row mb-4">
+        <!-- Revenue & Registration Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="glass-panel p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-chart-area text-info me-2"></i>Thống Kê Đăng Ký Theo Sự Kiện</h5>
+                    <span class="badge bg-secondary rounded-pill px-3">Real-time Data</span>
+                </div>
+                <div style="height: 280px;">
+                    <canvas id="registrationChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Sentiment Doughnut -->
+        <div class="col-lg-4 mb-4">
+            <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-face-smile text-warning me-2"></i>Phân Tích Cảm Xúc (Sentiment)</h5>
+                    <div style="height: 180px;" class="position-relative">
+                        <canvas id="sentimentChart"></canvas>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-around text-center pt-3 border-top border-secondary border-opacity-25">
+                    <div>
+                        <small class="text-success d-block fw-bold">Tích cực</small>
+                        <strong class="fs-5">{{ positive_count }}</strong>
+                    </div>
+                    <div>
+                        <small class="text-secondary d-block fw-bold">Trung tính</small>
+                        <strong class="fs-5">{{ neutral_count }}</strong>
+                    </div>
+                    <div>
+                        <small class="text-danger d-block fw-bold">Tiêu cực</small>
+                        <strong class="fs-5">{{ negative_count }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREDICTIVE ATTENDANCE AI MODULE -->
+    <div class="glass-panel p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <span class="badge bg-purple px-2 py-1 mb-1" style="background: #8b5cf6;"><i class="fa-solid fa-brain me-1"></i> AI Touchpoint #3</span>
+                <h5 class="fw-bold mb-0">Mô Hình Dự Báo Tỷ Lệ Tham Dự Thực Tế (Predictive Attendance Forecast)</h5>
+            </div>
+            <select id="predictEventSelect" class="form-select bg-dark text-light border-secondary" style="max-width: 350px;">
+                {% for evt in events %}
+                <option value="{{ evt.id }}">{{ evt.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="row g-3" id="predictResultBox">
+            <div class="col-md-3">
+                <div class="p-3 rounded-3 text-center" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);">
+                    <small class="text-muted d-block fw-semibold">ĐÃ ĐĂNG KÝ</small>
+                    <h3 class="fw-bold mb-0" id="predTotalReg">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 rounded-3 text-center" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <small class="text-success d-block fw-semibold">DỰ BÁO SHOW-UP</small>
+                    <h3 class="fw-bold text-success mb-0" id="predExpected">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 rounded-3 text-center" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <small class="text-info d-block fw-semibold">TỶ LỆ DỰ BÁO</small>
+                    <h3 class="fw-bold text-info mb-0" id="predRate">-</h3>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 rounded-3 text-center" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2);">
+                    <small class="text-warning d-block fw-semibold">KHUYẾN NGHỊ CHỖ NGỒI</small>
+                    <h3 class="fw-bold text-warning mb-0" id="predSeats">-</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECENT FEEDBACK & AI AUDIT LOGS ROW -->
+    <div class="row">
+        <!-- Recent Reviews -->
+        <div class="col-lg-6 mb-4">
+            <div class="glass-panel p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-comments text-primary me-2"></i>Ý Kiến Đánh Giá Gần Đây</h5>
+                    <span class="badge bg-secondary rounded-pill px-2 py-1 small">{{ feedbacks|length }} Đánh Giá</span>
+                </div>
+                {% if feedbacks %}
+                    <div class="d-flex flex-column gap-3">
+                        {% for fb in feedbacks %}
+                        <div class="p-3 rounded-3 feedback-review-card feedback-border-{{ fb.sentiment or 'neutral' }}">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <strong class="small">{{ fb.attendee.full_name if fb.attendee else 'Khách tham dự' }}</strong>
+                                <span class="text-warning small" style="font-size: 0.95rem;">
+                                    {% for i in range(fb.feedback_rating or 0) %}★{% endfor %}
+                                    {% for i in range(5 - (fb.feedback_rating or 0)) %}☆{% endfor %}
+                                </span>
+                            </div>
+                            <p class="mb-2 small italic">"{{ fb.feedback_text or 'Đánh giá xếp hạng sao sự kiện' }}"</p>
+                            <div class="d-flex justify-content-between align-items-center text-muted" style="font-size: 0.75rem;">
+                                <span class="text-truncate" style="max-width: 250px;">{{ fb.event.title if fb.event else 'Sự kiện' }}</span>
+                                <div class="d-flex align-items-center gap-1">
+                                    {% if fb.feedback_submitted_at %}
+                                    <span class="d-none d-sm-inline">{{ fb.feedback_submitted_at.strftime('%d/%m/%Y') }} •</span>
+                                    {% endif %}
+                                    <span class="badge {% if fb.sentiment == 'positive' %}bg-success{% elif fb.sentiment == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ fb.sentiment or 'neutral' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-comment-slash fs-2 mb-2 opacity-50"></i>
+                        <p class="small mb-0">Chưa có đánh giá nào từ người tham dự.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- AI Audit Log -->
+        <div class="col-lg-6 mb-4">
+            <div class="glass-panel p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-clipboard-list text-secondary me-2"></i>Nhật Ký Tương Tác AI (Audit Trail)</h5>
+                    <span class="badge bg-purple rounded-pill px-2 py-1 small" style="background: #8b5cf6;">Gemini 2.0 & RAG</span>
+                </div>
+                {% if ai_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm align-middle mb-0" style="font-size: 0.82rem; background: transparent;">
+                            <thead>
+                                <tr class="text-muted" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                    <th>LOẠI AI</th>
+                                    <th>CÂU HỎI USER</th>
+                                    <th>CHẾ ĐỘ</th>
+                                    <th>ĐỘ TRỄ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in ai_logs %}
+                                <tr>
+                                    <td><span class="badge bg-purple" style="background: #8b5cf6;">{{ log.chat_type }}</span></td>
+                                    <td class="text-truncate" style="max-width: 180px;" title="{{ log.user_message }}">{{ log.user_message }}</td>
+                                    <td>
+                                        <span class="badge {% if log.response_mode == 'live' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                                            {{ log.response_mode }}
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ log.latency_ms or 0 }}ms</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4 text-muted">
+                        <i class="fa-solid fa-robot fs-2 mb-2 opacity-50"></i>
+                        <p class="small mb-0">Chưa có nhật ký tương tác AI.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SAFE JSON SCRIPT DATA TAG -->
+<script id="adminChartData" type="application/json">
+{{ chart_data | tojson | safe }}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 0. Parse Safe Chart Data from JSON script tag
+    const rawDataEl = document.getElementById('adminChartData');
+    let chartData = {
+        event_titles: [],
+        registered_data: [],
+        capacity_data: [],
+        sentiment_data: [0, 0, 0]
+    };
+
+    if (rawDataEl && rawDataEl.textContent) {
+        try {
+            chartData = JSON.parse(rawDataEl.textContent);
+        } catch (e) {
+            console.error("Failed to parse adminChartData:", e);
+        }
+    }
+
+    // 1. Registration & Capacity Bar Chart
+    const ctx1 = document.getElementById('registrationChart');
+    if (ctx1) {
+        const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        const textColor = isLight ? '#475569' : '#94a3b8';
+        const gridColor = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)';
+        const capBg = isLight ? 'rgba(100, 116, 139, 0.2)' : 'rgba(255, 255, 255, 0.15)';
+
+        new Chart(ctx1.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: chartData.event_titles || [],
+                datasets: [
+                    {
+                        label: 'Đã Đăng Ký',
+                        data: chartData.registered_data || [],
+                        backgroundColor: 'rgba(99, 102, 241, 0.85)',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Sức Chứa Tối Đa',
+                        data: chartData.capacity_data || [],
+                        backgroundColor: capBg,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: textColor } }
+                },
+                scales: {
+                    x: { ticks: { color: textColor }, grid: { color: gridColor } },
+                    y: { ticks: { color: textColor }, grid: { color: gridColor } }
+                }
+            }
+        });
+    }
+
+    // 2. Sentiment Doughnut Chart
+    const ctx2 = document.getElementById('sentimentChart');
+    if (ctx2) {
+        new Chart(ctx2.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Tích cực', 'Trung tính', 'Tiêu cực'],
+                datasets: [{
+                    data: chartData.sentiment_data || [0, 0, 0],
+                    backgroundColor: ['#10b981', '#64748b', '#ef4444'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    // 3. Predictive Forecast fetcher
+    const select = document.getElementById('predictEventSelect');
+    async function updatePredictive(eventId) {
+        if (!eventId) return;
+        try {
+            const res = await fetch(`/api/ai/predictive/${eventId}`);
+            const data = await res.json();
+            if (data.success && data.stats) {
+                document.getElementById('predTotalReg').innerText = data.stats.total_registered;
+                document.getElementById('predExpected').innerText = data.stats.expected_attendance;
+                document.getElementById('predRate').innerText = data.stats.predicted_showup_rate + '%';
+                document.getElementById('predSeats').innerText = data.stats.recommended_seats + ' ghế';
+            }
+        } catch (e) {
+            console.log("Could not load predictive data:", e);
+        }
+    }
+
+    if (select && select.value) {
+        updatePredictive(select.value);
+        select.addEventListener('change', () => updatePredictive(select.value));
+    }
+});
+</script>
+{% endblock %}

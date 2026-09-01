@@ -1,0 +1,1834 @@
+TRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN VÀ TRUYỀN THÔNG
+KHOA CÔNG NGHỆ THÔNG TIN
+----------o0o----------
+BÁO CÁO DỰ ÁN
+HỌC PHẦN: Ứng Dụng Trí Tuệ Nhân Tạo
+ĐỀ TÀI:
+ HỆ THỐNG QUẢN LÝ SỰ KIỆN CÓ TÍCH HỢP AI 
+Nhóm sinh viên thực hiện: NÔNG QUỐC TUẤN (Nhóm Trưởng)
+(Nhóm 9)NGÔ XUÂN THUỶ
+Giảng viên hướng dẫn: Th.S . Nguyễn Đình Dũng
+Lớp: KTPM K23C
+Thái nguyên, tháng 10 năm 2026
+BẢNG PHÂN CÔNG NHIỆM VỤ 
+STT
+Họ và tên sinh viên
+Tên nhiệm vụ
+1
+Nông Quốc Tuấn
+Khảo sát bài toán và nhận diện vấn đề 
+Đặc tả Yêu cầu chức năng 
+Thiết kế Actor và Use Case
+Minh chứng AI 
+2
+Ngô Xuân Thuỷ
+Xác định Yêu cầu phi chức năng
+Đặc tả Yêu cầu chức năng 
+Đặc tả chi tiết Use Case 
+MỤC LỤC
+LỜI MỞ ĐẦU8
+CHƯƠNG I: TỔNG QUAN VỀ DỰ ÁN QUẢN LÝ SỰ KIỆN TÍCH HỢP AI9
+1.1. Phân tích bối cảnh ra đời và tính cấp thiết của dự án9
+1.2. Xác định mục tiêu chiến lược và các mục tiêu cụ thể (KPIs)10
+1.3. Xác lập phạm vi dự án (In-Scope / Out-of-Scope)11
+Phạm vi thực hiện (In-Scope)11
+Giới hạn dự án (Out-of-Scope)12
+1.4. Phân tích các bên liên quan (Stakeholders) và Ma trận trách nhiệm (RACI)12
+Bảng 1.1: Ma trận phân công trách nhiệm Stakeholders (RACI Matrix)12
+CHƯƠNG II: XÂY DỰNG KẾ HOẠCH DỰ ÁN VÀ QUẢN LÝ TIẾN ĐỘ14
+2.1. Lựa chọn phương pháp luận quản trị dự án (Hybrid Agile-Linear)14
+2.2. Cấu trúc phân rã công việc (WBS) theo 4 Sprint15
+Bảng 2.1: Cấu trúc phân rã công việc WBS chi tiết 4 giai đoạn phát triển15
+Sprint 1: Phân tích & Thiết kế (Bài KT1)16
+Sprint 2: Xây dựng Chức năng Quản lý (Bài KT2)16
+Sprint 3: Tích hợp AI & Kiểm thử (Bài KT3)16
+Sprint 4: Hoàn thiện & Triển khai (Bài Cuối kỳ)17
+2.3. Ước lượng chi phí, xác định nguồn lực nhân sự và hạ tầng kỹ thuật17
+Nhân lực17
+Môi trường phát triển17
+Dịch vụ AI Cloud18
+Hạ tầng triển khai18
+2.4. Kế hoạch nhận diện và quản lý rủi ro dự phòng (Risk Management)18
+Bảng 2.2: Ma trận nhận diện rủi ro và kế hoạch kiểm soát dự phòng19
+RSK-01: Gemini API bị mất kết nối20
+RSK-02: Hallucination trong Chatbot20
+RSK-05: Xung đột số lượng vé20
+RSK-07: Check-in trùng20
+RSK-09: Rủi ro từ Predictive Analytics20
+CHƯƠNG III: ĐÁP ỨNG TOÀN DIỆN 40/40 TIÊU CHÍ RUBRIC CHUNG21
+3.1: PHÂN TÍCH YÊU CẦU & THIẾT KẾ HỆ THỐNG (10 Tiêu chí)21
+3.1.1. Tiêu chí 1: Phân tích đúng bài toán quản lý và 4 điểm nghẽn vận hành sự kiện21
+1. Phân mảnh thông tin sự kiện và tài nguyên21
+2. Đăng ký, phát hành vé và thanh toán thiếu tính nhất quán21
+3. Điểm nghẽn tại khu vực check-in22
+4. Thiếu khả năng dự báo và hiểu phản hồi người tham dự22
+3.1.2. Tiêu chí 2: Đặc tả I/O 8 chức năng quản lý cốt lõi và 4 chức năng AI22
+Bảng 3.1: Bảng đặc tả chi tiết các yêu cầu chức năng quản lý & AI22
+3.1.3. Tiêu chí 3: Xác định yêu cầu phi chức năng (NFR)23
+Bảng 3.2: Ma trận 9 Yêu cầu Phi Chức Năng (NFR) hệ thống23
+3.1.4. Tiêu chí 4: Thiết kế Actor và Đặc tả chi tiết 8 Use Cases24
+Hình 3.1: Sơ đồ Use Case tổng thể — 3 Actor và 8 Use Cases cốt lõi25
+Bảng 3.3.1: Đặc tả chi tiết UC01 — Đăng nhập & Xác thực25
+Bảng 3.3.2: Đặc tả chi tiết UC02 — Quản lý Sự kiện26
+Bảng 3.3.3: Đặc tả chi tiết UC03 — Quản lý Diễn giả, Khách mời & Tài nguyên26
+Bảng 3.3.4: Đặc tả chi tiết UC04 — Quản lý Vé & Đăng ký26
+Bảng 3.3.5: Đặc tả chi tiết UC05 — Thanh toán & Hoàn/Hủy Vé27
+Bảng 3.3.6: Đặc tả chi tiết UC06 — Check-in & Vận hành Sự kiện27
+Bảng 3.3.7: Đặc tả chi tiết UC07 — Sử dụng Trợ lý AI27
+Bảng 3.3.8: Đặc tả chi tiết UC08 — Quản lý Người dùng & Quyền hệ thống28
+3.1.5. Tiêu chí 5: Thiết kế Cơ sở dữ liệu và Từ điển dữ liệu 9 bảng 3NF28
+Hình 3.2: Sơ đồ ERD 9 bảng CSDL chuẩn 3NF và các mối quan hệ PK-FK28
+Bảng 3.4.1: Cấu trúc bảng users29
+Bảng 3.4.2: Cấu trúc bảng events29
+Bảng 3.4.3: Cấu trúc bảng speakers30
+Bảng 3.4.4: Cấu trúc bảng venues30
+Bảng 3.4.5: Cấu trúc bảng schedules31
+Bảng 3.4.6: Cấu trúc bảng attendees31
+Bảng 3.4.7: Cấu trúc bảng tickets32
+Bảng 3.4.8: Cấu trúc bảng registrations33
+Bảng 3.4.9: Cấu trúc bảng ai_chat_history33
+3.1.6. Tiêu chí 6: Thiết kế Kiến trúc hệ thống 3 tầng & Sơ đồ Luồng Dữ Liệu DFD34
+Hình 3.3: Sơ đồ Kiến trúc 3 tầng tích hợp AI Service34
+Lớp Presentation35
+Lớp Business35
+Lớp Data35
+AI Service35
+Hình 3.3b: Sơ đồ Luồng Dữ liệu (DFD)35
+3.1.7. Tiêu chí 7: Xác định vị trí tích hợp AI, Sequence Diagram & Sơ đồ Pipeline36
+AI Touchpoint 1 — Recommendation36
+AI Touchpoint 2 — Chatbot LLM/RAG36
+AI Touchpoint 3 — Predictive Analytics37
+AI Touchpoint 4 — Sentiment Analysis37
+Hình 3.4: Sequence Diagram — Luồng xử lý chức năng AI38
+3.1.8. Tiêu chí 8: Thiết kế Prompt có hệ thống và Luồng gọi AI sơ bộ38
+Cấu trúc System Prompt38
+Dynamic Context38
+Luồng gọi AI sơ bộ39
+3.1.9. Tiêu chí 9: Minh chứng sử dụng AI trong Phân tích & Thiết kế (4 mục AI-KT1)39
+Bảng 3.5: Minh chứng sử dụng AI trong Giai đoạn 1 (Bài KT1)39
+3.1.10. Tiêu chí 10: Tài liệu thiết kế và Kế hoạch phân rã công việc WBS40
+CHƯƠNG IV: THIẾT KẾ HỆ THỐNG41
+4.1. Mục tiêu của giai đoạn thiết kế41
+4.2. Kiến trúc tổng thể của hệ thống41
+4.2.1. Kiến trúc được lựa chọn41
+4.2.2. Các thành phần của hệ thống42
+Thành phần Client42
+Firebase / LocalStorage42
+Gemini API42
+4.3. Thiết kế Use Case43
+4.3.1. Mục đích43
+4.3.2. Xác định các tác nhân43
+4.3.3. Danh sách các Use Case chính43
+Nhóm Người dùng43
+Nhóm Quản Trị Viên43
+4.3.4. Biểu Đồ Use Cases44
+4.4. Đặc tả Use Case45
+4.4.1. UC08 – Thêm sự kiện45
+4.4.2. UC11 – Tạo mô tả sự kiện bằng AI45
+4.4.3. UC06 – Hỏi đáp với AI Assistant45
+4.5. Thiết kế Activity Diagram46
+4.5.1. Activity Diagram – Đăng ký sự kiện46
+4.5.2. Activity Diagram – Tạo sự kiện bằng AI47
+4.5.3. Activity Diagram – AI Assistant48
+4.6. Thiết kế Sequence Diagram49
+4.6.1. Sequence Diagram – Tạo mô tả sự kiện bằng AI49
+4.6.2. Sequence Diagram – AI Assistant50
+4.7. Thiết kế ERD – Sơ đồ thực thể liên kết50
+4.7.1. Mục tiêu50
+4.7.2. Thực thể User51
+4.7.3. Thực thể Event51
+4.7.4. Thực thể Registration51
+4.7.5. Mối quan hệ giữa các thực thể51
+4.7.6. Biểu đồ ERD52
+4.8. Thiết kế Class Diagram53
+4.9. Component Diagram54
+4.10. Thiết kế Deployment Diagram55
+4.11. Thiết kế luồng xử lý AI55
+4.11.1. Kiến trúc xử lý AI55
+4.11.2. Prompt tạo mô tả sự kiện56
+4.11.3. Prompt cải thiện nội dung56
+4.11.4. Prompt AI Assistant57
+4.12. Thiết kế UI/UX57
+4.12.1. Nguyên tắc thiết kế57
+4.12.2. Thiết kế Sitemap57
+4.12.3. Wireframe trang chủ58
+4.12.4. Wireframe Dashboard Admin58
+4.12.5. Wireframe AI Assistant59
+4.12.6. Wireframe Form tạo sự kiện59
+4.13. Liên kết giữa yêu cầu và thiết kế59
+4.14. Kết quả đạt được60
+4.15. Đánh giá giai đoạn thiết kế60
+4.16. Kết luận61
+LỜI MỞ ĐẦU
+Trong bối cảnh chuyển đổi số đang diễn ra mạnh mẽ, việc tổ chức và quản lý các sự kiện (như hội thảo, workshop, cuộc thi hay hoạt động câu lạc bộ) ngày càng đòi hỏi sự chuyên nghiệp và hiệu quả. Tuy nhiên, trong thực tế hiện nay, việc quản lý sự kiện thường gặp nhiều hạn chế do thông tin bị phân tán trên nhiều nền tảng khác nhau như Facebook, Zalo, Google Form hay Excel. Những phương pháp thủ công và rời rạc này dẫn đến nhiều khó khăn: dữ liệu thiếu đồng bộ, khó cập nhật khi có thay đổi, người tổ chức mất nhiều thời gian viết nội dung truyền thông, và người tham gia gặp khó khăn trong việc tìm kiếm sự kiện phù hợp. 
+Đồng thời, sự phát triển vượt bậc của công nghệ Trí tuệ nhân tạo (AI) đã mở ra những cơ hội mới để tự động hóa và giải quyết các hạn chế trên. Công nghệ AI có khả năng hỗ trợ đắc lực thông qua việc sinh nội dung mô tả sự kiện, tối ưu hóa nội dung truyền thông, gợi ý sự kiện phù hợp với sở thích người dùng và hỗ trợ trả lời câu hỏi tự động. 
+Nhận thức được những vấn đề thực tiễn đó cùng với mong muốn ứng dụng công nghệ hiện đại, nhóm 9 đã quyết định chọn đề tài "Hệ thống quản lý sự kiện có tích hợp AI" cho báo cáo dự án thuộc học phần Ứng dụng Trí tuệ Nhân tạo. 
+Dự án này được định hướng phát triển dưới dạng một ứng dụng web nhằm tập trung hóa dữ liệu sự kiện. Mục tiêu tổng quát của hệ thống là hỗ trợ người dùng quản lý, tìm kiếm, lọc và tương tác với sự kiện, đồng thời tích hợp sức mạnh của Gemini API để tự động hóa việc tạo nội dung và xây dựng AI Assistant hỗ trợ hỏi đáp. Qua đó, dự án hướng tới việc đơn giản hóa thao tác quản lý cho ban tổ chức và nâng cao tối đa trải nghiệm của người tham gia. 
+Nội dung của báo cáo sẽ trình bày chi tiết về quá trình khảo sát hiện trạng, phân tích các yêu cầu chức năng và phi chức năng, xây dựng luồng hoạt động, thiết kế giao diện, cấu trúc dữ liệu, cũng như đánh giá tính khả thi để triển khai dự án. 
+Nhóm thực hiện hy vọng rằng dự án không chỉ đáp ứng tốt các tiêu chí của học phần mà còn có thể phát triển thành một sản phẩm thực tế hữu ích. Chúng em rất mong nhận được những nhận xét và góp ý từ giảng viên hướng dẫn để tiếp tục hoàn thiện hệ thống.
+CHƯƠNG I: TỔNG QUAN VỀ DỰ ÁN QUẢN LÝ SỰ KIỆN TÍCH HỢP AI
+1.1. Phân tích bối cảnh ra đời và tính cấp thiết của dự án
+Trong bối cảnh chuyển đổi số diễn ra mạnh mẽ, hoạt động tổ chức hội thảo, hội nghị, workshop, triển lãm, chương trình đào tạo, sự kiện doanh nghiệp và các chương trình cộng đồng ngày càng đòi hỏi khả năng quản lý tập trung, cập nhật dữ liệu theo thời gian thực và cung cấp trải nghiệm thuận tiện cho người tham dự. Một sự kiện không chỉ bao gồm việc tạo một lịch chương trình đơn thuần mà là một chuỗi nghiệp vụ liên kết giữa thông tin sự kiện, diễn giả, khách mời, địa điểm, lịch trình, vé, thanh toán, check-in, truyền thông và thu thập phản hồi.
+Tuy nhiên, trong thực tế vận hành, đặc biệt đối với các đơn vị tổ chức sự kiện quy mô vừa và nhỏ, dữ liệu nghiệp vụ thường được phân tán trên nhiều công cụ khác nhau như bảng tính, biểu mẫu trực tuyến, email, nền tảng nhắn tin và phần mềm thanh toán riêng biệt. Cách tiếp cận này tạo ra sự phụ thuộc lớn vào thao tác thủ công và làm giảm khả năng kiểm soát xuyên suốt vòng đời sự kiện.
+Phương thức quản lý phân tán này bộc lộ 4 điểm nghẽn nghiêm trọng, ảnh hưởng trực tiếp đến hiệu quả vận hành và trải nghiệm của người tham dự:
+Phân mảnh dữ liệu sự kiện và tài nguyên: Thông tin về sự kiện, diễn giả, khách mời, địa điểm và lịch trình thường được lưu ở các tệp hoặc hệ thống riêng lẻ. Khi lịch trình thay đổi, người phụ trách phải cập nhật đồng thời nhiều nơi, làm tăng khả năng sai lệch dữ liệu. Ví dụ, thời gian phát biểu của một diễn giả có thể đã được thay đổi trong bảng điều phối nhưng chưa được cập nhật trên thông tin gửi tới khách tham dự. Điều này đặc biệt nghiêm trọng đối với sự kiện có nhiều phiên diễn ra song song.
+Quy trình đăng ký, phát hành vé và thanh toán còn nhiều thao tác thủ công: Việc phân biệt vé Free, Paid và VIP, kiểm tra số lượng vé còn lại, xác nhận thanh toán, xử lý hoàn vé hoặc hủy vé có thể tạo ra nhiều điểm kiểm soát thủ công. Khi số lượng người đăng ký tăng cao, ban tổ chức phải đối chiếu danh sách đăng ký, giao dịch thanh toán và trạng thái vé, từ đó phát sinh nguy cơ cấp nhầm vé, ghi nhận sai trạng thái thanh toán hoặc xử lý hoàn hủy không nhất quán.
+Tắc nghẽn trong vận hành tại thời điểm diễn ra sự kiện: Check-in là một trong những điểm có mật độ giao dịch cao nhất. Nếu chỉ sử dụng danh sách giấy hoặc tìm kiếm thủ công theo họ tên, thời gian chờ của khách tham dự sẽ tăng lên đáng kể. Trong trường hợp triển khai mã QR hoặc nhận diện khuôn mặt, hệ thống còn phải bảo đảm việc xác thực nhanh, chống check-in trùng và đồng bộ trạng thái theo thời gian thực. Đồng thời, ban tổ chức cần có khả năng gửi thông báo tức thời khi thay đổi phòng, thay đổi lịch trình, thông báo diễn giả hoặc các sự cố phát sinh.
+Thiếu khả năng phân tích và hỗ trợ ra quyết định thông minh: Dữ liệu lịch sử đăng ký, tỷ lệ người mua vé nhưng không tham dự, lịch sử tham gia sự kiện, sở thích chủ đề và phản hồi sau chương trình có giá trị lớn đối với công tác tổ chức. Tuy nhiên, nếu chỉ lưu dữ liệu dạng bảng và thống kê thủ công, ban tổ chức khó xác định nhóm khách hàng tiềm năng, dự báo số người tham dự thực tế, ước lượng ngân sách và nguồn lực cần chuẩn bị hoặc nhận biết nguyên nhân khiến một sự kiện có mức độ hài lòng thấp.
+Từ các vấn đề trên, việc xây dựng Hệ thống quản lý sự kiện có tích hợp AI (AI-integrated Event Management System) có tính cấp thiết cả về phương diện nghiệp vụ lẫn kỹ thuật. Hệ thống hướng tới việc số hóa toàn bộ chu trình từ khởi tạo sự kiện, quản lý nguồn lực, đăng ký và phát hành vé, thanh toán, vận hành check-in đến khảo sát sau sự kiện trên một nền tảng thống nhất.
+Điểm khác biệt trọng tâm của hệ thống là AI không được xem như một chức năng bổ sung độc lập mà được đặt tại các điểm có giá trị cao trong vòng đời nghiệp vụ. AI Recommendation phân tích lịch sử tham gia, sở thích và hành vi của người dùng để cá nhân hóa danh sách sự kiện đề xuất. AI Chatbot sử dụng LLM/RAG đóng vai trò trợ lý hỗ trợ khách hàng 24/7, có khả năng trả lời câu hỏi liên quan đến chương trình, thời gian, diễn giả, địa điểm, hướng dẫn di chuyển và quy trình mua vé dựa trên dữ liệu thực tế của hệ thống. Predictive Analytics hỗ trợ ban tổ chức dự báo số lượng người tham dự thực tế, nhu cầu nguồn lực và xu hướng ngân sách. Sau sự kiện, Sentiment Analysis phân tích phản hồi và bình luận để xác định mức độ hài lòng, chủ đề tích cực và các vấn đề cần cải thiện.
+Về mặt kỹ thuật, hệ thống được định hướng xây dựng trên nền tảng C# và ASP.NET Core MVC, sử dụng SQL Server làm cơ sở dữ liệu trung tâm. Giao diện được phát triển bằng HTML, CSS, JavaScript và Bootstrap, bảo đảm khả năng sử dụng trên máy tính và các thiết bị có kích thước màn hình khác nhau. Các dịch vụ AI được tích hợp thông qua OpenAI API đối với Chatbot/LLM, trong khi Python hoặc ML.NET được sử dụng cho các bài toán Recommendation và Predictive Analytics. Cách phân tách này giúp hệ thống duy trì ranh giới rõ ràng giữa nghiệp vụ lõi, dữ liệu và các thành phần trí tuệ nhân tạo.
+1.2. Xác định mục tiêu chiến lược và các mục tiêu cụ thể (KPIs)
+Mục tiêu chiến lược: Xây dựng một giải pháp phần mềm quản lý sự kiện tập trung, hiện đại và có khả năng mở rộng, hỗ trợ quản lý xuyên suốt vòng đời sự kiện từ giai đoạn chuẩn bị, tổ chức, vận hành đến đánh giá sau sự kiện; đồng thời tích hợp các mô hình AI phù hợp nhằm nâng cao khả năng cá nhân hóa, tự động hóa và hỗ trợ ra quyết định.
+Mục tiêu của hệ thống được cụ thể hóa thành các nhóm Key Performance Indicators (KPIs) sau:
+Về Nghiệp vụ Quản lý: Hoàn thiện đầy đủ các nhóm chức năng quản lý cốt lõi, bao gồm xác thực và phân quyền; quản lý sự kiện; quản lý diễn giả; quản lý khách mời; quản lý địa điểm; quản lý lịch trình; quản lý vé; đăng ký và thanh toán; check-in; thông báo; khảo sát và báo cáo. Các nghiệp vụ phải duy trì tính nhất quán dữ liệu giữa các module và hỗ trợ truy vết trạng thái của một người tham dự từ lúc đăng ký đến sau khi kết thúc sự kiện.
+Về Quản lý Vé & Thanh toán: Hỗ trợ ít nhất ba loại vé gồm Free, Paid và VIP, quản lý hạn mức phát hành, trạng thái vé và số lượng vé còn lại; tích hợp quy trình thanh toán trực tuyến thông qua API/cổng thanh toán được cấu hình; hỗ trợ xử lý trạng thái thanh toán thành công, thất bại, chờ xử lý; đồng thời cung cấp nghiệp vụ hoàn vé, hủy vé và cập nhật trạng thái liên quan một cách nhất quán.
+Về Trí tuệ Nhân tạo: Tích hợp bốn nhóm năng lực AI trọng tâm:(1) AI Recommendation – gợi ý sự kiện cá nhân hóa theo lịch sử tham gia và sở thích;(2) AI Chatbot LLM/RAG – trợ lý hỏi đáp 24/7 về sự kiện, lịch trình, diễn giả, địa điểm, cách di chuyển và mua vé;(3) Predictive Analytics – dự báo số lượng người tham dự thực tế, ngân sách và nhu cầu tài nguyên;(4) Sentiment Analysis – phân tích cảm xúc từ khảo sát, nhận xét và bình luận sau sự kiện.
+Về Vận hành thời gian thực: Xây dựng quy trình check-in bằng mã QR, cho phép xác thực vé nhanh và cập nhật trạng thái tham dự tức thời. Kiến trúc hệ thống được thiết kế theo hướng có thể mở rộng sang Face ID/Face Recognition khi có đủ dữ liệu và điều kiện bảo mật cần thiết. Các thay đổi quan trọng như thay đổi phòng, thay đổi thời gian hoặc thông báo khẩn phải được truyền tới người dùng theo cơ chế gần thời gian thực.
+Về Hiệu năng & Chất lượng: Các thao tác nghiệp vụ thông thường phải có thời gian phản hồi ở mức phù hợp với ứng dụng web quản lý; các chức năng AI phải có cơ chế timeout, xử lý lỗi và giới hạn tần suất gọi API. Hệ thống cần có bộ kiểm thử bao phủ các nghiệp vụ quan trọng, đặc biệt là các luồng có liên quan đến thanh toán, phát hành vé, hoàn vé và check-in.
+Về Chất lượng dữ liệu & AI: Dữ liệu sử dụng cho AI phải được lấy từ nguồn dữ liệu có kiểm soát trong hệ thống. Chatbot không được tự ý tạo thông tin lịch trình, diễn giả, giá vé hoặc chính sách nếu thông tin đó không tồn tại trong nguồn dữ liệu truy xuất. Với Recommendation và Predictive Analytics, mô hình phải có cơ chế xác định dữ liệu đầu vào, kết quả dự đoán và mức độ tin cậy phù hợp để kết quả AI được sử dụng như công cụ hỗ trợ quyết định thay vì thay thế hoàn toàn quyết định của người quản trị.
+Về Đóng gói & Triển khai: Hoàn thiện ứng dụng ASP.NET Core MVC, cấu hình kết nối SQL Server, cung cấp dữ liệu mẫu phục vụ kiểm thử, môi trường cấu hình AI riêng biệt và tài liệu triển khai đầy đủ để hệ thống có thể cài đặt, chạy thử và trình diễn một cách nhất quán.
+1.3. Xác lập phạm vi dự án (In-Scope / Out-of-Scope)
+Phạm vi thực hiện (In-Scope)
+Quản lý sự kiện: Tạo mới, cập nhật, xem chi tiết, công bố, tạm dừng và kết thúc sự kiện; quản lý tên sự kiện, mô tả, chủ đề, thời gian bắt đầu, thời gian kết thúc, trạng thái và các thông tin liên quan.
+Quản lý diễn giả (Speaker): Quản lý hồ sơ diễn giả, chuyên môn, chức danh, đơn vị công tác, thông tin giới thiệu và mối quan hệ giữa diễn giả với từng phiên trong lịch trình sự kiện.
+Quản lý khách mời và người tham dự: Quản lý hồ sơ người dùng, lịch sử đăng ký, lịch sử tham gia, trạng thái tham dự, nhóm khách mời và các thông tin cần thiết phục vụ cá nhân hóa trải nghiệm.
+Quản lý địa điểm: Quản lý địa điểm tổ chức, phòng/không gian sử dụng, sức chứa, sơ đồ hoặc mô tả vị trí, tình trạng khả dụng và khả năng phân bổ địa điểm cho từng sự kiện.
+Quản lý lịch trình: Xây dựng agenda theo phiên, thời gian, phòng tổ chức và diễn giả; kiểm soát xung đột thời gian, xung đột địa điểm và hỗ trợ cập nhật lịch trình khi có thay đổi.
+Quản lý vé & đăng ký: Hỗ trợ các loại vé Free/Paid/VIP, số lượng phát hành, giá vé, thời gian mở bán, thời gian đóng bán, điều kiện sử dụng, mã vé và trạng thái vé.
+Thanh toán trực tuyến: Tiếp nhận yêu cầu thanh toán, ghi nhận giao dịch, xác minh trạng thái thanh toán, cập nhật trạng thái đơn đăng ký và liên kết giao dịch với vé tương ứng.
+Hoàn/hủy vé: Cho phép xử lý hủy đăng ký, hoàn vé theo chính sách của sự kiện, ghi nhận lý do, thời điểm và trạng thái hoàn tiền.
+Check-in sự kiện: Check-in bằng QR Code là phương thức chính; hệ thống duy trì kiến trúc có thể tích hợp Face ID/Face Recognition trong phạm vi mở rộng. Hệ thống phải phát hiện check-in trùng và cập nhật thời điểm tham dự.
+Thông báo realtime: Gửi thông báo đến người tham dự về thay đổi lịch trình, phòng, diễn giả, thời gian bắt đầu, sự cố vận hành hoặc thông tin quan trọng khác.
+Khảo sát sau sự kiện: Thu thập đánh giá, điểm số, bình luận và phản hồi mở của người tham dự sau khi sự kiện kết thúc.
+Dashboard & Báo cáo: Cung cấp các chỉ số về số lượt đăng ký, số vé phát hành, doanh thu, tỷ lệ thanh toán, tỷ lệ check-in, tỷ lệ vắng mặt, mức độ phản hồi và các chỉ số vận hành khác.
+AI Recommendation: Tạo danh sách sự kiện đề xuất dựa trên lịch sử tham gia, chủ đề quan tâm, loại sự kiện và các đặc trưng hành vi có sẵn của người dùng.
+AI Chatbot LLM/RAG: Cung cấp trợ lý hỏi đáp tự nhiên dựa trên dữ liệu có kiểm soát của hệ thống, bao gồm thông tin chương trình, địa điểm, diễn giả, lịch trình, vé và hướng dẫn tham gia.
+Predictive Analytics: Phân tích dữ liệu lịch sử và dữ liệu đăng ký hiện tại để dự báo số lượng người tham dự thực tế, nhu cầu tài nguyên và xu hướng ngân sách.
+Sentiment Analysis: Phân loại cảm xúc của phản hồi sau sự kiện thành các nhóm phù hợp, đồng thời xác định các chủ đề hoặc vấn đề được đề cập thường xuyên.
+Bảo mật & Phân quyền: Thiết kế RBAC theo nhóm người dùng, bảo vệ dữ liệu cá nhân, bảo vệ thông tin giao dịch và kiểm soát quyền truy cập tới các chức năng quản trị.
+Giới hạn dự án (Out-of-Scope)
+• Không xây dựng một cổng thanh toán độc lập: hệ thống tích hợp thông qua API của cổng thanh toán được lựa chọn, không tự phát triển hạ tầng xử lý thanh toán tài chính từ đầu.
+• Không xây dựng ứng dụng Mobile Native riêng biệt: phiên bản đầu tiên tập trung vào ứng dụng web ASP.NET Core MVC với giao diện Responsive trên Desktop, Tablet và thiết bị di động.
+• Không triển khai Face ID ở mức thương mại quy mô lớn trong phiên bản cơ sở: Face ID/Face Recognition được xác định là khả năng mở rộng. Phiên bản lõi ưu tiên QR Code để giảm độ phức tạp triển khai và rủi ro liên quan đến dữ liệu sinh trắc học.
+• Không xây dựng hệ thống quản trị nhân sự chuyên sâu: các nghiệp vụ nhân sự, tính lương, chấm công không thuộc phạm vi của hệ thống quản lý sự kiện.
+• Không để AI tự động thực hiện các quyết định tài chính hoặc vận hành có tính ràng buộc: các kết quả dự báo và khuyến nghị của AI chỉ đóng vai trò hỗ trợ; quyết định cuối cùng thuộc về người quản trị sự kiện.
+1.4. Phân tích các bên liên quan (Stakeholders) và Ma trận trách nhiệm (RACI)
+Theo cách trình bày của báo cáo mẫu, phần Stakeholder được tổ chức thành bảng gồm Bên liên quan, Vai trò & Thẩm quyền và Trách nhiệm theo chuẩn RACI. 
+Bảng 1.1: Ma trận phân công trách nhiệm Stakeholders (RACI Matrix)
+Bên liên quan (Stakeholder)
+Vai trò & Thẩm quyền
+Trách nhiệm chính theo chuẩn RACI
+Giảng viên giảng dạy
+Giảng viên phụ trách học phần
+Accountable (A) — Đánh giá chất lượng đồ án, định hướng kiến trúc, yêu cầu kỹ thuật và kết quả cuối kỳ
+Giảng viên hướng dẫn
+Cố vấn chuyên môn & học thuật
+Accountable (A) — Hướng dẫn phương pháp nghiên cứu, phân tích thiết kế và nghiệm thu từng giai đoạn
+Sinh viên thực hiện
+Trưởng dự án, System Analyst, AI Engineer & Full-stack Developer
+Responsible (R) — Trực tiếp phân tích yêu cầu, thiết kế hệ thống, lập trình ASP.NET Core MVC, xây dựng CSDL SQL Server, tích hợp AI, kiểm thử và viết báo cáo
+Nhà tổ chức sự kiện / Event Manager
+Người dùng quản trị nghiệp vụ chính
+Consulted (C) — Xác định quy trình tổ chức sự kiện, nhu cầu quản lý tài nguyên, vé, lịch trình, check-in và báo cáo
+Nhân viên vận hành sự kiện
+Người dùng trực tiếp tại hiện trường
+Informed (I) — Vận hành check-in, kiểm soát vé, cập nhật tình trạng tham dự và tiếp nhận thông báo realtime
+Khách tham dự / Attendee
+Người sử dụng dịch vụ cuối cùng
+Consulted (C) — Đăng ký sự kiện, mua vé, sử dụng Chatbot, nhận Recommendation, check-in và gửi phản hồi sau sự kiện
+Quản trị hệ thống / System Administrator
+Quản trị kỹ thuật và bảo mật
+Responsible (R) — Quản lý tài khoản, phân quyền, cấu hình hệ thống, sao lưu dữ liệu, giám sát lỗi và kiểm soát tích hợp dịch vụ bên ngoài
+Nhà cung cấp thanh toán
+Hệ thống bên ngoài xử lý giao dịch
+Informed (I) — Cung cấp trạng thái giao dịch thanh toán, phản hồi kết quả thành công/thất bại và hỗ trợ xác minh giao dịch
+Trong mô hình RACI trên, Event Manager là stakeholder nghiệp vụ trung tâm vì chịu trách nhiệm xác định quy trình quản lý sự kiện và tiêu chí vận hành; Attendee là nhóm người dùng chịu ảnh hưởng trực tiếp bởi chất lượng trải nghiệm; System Administrator chịu trách nhiệm đối với lớp vận hành kỹ thuật. Riêng các thành phần AI cần được xem là thành phần hỗ trợ nghiệp vụ, không phải stakeholder có quyền tự quyết.
+Đối với AI Recommendation, trách nhiệm của hệ thống là phân tích dữ liệu hành vi và tạo danh sách đề xuất; quyền quyết định của người dùng vẫn được giữ nguyên. Đối với AI Chatbot, hệ thống phải trả lời dựa trên dữ liệu sự kiện được truy xuất, đặc biệt đối với các thông tin có tính thời điểm như lịch trình, phòng và tình trạng vé. Đối với Predictive Analytics, kết quả dự báo phải được trình bày dưới dạng dữ liệu hỗ trợ lập kế hoạch. Đối với Sentiment Analysis, hệ thống chỉ phân tích phản hồi đã được thu thập và không được suy diễn vượt quá thông tin mà dữ liệu thực tế hỗ trợ.
+CHƯƠNG II: XÂY DỰNG KẾ HOẠCH DỰ ÁN VÀ QUẢN LÝ TIẾN ĐỘ
+Chương II của báo cáo mẫu tổ chức kế hoạch theo mô hình Hybrid Agile-Linear, chia quá trình phát triển thành 4 Sprint tương ứng với 4 mốc đánh giá, đồng thời xác định nguồn lực, hạ tầng và ma trận rủi ro kỹ thuật. Dựa trên cách tổ chức đó, dự án AI-integrated Event Management System được triển khai với nền tảng Flask, SQLite, SQLAlchemy và Gemini 2.0 Flash; nội dung nghiệp vụ được ánh xạ sang quản lý sự kiện, vé, thanh toán, check-in và các chức năng AI.
+2.1. Lựa chọn phương pháp luận quản trị dự án (Hybrid Agile-Linear)
+Dự án AI-integrated Event Management System áp dụng phương pháp luận quản trị Hybrid Agile-Linear, kết hợp ưu điểm của mô hình tuyến tính và phương pháp phát triển linh hoạt.
+Ở cấp độ vĩ mô, mô hình Linear / Waterfall được sử dụng để kiểm soát các mốc phát triển lớn của đồ án, bảo đảm sản phẩm lần lượt đi qua các giai đoạn: phân tích yêu cầu → thiết kế hệ thống → xây dựng chức năng → tích hợp AI và kiểm thử → hoàn thiện và trình diễn. Cách tiếp cận này phù hợp với đặc thù đồ án học phần khi sản phẩm phải đáp ứng các mốc đánh giá định trước.
+Ở cấp độ vi mô, phương pháp Agile/Scrum được sử dụng thông qua các Sprint ngắn. Trong mỗi Sprint, nhóm chức năng được triển khai theo chu trình:
+Phân tích → Thiết kế → Lập trình → Kiểm thử → Đánh giá → Điều chỉnh.
+Mô hình Hybrid đặc biệt phù hợp với dự án có thành phần AI vì chất lượng của chức năng AI khó có thể xác định hoàn toàn ngay từ phiên bản đầu tiên. Chẳng hạn, Chatbot có thể trả lời đúng câu hỏi cơ bản nhưng vẫn xuất hiện hiện tượng trả lời thiếu ngữ cảnh đối với các câu hỏi phức tạp về lịch trình hoặc chính sách vé. Do đó, Prompt cần được thử nghiệm và tối ưu nhiều vòng.
+Tương tự, mô hình AI Recommendation có thể bắt đầu bằng cơ chế gợi ý dựa trên luật hoặc đặc trưng đơn giản, sau đó được cải thiện khi dữ liệu lịch sử tham gia sự kiện tăng lên. Predictive Analytics cũng cần trải qua quá trình kiểm tra dữ liệu đầu vào, đánh giá sai số và điều chỉnh cách xây dựng đặc trưng. Vì vậy, việc tổ chức theo Sprint giúp giảm rủi ro kỹ thuật và cho phép cải thiện từng thành phần thay vì triển khai toàn bộ hệ thống theo một lần duy nhất.
+Định hướng triển khai cụ thể của dự án là:
+Tầng Linear: kiểm soát phạm vi, kiến trúc tổng thể, mốc đánh giá và sản phẩm bàn giao. 
+Tầng Agile: phát triển module, kiểm thử hồi quy, thử nghiệm Prompt, đánh giá kết quả AI. 
+Tầng AI/ML: thực hiện các vòng lặp riêng cho Chatbot, Recommendation, Predictive Analytics và Sentiment Analysis. 
+Tầng Quality Assurance: kiểm thử liên tục sau mỗi chức năng thay đổi nhằm tránh tình trạng một thay đổi nhỏ ở module vé hoặc sự kiện làm ảnh hưởng đến đăng ký và check-in. 
+Việc sử dụng Hybrid Agile-Linear do đó vừa bảo đảm tính kỷ luật của đồ án học thuật, vừa đáp ứng đặc trưng thay đổi liên tục của các chức năng AI.
+2.2. Cấu trúc phân rã công việc (WBS) theo 4 Sprint
+Theo mô hình của báo cáo mẫu, toàn bộ quá trình phát triển được chia thành 4 Sprint, mỗi Sprint tạo ra một tập hợp sản phẩm bàn giao có thể kiểm tra được. 
+Bảng 2.1: Cấu trúc phân rã công việc WBS chi tiết 4 giai đoạn phát triển
+Gói công việc (WBS)
+Hạng mục nhiệm vụ chi tiết
+Sản phẩm bàn giao (Deliverables)
+Thời gian thực hiện
+Sprint 1: Phân tích & Thiết kế (Bài KT1)
+• Khảo sát nghiệp vụ tổ chức sự kiện và phân tích 4 điểm nghẽn. • Xác định các yêu cầu chức năng quản lý và yêu cầu AI. • Thiết kế Actor, RBAC và Use Case. • Thiết kế CSDL SQLite theo 3NF. • Thiết kế kiến trúc Flask 3 tầng/Blueprint. • Thiết kế DFD. • Xác định 4 vị trí tích hợp AI. • Thiết kế Sequence Diagram và AI Pipeline. • Soạn thảo Prompt V1.
+1. Tài liệu SRS hoàn chỉnh 2. Use Case Diagram 3. ERD CSDL 4. Kiến trúc hệ thống 5. DFD 6. Sequence Diagram 7. AI Pipeline 8. Prompt V1
+Tuần 1 – Tuần 2
+Sprint 2: Xây dựng Chức năng Quản lý (Bài KT2)
+• Khởi tạo cấu trúc Flask Blueprint Factory. • Cấu hình SQLAlchemy và SQLite. • Lập trình xác thực và RBAC. • CRUD Sự kiện, Diễn giả, Khách mời, Địa điểm. • Quản lý lịch trình và phiên sự kiện. • Quản lý vé Free/Paid/VIP. • Xây dựng đăng ký vé và thanh toán. • Xây dựng check-in QR. • Dashboard và thống kê. • Seed dữ liệu mẫu.
+1. Mã nguồn Flask Blueprint 2. Models SQLAlchemy 3. Templates giao diện 4. Seed Data 5. Module quản lý vé 6. Module check-in QR 7. Dashboard 8. README & .env.example
+Tuần 3 – Tuần 5
+Sprint 3: Tích hợp AI & Kiểm thử (Bài KT3)
+• Tích hợp Gemini 2.0 Flash. • Xây dựng Chatbot LLM/RAG. • Xây dựng AI Recommendation. • Xây dựng Predictive Analytics. • Xây dựng Sentiment Analysis. • Quản lý Prompt Template. • Tối ưu Prompt qua các vòng V1→V2→V3. • Rate Limiter. • Cơ chế Fallback. • Xây dựng bộ Test Cases.
+1. Module AI Engine 2. Prompt Templates 3. Chatbot LLM/RAG 4. Recommendation Engine 5. Predictive Engine 6. Sentiment Engine 7. Bảng thực nghiệm Prompt 8. Bộ kiểm thử tự động
+Tuần 6 – Tuần 8
+Sprint 4: Hoàn thiện & Triển khai (Bài Cuối kỳ)
+• Rà soát toàn bộ chức năng. • Xây dựng Class Diagram. • Xây dựng Deployment Diagram. • Tối ưu hiệu năng. • Kiểm thử bảo mật. • Kiểm thử UAT. • Hoàn thiện tài liệu kỹ thuật. • Chuẩn bị dữ liệu Demo. • Xây dựng kịch bản Live Demo.
+1. Deployment Diagram 2. Class Diagram 3. Phiên bản hệ thống hoàn chỉnh 4. Báo cáo kỹ thuật 5. Slide thuyết trình 6. Kịch bản Live Demo 10 phút
+Tuần 9 – Tuần 10
+Sprint 1: Phân tích & Thiết kế (Bài KT1)
+Trong Sprint đầu tiên, trọng tâm không phải là lập trình ngay mà là xác định chính xác mô hình nghiệp vụ của hệ thống quản lý sự kiện.
+Các nghiệp vụ được phân tích gồm chu trình:
+Tạo sự kiện → Quản lý tài nguyên → Công bố sự kiện → Đăng ký → Phát hành vé → Thanh toán → Check-in → Vận hành → Khảo sát → Phân tích sau sự kiện.
+Đối với AI, Sprint này xác định bốn điểm tích hợp:
+AI Recommendation tại giao diện khám phá sự kiện. 
+AI Chatbot tại trung tâm hỗ trợ người dùng. 
+Predictive Analytics tại Dashboard quản trị. 
+Sentiment Analysis tại module khảo sát sau sự kiện. 
+Kết quả quan trọng nhất của Sprint là tài liệu SRS, Use Case, ERD, kiến trúc Flask và mô hình AI Pipeline.
+Sprint 2: Xây dựng Chức năng Quản lý (Bài KT2)
+Sprint thứ hai tập trung xây dựng nghiệp vụ lõi.
+Hệ thống Flask được tổ chức theo mô hình Blueprint Factory, trong đó mỗi nhóm nghiệp vụ có thể được tách thành module độc lập, chẳng hạn:
+auth 
+events 
+speakers 
+attendees 
+venues 
+schedules 
+tickets 
+payments 
+checkin 
+notifications 
+surveys 
+ai_engine 
+reports 
+SQLAlchemy ORM được sử dụng để ánh xạ các đối tượng Python với các bảng SQLite.
+Các nghiệp vụ quan trọng nhất ở Sprint 2 là phát hành vé và đăng ký. Hệ thống phải kiểm tra tình trạng vé trước khi xác nhận đăng ký:
+Kiểm tra loại vé → Kiểm tra quota → Tạo registration → Tạo ticket → Ghi nhận payment nếu có → Cập nhật số lượng vé còn lại.
+Đối với trường hợp Paid/VIP, hệ thống phải quản lý trạng thái thanh toán độc lập với trạng thái đăng ký để tránh xác nhận người tham dự khi giao dịch chưa hoàn tất.
+Sprint 3: Tích hợp AI & Kiểm thử (Bài KT3)
+Sprint thứ ba tập trung vào phần AI, tương ứng với cách báo cáo mẫu dành riêng một Sprint cho tích hợp Gemini, Prompt Engineering, Rate Limiter và kiểm thử. 
+AI Chatbot: sử dụng Gemini 2.0 Flash để xử lý hội thoại tự nhiên. Các thông tin về lịch trình, diễn giả, địa điểm, loại vé hoặc hướng dẫn tham dự được truy xuất từ dữ liệu hệ thống trước khi hình thành Context đưa vào Prompt.
+AI Recommendation: sử dụng thông tin hồ sơ và lịch sử tham dự để xây dựng danh sách sự kiện phù hợp. Trong phiên bản đầu, mô hình có thể kết hợp Content-Based Recommendation với các đặc trưng như chủ đề, lĩnh vực, loại sự kiện và lịch sử tham gia.
+Predictive Analytics: sử dụng dữ liệu đăng ký theo thời gian, trạng thái thanh toán, lịch sử check-in và các đặc trưng sự kiện để dự báo số người có khả năng tham dự thực tế.
+Sentiment Analysis: phân tích phản hồi dạng văn bản sau sự kiện, xác định khuynh hướng tích cực, trung tính hoặc tiêu cực, đồng thời trích xuất các chủ đề được đề cập.
+Các thành phần AI đều được đặt sau Rate Limiter và bộ kiểm tra dữ liệu đầu vào.
+Sprint 4: Hoàn thiện & Triển khai (Bài Cuối kỳ)
+Sprint cuối cùng tập trung vào độ ổn định và khả năng trình diễn của hệ thống.
+Ngoài kiểm thử nghiệp vụ, dự án phải hoàn thiện:
+Class Diagram; 
+Deployment Diagram; 
+xử lý lỗi 400/403/404/500; 
+kiểm soát quyền truy cập; 
+bảo vệ API Key; 
+kiểm soát Prompt Injection; 
+kiểm thử giao dịch vé/thanh toán; 
+kiểm thử check-in trùng; 
+kiểm thử dữ liệu AI; 
+hoàn thiện tài liệu và kịch bản Demo. 
+2.3. Ước lượng chi phí, xác định nguồn lực nhân sự và hạ tầng kỹ thuật
+Dự án được định hướng tối ưu chi phí bằng việc sử dụng các công nghệ nguồn mở và nền tảng có gói sử dụng miễn phí, tương tự phương án của báo cáo mẫu. Báo cáo mẫu sử dụng một Developer, máy tính cá nhân, Gemini API và Docker/SQLite để giảm chi phí triển khai. 
+Nhân lực
+01 Full-stack Developer kiêm System Analyst & AI Engineer chịu trách nhiệm toàn bộ vòng đời phát triển dự án, bao gồm:
+khảo sát và phân tích nghiệp vụ; 
+thiết kế kiến trúc; 
+thiết kế CSDL; 
+xây dựng Flask Blueprint; 
+phát triển giao diện; 
+tích hợp Gemini; 
+xây dựng Recommendation/Predictive/Sentiment; 
+kiểm thử; 
+triển khai; 
+viết báo cáo. 
+Do tính chất đồ án cá nhân, việc một người đảm nhiệm nhiều vai trò yêu cầu WBS phải được phân chia rõ ràng để tránh tập trung quá nhiều thời gian vào phần AI nhưng bỏ sót nghiệp vụ cốt lõi.
+Môi trường phát triển
+Môi trường phát triển được định hướng:
+Windows 11; 
+Python 3.x; 
+Flask; 
+SQLAlchemy; 
+SQLite; 
+Visual Studio Code; 
+Git/GitHub; 
+Pytest; 
+Bootstrap; 
+JavaScript; 
+Chart.js; 
+Docker. 
+Dịch vụ AI Cloud
+Hệ thống sử dụng Google Gemini 2.0 Flash làm mô hình ngôn ngữ phục vụ Chatbot. API Key được lưu thông qua biến môi trường, không hard-code trực tiếp trong mã nguồn.
+Đối với Recommendation, Predictive Analytics và Sentiment Analysis, hệ thống có thể sử dụng Python/ML libraries hoặc các pipeline ML phù hợp với dữ liệu của đồ án.
+Hạ tầng triển khai
+Kiến trúc triển khai dự kiến gồm:
+Browser → Flask Application → AI Engine / Business Logic → SQLite Database
+Trong trường hợp cần đóng gói, Flask Application có thể được triển khai trong Docker Container. Việc sử dụng SQLite phù hợp với quy mô đồ án vì loại bỏ yêu cầu quản trị máy chủ CSDL riêng và giúp việc khởi tạo môi trường Demo đơn giản.
+Ước lượng chi phí:
+Hạng mục
+Giải pháp
+Chi phí dự kiến
+Nhân lực
+01 Developer kiêm AI Engineer
+5.000.000 VNĐ trong phạm vi đồ án
+Hệ điều hành
+Windows 11 trên máy cá nhân
+Đã có
+IDE
+Visual Studio Code
+0 VNĐ
+Flask
+Open Source
+0 VNĐ
+SQLAlchemy
+Open Source
+0 VNĐ
+SQLite
+Embedded Database
+0 VNĐ
+Gemini API
+Free/Development Quota
+Tuỳ theo hạn mức sử dụng
+Docker
+Docker Engine/Desktop
+ 0 VNĐ trong môi trường học tập phù hợp
+Git
+Git/GitHub
+0 VNĐ cho phạm vi cơ bản
+Bootstrap/Chart.js
+Open Source
+0 VNĐ
+Mục tiêu của phương án này là bảo đảm toàn bộ hệ thống có thể chạy được trong môi trường học tập mà không yêu cầu đầu tư hạ tầng thương mại lớn.
+2.4. Kế hoạch nhận diện và quản lý rủi ro dự phòng (Risk Management)
+Báo cáo mẫu sử dụng ma trận rủi ro gồm Mã rủi ro – Mô tả nguy cơ – Mức độ – Giải pháp ứng phó, trong đó chú trọng các rủi ro API AI, Hallucination, PII, Rate Limiter và xung đột dữ liệu. 
+Bảng 2.2: Ma trận nhận diện rủi ro và kế hoạch kiểm soát dự phòng
+Mã rủi ro
+Mô tả nguy cơ tiềm ẩn
+Mức độ
+Kế hoạch ứng phó & Giải pháp kỹ thuật dự phòng
+RSK-01
+Gemini API mất kết nối Internet, hết quota hoặc API Key không hợp lệ trong thời điểm Demo
+Rất cao
+Xây dựng Fallback Mock Engine, khi Gemini không phản hồi hệ thống chuyển sang bộ trả lời nội bộ dựa trên dữ liệu sự kiện đã cấu hình, bảo đảm chức năng Chatbot không làm gián đoạn toàn bộ Demo
+RSK-02
+AI Chatbot Hallucination: tự tạo lịch trình, diễn giả, giá vé hoặc thông tin địa điểm không tồn tại
+Rất cao
+Áp dụng mô hình RAG, chỉ đưa dữ liệu truy xuất từ CSDL vào Context; Prompt quy định AI không được tự suy đoán dữ liệu nghiệp vụ
+RSK-03
+AI làm lộ dữ liệu cá nhân hoặc thông tin thanh toán
+Cao
+Loại bỏ PII và dữ liệu nhạy cảm không cần thiết trước khi đưa vào Prompt; giới hạn quyền truy cập theo Role
+RSK-04
+Người dùng spam Chatbot khiến API quá tải hoặc cạn quota
+Cao
+Triển khai Rate Limiter, giới hạn số request AI/user/phút; khi vượt ngưỡng trả HTTP 429
+RSK-05
+Hai người dùng đồng thời đăng ký một số lượng vé cuối cùng
+Cao
+Sử dụng Transaction và kiểm tra quota ngay trước khi commit; nếu quota không đủ thì rollback
+RSK-06
+Thanh toán thành công nhưng trạng thái vé chưa được cập nhật
+Cao
+Xây dựng quy trình xác minh transaction, lưu Payment Status độc lập và cho phép đối soát lại giao dịch
+RSK-07
+Một vé được sử dụng check-in nhiều lần
+Cao
+QR Ticket có mã định danh duy nhất; kiểm tra checked_in = false trước khi xác nhận và cập nhật transaction atomic
+RSK-08
+AI Recommendation đề xuất sự kiện không phù hợp
+Trung bình
+Xây dựng bộ lọc theo trạng thái sự kiện, ngày tổ chức, chủ đề và lịch sử người dùng trước khi đưa danh sách vào Recommendation Engine
+RSK-09
+Predictive Analytics dự đoán sai số lượng người tham dự
+Trung bình
+Ghi nhận sai số dự báo, hiển thị kết quả cùng dữ liệu đầu vào và xem AI như công cụ hỗ trợ thay vì quyết định tuyệt đối
+RSK-10
+Sentiment Analysis phân loại sai phản hồi tiếng Việt hoặc câu có ngữ cảnh phức tạp
+Trung bình
+Xây dựng tập kiểm thử riêng với phản hồi tiếng Việt; kết hợp điểm sentiment với từ khóa/chủ đề để tăng khả năng kiểm chứng
+RSK-11
+Dữ liệu lịch trình bị thay đổi nhưng Chatbot sử dụng Context cũ
+Trung bình
+Context được truy xuất trực tiếp từ CSDL tại thời điểm hỏi; không lưu cứng thông tin lịch trình trong Prompt
+RSK-12
+SQLite gặp xung đột khi số lượng transaction đồng thời tăng cao
+Trung bình
+Giới hạn phạm vi đồng thời của đồ án, tối ưu Transaction, kiểm soát các thao tác ghi và thiết kế phương án chuyển sang PostgreSQL/SQL Server ở giai đoạn mở rộng
+RSK-01: Gemini API bị mất kết nối
+Đây là rủi ro quan trọng nhất đối với phần AI. Trong buổi Demo, việc API không phản hồi có thể khiến chức năng Chatbot không hoạt động dù phần nghiệp vụ truyền thống vẫn hoàn chỉnh.
+Giải pháp là xây dựng:
+AI Request → Gemini API → Thành công → Kết quả
+hoặc:
+AI Request → Gemini API → Timeout/Error → Fallback Mock → Kết quả
+Cơ chế Fallback giúp hệ thống tiếp tục trình diễn được trong điều kiện Internet hoặc API không ổn định.
+RSK-02: Hallucination trong Chatbot
+Đối với hệ thống quản lý sự kiện, Hallucination có thể gây hậu quả nghiêm trọng. Ví dụ, AI tự trả lời rằng diễn giả A xuất hiện lúc 14:00 trong khi lịch chính thức là 15:00, hoặc tư vấn cho người dùng mua một loại vé đã hết.
+Do đó, Chatbot không được hoạt động theo mô hình “LLM trả lời tự do”. Luồng xử lý được thiết kế:
+User Question → Intent Detection → Database Retrieval → Context Construction → Gemini Prompt → Response Validation → User
+Đây là nền tảng để triển khai RAG trong các chương tiếp theo.
+RSK-05: Xung đột số lượng vé
+Giả sử hệ thống chỉ còn một vé VIP nhưng hai người dùng gửi yêu cầu đăng ký gần như cùng thời điểm. Nếu chỉ kiểm tra quota rồi ghi dữ liệu mà không có Transaction phù hợp, cả hai người có thể được cấp vé.
+Do đó, nghiệp vụ phát hành vé phải tuân theo nguyên tắc:
+Kiểm tra quota → Khởi tạo Transaction → Tạo đăng ký/vé → Cập nhật quota → Commit.
+Nếu bất kỳ thao tác nào thất bại, toàn bộ Transaction phải được rollback.
+RSK-07: Check-in trùng
+Mỗi vé được cấp một ticket_code hoặc QR Token duy nhất. Khi check-in, hệ thống kiểm tra:
+vé có tồn tại hay không; 
+vé thuộc đúng sự kiện hay không; 
+vé có trạng thái hợp lệ hay không; 
+vé đã check-in trước đó hay chưa. 
+Chỉ khi toàn bộ điều kiện hợp lệ, hệ thống mới chuyển trạng thái sang checked_in.
+RSK-09: Rủi ro từ Predictive Analytics
+Dự báo lượng người tham dự không phải giá trị chắc chắn tuyệt đối. Tỷ lệ người đăng ký nhưng không đến thực tế có thể thay đổi theo loại sự kiện, giá vé, thời gian tổ chức và nhóm người dùng.
+Vì vậy, kết quả nên được biểu diễn theo hướng:
+Số đăng ký hiện tại + đặc trưng lịch sử + dự báo số người tham dự + khoảng sai số
+thay vì trình bày một con số như một sự thật tuyệt đối.
+CHƯƠNG III: ĐÁP ỨNG TOÀN DIỆN 40/40 TIÊU CHÍ RUBRIC CHUNG
+Báo cáo mẫu tổ chức Chương III thành bốn bài kiểm tra, trong đó Bài kiểm tra 1 tập trung vào phân tích yêu cầu, Actor/Use Case, CSDL, kiến trúc, DFD và xác định vị trí ứng dụng AI. Đây cũng là nền tảng để chuyển sang giai đoạn lập trình ở Bài kiểm tra 2. 
+Trong phiên bản AI-integrated Event Management System, phần này giữ nguyên phương pháp luận và mức độ chi tiết của mẫu, nhưng toàn bộ đối tượng nghiệp vụ được thay bằng Sự kiện – Diễn giả – Khách mời – Địa điểm – Lịch trình – Vé – Đăng ký – Thanh toán – Check-in – Khảo sát – AI.
+3.1: PHÂN TÍCH YÊU CẦU & THIẾT KẾ HỆ THỐNG (10 Tiêu chí)
+Bài kiểm tra 1 tập trung vào giai đoạn đầu của SDLC: khảo sát bài toán tổ chức sự kiện, xác định yêu cầu nghiệp vụ, mô hình hóa dữ liệu, xác định Actor, thiết kế Use Case, kiến trúc hệ thống và các điểm tích hợp AI.
+3.1.1. Tiêu chí 1: Phân tích đúng bài toán quản lý và 4 điểm nghẽn vận hành sự kiện
+Hệ thống AI-integrated Event Management System giải quyết bài toán quản lý xuyên suốt vòng đời của một sự kiện, từ khi hình thành kế hoạch đến khi tổng kết sau chương trình.
+Chu trình nghiệp vụ tổng quát được xác định:
+Tạo sự kiện → Quản lý tài nguyên → Xây dựng lịch trình → Mở đăng ký → Phát hành vé → Thanh toán → Xác nhận tham dự → Check-in → Thông báo vận hành → Khảo sát → Phân tích sau sự kiện.
+Qua phân tích nghiệp vụ, hệ thống tập trung giải quyết 4 điểm nghẽn chính:
+1. Phân mảnh thông tin sự kiện và tài nguyên
+Thông tin sự kiện, diễn giả, phòng tổ chức và lịch trình thường được quản lý bằng nhiều bảng tính hoặc công cụ khác nhau. Khi một phiên thay đổi thời gian hoặc địa điểm, người tổ chức phải cập nhật thủ công ở nhiều nơi.
+Hậu quả là:
+lịch trình không đồng nhất; 
+diễn giả nhận thông tin cũ; 
+khách tham dự không biết thay đổi; 
+dễ xảy ra trùng phòng hoặc trùng thời gian. 
+Hệ thống mới sử dụng CSDL tập trung, trong đó events, speakers, venues và schedules được liên kết bằng khóa ngoại. Mọi thay đổi được thực hiện từ một nguồn dữ liệu thống nhất.
+2. Đăng ký, phát hành vé và thanh toán thiếu tính nhất quán
+Quy trình đăng ký thủ công thường dẫn tới việc người dùng đăng ký nhưng chưa thanh toán, đã thanh toán nhưng chưa nhận vé hoặc vé đã hết nhưng hệ thống vẫn tiếp nhận đăng ký.
+Hệ thống phân biệt rõ:
+Registration Status → Payment Status → Ticket Status
+và chỉ xác nhận đăng ký Paid/VIP sau khi giao dịch đạt trạng thái hợp lệ.
+Đối với vé Free, hệ thống có thể bỏ qua bước thanh toán nhưng vẫn tạo mã vé duy nhất để sử dụng trong check-in.
+3. Điểm nghẽn tại khu vực check-in
+Trong thời điểm bắt đầu chương trình, hàng trăm người có thể cùng xuất hiện trong một khoảng thời gian ngắn. Việc tìm kiếm thủ công theo tên hoặc số điện thoại làm tăng thời gian chờ.
+Hệ thống sử dụng:
+QR Ticket → Scanner → Ticket Validation → Check-in Transaction → Realtime Status
+Mỗi mã vé chỉ được phép check-in một lần. Khi một vé đã được xác nhận, trạng thái được chuyển sang checked_in, kèm thời gian và thông tin điểm check-in.
+Kiến trúc được thiết kế để có thể mở rộng sang Face ID/Face Recognition, nhưng phiên bản lõi ưu tiên QR nhằm giảm độ phức tạp về dữ liệu sinh trắc học.
+4. Thiếu khả năng dự báo và hiểu phản hồi người tham dự
+Số lượng đăng ký không đồng nghĩa với số lượng người đến thực tế. Một sự kiện có thể có 1.000 đăng ký nhưng tỷ lệ tham dự thực tế thấp hơn nhiều.
+Nếu chỉ sử dụng thống kê truyền thống, Event Manager khó trả lời các câu hỏi như:
+“Ngày mai thực tế có khoảng bao nhiêu người đến?”
+“Cần chuẩn bị bao nhiêu ghế, bộ tài liệu và suất ăn?”
+“Sự kiện nào phù hợp nhất với nhóm khách hàng này?”
+“Khách tham dự đang không hài lòng ở điểm nào?”
+Bốn nhóm AI được đưa vào đúng các điểm nghẽn này:
+AI Recommendation: cá nhân hóa sự kiện. 
+AI Chatbot LLM/RAG: hỗ trợ hỏi đáp. 
+Predictive Analytics: dự báo số người tham dự và nhu cầu tài nguyên. 
+Sentiment Analysis: phân tích chất lượng phản hồi. 
+Do đó, AI trong hệ thống không chỉ tạo nội dung mà trực tiếp hỗ trợ ba lớp quyết định: trải nghiệm người dùng, vận hành sự kiện và phân tích sau sự kiện.
+3.1.2. Tiêu chí 2: Đặc tả I/O 8 chức năng quản lý cốt lõi và 4 chức năng AI
+Báo cáo mẫu sử dụng bảng đặc tả theo ba thành phần Input – Processing – Output, giúp chuyển yêu cầu nghiệp vụ thành yêu cầu có thể triển khai kỹ thuật. 
+Bảng 3.1: Bảng đặc tả chi tiết các yêu cầu chức năng quản lý & AI
+Mã
+Tên chức năng
+Dữ liệu đầu vào (Input)
+Quy trình xử lý (Processing)
+Kết quả đầu ra (Output)
+FR01
+Xác thực & Phân quyền
+Username, Password
+Kiểm tra hash PBKDF2, trạng thái tài khoản và Role
+Session hợp lệ, menu theo quyền
+FR02
+Quản lý Sự kiện
+Mã, tên, mô tả, chủ đề, thời gian, trạng thái
+Kiểm tra mã duy nhất, thời gian hợp lệ, lưu CSDL
+Sự kiện được tạo/cập nhật/xóa
+FR03
+Quản lý Diễn giả & Khách mời
+Hồ sơ Speaker/Attendee
+Kiểm tra dữ liệu, liên kết với sự kiện
+Danh sách diễn giả/khách mời
+FR04
+Quản lý Địa điểm & Lịch trình
+Địa điểm, phòng, thời gian, phiên, speaker
+Kiểm tra sức chứa và xung đột lịch
+Lịch trình hoàn chỉnh
+FR05
+Phát hành Vé & Đăng ký
+Loại vé, giá, quota, người đăng ký
+Kiểm tra quota, tạo registration và ticket
+Vé Free/Paid/VIP và mã QR
+FR06
+Thanh toán & Hoàn/Hủy
+Registration, số tiền, phương thức
+Tạo giao dịch, cập nhật Payment Status, xử lý hoàn
+Trạng thái thanh toán và hoàn vé
+FR07
+Check-in & Thông báo
+QR code, ticket ID, thông báo
+Xác thực vé, chống check-in trùng, ghi thời gian
+Trạng thái Checked-in và thông báo
+FR08
+Dashboard, Khảo sát & Báo cáo
+Dữ liệu đăng ký, check-in, phản hồi
+Tổng hợp KPI, xuất báo cáo, xử lý khảo sát
+Dashboard và báo cáo sau sự kiện
+AI01
+AI Recommendation
+Hồ sơ, lịch sử tham gia, chủ đề quan tâm
+Tính tương đồng giữa profile và event features
+Danh sách sự kiện được cá nhân hóa
+AI02
+AI Chatbot LLM/RAG
+Câu hỏi tự nhiên
+Truy xuất Context từ DB → Prompt → Gemini
+Câu trả lời về lịch trình, Speaker, vé, địa điểm
+AI03
+Predictive Analytics
+Lịch sử đăng ký, thanh toán, check-in
+Tiền xử lý → ML model → dự báo
+Số người tham dự và tài nguyên dự kiến
+AI04
+Sentiment Analysis
+Điểm đánh giá, comment, feedback
+NLP/LLM phân tích sentiment và chủ đề
+Positive/Neutral/Negative + insight
+Thiết kế trên bảo đảm bốn chức năng AI có Input, Processing và Output độc lập, nhưng dữ liệu đầu vào đều xuất phát từ hệ thống quản lý thay vì dữ liệu giả lập.
+3.1.3. Tiêu chí 3: Xác định yêu cầu phi chức năng (NFR)
+Báo cáo mẫu định nghĩa 9 NFR theo bốn nhóm chính: Security, Performance, Availability, Rate Limit và UX, kèm chỉ số định lượng và giải pháp triển khai. 
+Bảng 3.2: Ma trận 9 Yêu cầu Phi Chức Năng (NFR) hệ thống
+Mã NFR
+Phân loại yêu cầu
+Tiêu chuẩn kỹ thuật định lượng
+Giải pháp triển khai thực tế
+NFR-SEC-01
+Bảo mật tài khoản
+100% mật khẩu không lưu dạng plain text
+Werkzeug PBKDF2:SHA256 + Salt
+NFR-SEC-02
+Bảo vệ khóa bí mật
+Không lộ Gemini API Key
+Lưu API Key trong .env, loại .env khỏi Git
+NFR-SEC-03
+Bảo vệ dữ liệu nhạy cảm
+Không đưa PII không cần thiết vào AI
+Mask/loại bỏ phone, email, token thanh toán trước khi tạo Context
+NFR-SEC-04
+Chống tấn công AI
+Chống Prompt Injection
+Giới hạn Input 500 ký tự, tách System Instruction khỏi User Prompt
+NFR-PERF-01
+Hiệu năng nghiệp vụ
+CRUD mục tiêu < 100ms trong môi trường Demo
+SQLAlchemy Query tối ưu, Index cho các trường tìm kiếm
+NFR-PERF-02
+Hiệu năng AI
+AI Response mục tiêu < 3,0s
+Gemini 2.0 Flash, timeout và Fallback Mock
+NFR-AVAIL-01
+Độ sẵn sàng
+Mục tiêu Uptime 99,9% trong môi trường triển khai
+Fallback khi Gemini lỗi hoặc mất mạng
+NFR-RATE-01
+Kiểm soát lưu lượng
+Tối đa 5 AI request/phút/user
+Sliding Window Rate Limiter, HTTP 429
+NFR-UX-01
+Trải nghiệm người dùng
+Responsive, thao tác trực quan
+Bootstrap, Toast, Modal, Loading Spinner
+Các chỉ tiêu về hiệu năng và Rate Limit được giữ theo tinh thần định lượng của báo cáo mẫu; mẫu đặt mục tiêu CRUD dưới 100ms, AI dưới 3 giây và giới hạn 5 request AI/phút/user. 
+3.1.4. Tiêu chí 4: Thiết kế Actor và Đặc tả chi tiết 8 Use Cases
+Báo cáo mẫu xác định ba Actor chính là Admin, Manager và Staff, sau đó đặc tả tám Use Case độc lập. 
+Đối với hệ thống quản lý sự kiện, ba Actor được ánh xạ thành:
+Admin: Quản trị viên kỹ thuật, quản lý tài khoản, cấu hình và toàn bộ hệ thống.
+Manager: Event Manager/Organizer, chịu trách nhiệm tổ chức sự kiện, quản lý vé, lịch trình, báo cáo và AI.
+Staff: Nhân viên vận hành sự kiện, thực hiện check-in, hỗ trợ khách và cập nhật thông tin tại hiện trường.
+Hình 3.1: Sơ đồ Use Case tổng thể — 3 Actor và 8 Use Cases cốt lõi
+Bảng 3.3.1: Đặc tả chi tiết UC01 — Đăng nhập & Xác thực
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC01: Đăng nhập & Xác thực
+Tác nhân chính
+Admin, Manager, Staff
+Tiền điều kiện
+Tài khoản đang tồn tại và ở trạng thái Active
+Hậu điều kiện
+Tạo Session hợp lệ, chuyển đến Dashboard
+Luồng chính
+1. Truy cập /auth/login. 2. Nhập Username/Password. 3. Hệ thống kiểm tra PBKDF2. 4. Kiểm tra is_active. 5. Tạo Session và xác định Role.
+Luồng phụ/Lỗi
+Sai thông tin → từ chối đăng nhập. Tài khoản bị khóa → thông báo trạng thái tài khoản.
+Bảng 3.3.2: Đặc tả chi tiết UC02 — Quản lý Sự kiện
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC02: Quản lý Sự kiện (CRUD)
+Tác nhân chính
+Admin, Manager
+Tiền điều kiện
+Đã đăng nhập với quyền phù hợp
+Hậu điều kiện
+Sự kiện được tạo/cập nhật/xóa
+Luồng chính
+1. Truy cập /events. 2. Chọn “Thêm sự kiện”. 3. Nhập mã, tên, mô tả, chủ đề, thời gian. 4. Chọn địa điểm. 5. Lưu dữ liệu.
+Luồng phụ/Lỗi
+Trùng mã sự kiện; thời gian kết thúc nhỏ hơn thời gian bắt đầu; địa điểm không khả dụng.
+Bảng 3.3.3: Đặc tả chi tiết UC03 — Quản lý Diễn giả, Khách mời & Tài nguyên
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC03: Quản lý Diễn giả, Khách mời & Tài nguyên
+Tác nhân chính
+Admin, Manager
+Tiền điều kiện
+Đã đăng nhập
+Hậu điều kiện
+Hồ sơ Speaker/Attendee và tài nguyên được lưu chính xác
+Luồng chính
+1. Chọn sự kiện. 2. Thêm Speaker/Attendee. 3. Nhập thông tin. 4. Liên kết Speaker với Schedule. 5. Lưu.
+Luồng phụ/Lỗi
+Diễn giả đã được gán vào phiên khác cùng thời điểm; địa điểm vượt sức chứa; hồ sơ trùng email.
+Bảng 3.3.4: Đặc tả chi tiết UC04 — Quản lý Vé & Đăng ký
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC04: Phát hành Vé & Đăng ký
+Tác nhân chính
+Manager, Staff
+Tiền điều kiện
+Sự kiện đã được công bố và có Ticket Type
+Hậu điều kiện
+Registration và Ticket được tạo
+Luồng chính
+1. Chọn sự kiện. 2. Chọn Free/Paid/VIP. 3. Kiểm tra quota. 4. Nhập thông tin Attendee. 5. Tạo Registration. 6. Nếu Paid/VIP thì chuyển sang Payment. 7. Sinh QR Ticket.
+Luồng phụ/Lỗi
+Hết quota → từ chối đăng ký; thông tin khách không hợp lệ; thanh toán chưa hoàn tất.
+Bảng 3.3.5: Đặc tả chi tiết UC05 — Thanh toán & Hoàn/Hủy Vé
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC05: Thanh toán & Hoàn/Hủy Vé
+Tác nhân chính
+Manager, Attendee
+Tiền điều kiện
+Có Registration hợp lệ
+Hậu điều kiện
+Payment Status và Ticket Status được cập nhật
+Luồng chính
+1. Chọn Registration Paid/VIP. 2. Tạo yêu cầu thanh toán. 3. Nhận kết quả giao dịch. 4. Xác minh trạng thái. 5. Xác nhận vé. 6. Khi cần, gửi yêu cầu hoàn/hủy.
+Luồng phụ/Lỗi
+Payment Failed; giao dịch Timeout; yêu cầu hoàn quá thời hạn; giao dịch đã hoàn trước đó.
+Bảng 3.3.6: Đặc tả chi tiết UC06 — Check-in & Vận hành Sự kiện
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC06: Check-in & Vận hành
+Tác nhân chính
+Staff, Manager
+Tiền điều kiện
+Sự kiện đang diễn ra, Ticket hợp lệ
+Hậu điều kiện
+Ticket chuyển sang trạng thái Checked-in
+Luồng chính
+1. Mở giao diện Check-in. 2. Quét QR. 3. Tìm Ticket. 4. Kiểm tra Event ID. 5. Kiểm tra trạng thái Ticket. 6. Ghi checked_in_at. 7. Hiển thị kết quả.
+Luồng phụ/Lỗi
+QR không hợp lệ; vé thuộc sự kiện khác; vé đã check-in; vé đã hủy.
+Bảng 3.3.7: Đặc tả chi tiết UC07 — Sử dụng Trợ lý AI
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC07: Sử dụng Trợ lý AI
+Tác nhân chính
+Admin, Manager, Staff, Attendee tùy phạm vi
+Tiền điều kiện
+Hệ thống AI hoạt động hoặc Fallback khả dụng
+Hậu điều kiện
+Người dùng nhận được kết quả AI
+Luồng chính
+1. Mở /ai/chat. 2. Chọn nhu cầu. 3. Nhập câu hỏi. 4. Rate Limiter kiểm tra request. 5. Truy xuất dữ liệu. 6. Tạo Context. 7. Gọi Gemini. 8. Render kết quả.
+Luồng phụ/Lỗi
+Vượt 5 request/phút → HTTP 429; Gemini timeout → Fallback Mock; thiếu dữ liệu → AI thông báo không đủ thông tin.
+Use Case này bao phủ bốn AI Touchpoints:
+Recommendation / Chatbot / Predictive Analytics / Sentiment Analysis.
+Bảng 3.3.8: Đặc tả chi tiết UC08 — Quản lý Người dùng & Quyền hệ thống
+Thuộc tính đặc tả
+Nội dung chi tiết
+Mã & Tên Use Case
+UC08: Quản lý Người dùng
+Tác nhân chính
+Admin
+Tiền điều kiện
+Đăng nhập bằng Role Admin
+Hậu điều kiện
+Tài khoản được tạo, sửa, khóa hoặc thay đổi Role
+Luồng chính
+1. Truy cập /auth/users. 2. Tạo User. 3. Thiết lập Password. 4. Chọn Role. 5. Lưu. 6. Có thể khóa/mở khóa User.
+Luồng phụ/Lỗi
+Manager/Staff truy cập → HTTP 403; Username trùng → từ chối; tài khoản cuối cùng của Admin không được khóa.
+Cách đặc tả này giữ nguyên nguyên tắc của mẫu: mỗi Use Case đều có Actor, Pre-condition, Post-condition, Main Flow và Alternate Flow, thay vì chỉ liệt kê tên chức năng. Báo cáo mẫu cũng sử dụng chính cấu trúc này cho tám UC. 
+3.1.5. Tiêu chí 5: Thiết kế Cơ sở dữ liệu và Từ điển dữ liệu 9 bảng 3NF
+Báo cáo mẫu sử dụng 9 bảng và yêu cầu ERD thể hiện PK/FK, sau đó cung cấp Data Dictionary cho từng bảng. 
+Đối với Event Management, cấu trúc 9 bảng được thiết kế như sau:
+Hình 3.2: Sơ đồ ERD 9 bảng CSDL chuẩn 3NF và các mối quan hệ PK-FK
+users→ quản lý tài khoản và RBAC.
+events→ thực thể trung tâm của hệ thống.
+speakers→ hồ sơ diễn giả.
+venues→ địa điểm và không gian tổ chức.
+schedules→ các phiên/chặng lịch trình của sự kiện.
+attendees→ hồ sơ người tham dự.
+tickets→ loại vé, giá, quota và mã QR.
+registrations→ liên kết Attendee với Event/Ticket và quản lý Payment, Check-in, Feedback.
+ai_chat_history→ lưu lịch sử tương tác với AI.
+Cách tổ chức này giữ đúng số lượng 9 bảng của báo cáo mẫu, đồng thời không tạo thêm bảng phụ không cần thiết. Báo cáo mẫu nhấn mạnh chuẩn hóa 3NF, tính toàn vẹn tham chiếu và Indexing. 
+Bảng 3.4.1: Cấu trúc bảng users
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính User
+username
+VARCHAR(80)
+UNIQUE, NOT NULL
+Tên đăng nhập
+password_hash
+VARCHAR(256)
+NOT NULL
+Mật khẩu đã băm PBKDF2
+full_name
+VARCHAR(150)
+NOT NULL
+Họ tên
+email
+VARCHAR(150)
+NULLABLE
+Email
+role
+VARCHAR(20)
+DEFAULT staff
+admin, manager, staff
+is_active
+BOOLEAN
+DEFAULT TRUE
+Trạng thái tài khoản
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian tạo
+Bảng 3.4.2: Cấu trúc bảng events
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính sự kiện
+event_code
+VARCHAR(30)
+UNIQUE, NOT NULL, INDEX
+Mã sự kiện
+name
+VARCHAR(200)
+NOT NULL
+Tên sự kiện
+description
+TEXT
+NULLABLE
+Nội dung giới thiệu
+category
+VARCHAR(80)
+NOT NULL
+Chủ đề/lĩnh vực
+start_at
+DATETIME
+NOT NULL
+Thời gian bắt đầu
+end_at
+DATETIME
+NOT NULL
+Thời gian kết thúc
+status
+VARCHAR(20)
+DEFAULT draft
+draft/published/ongoing/completed/cancelled
+created_by
+INTEGER
+FK → users.id
+Người tạo
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian tạo
+Bảng 3.4.3: Cấu trúc bảng speakers
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính diễn giả
+speaker_code
+VARCHAR(30)
+UNIQUE, NOT NULL
+Mã diễn giả
+full_name
+VARCHAR(150)
+NOT NULL
+Họ tên diễn giả
+title
+VARCHAR(150)
+NULLABLE
+Chức danh
+organization
+VARCHAR(200)
+NULLABLE
+Đơn vị công tác
+email
+VARCHAR(150)
+NULLABLE
+Email
+bio
+TEXT
+NULLABLE
+Tiểu sử/chuyên môn
+avatar_url
+VARCHAR(500)
+NULLABLE
+Ảnh đại diện
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian tạo
+Bảng 3.4.4: Cấu trúc bảng venues
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính địa điểm
+venue_code
+VARCHAR(30)
+UNIQUE, NOT NULL
+Mã địa điểm
+name
+VARCHAR(200)
+NOT NULL
+Tên địa điểm/phòng
+address
+TEXT
+NOT NULL
+Địa chỉ
+capacity
+INTEGER
+NOT NULL, > 0
+Sức chứa
+room_name
+VARCHAR(100)
+NULLABLE
+Tên phòng
+status
+VARCHAR(20)
+DEFAULT available
+Trạng thái
+description
+TEXT
+NULLABLE
+Mô tả cơ sở vật chất
+Bảng 3.4.5: Cấu trúc bảng schedules
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính phiên
+event_id
+INTEGER
+FK → events.id, INDEX
+Sự kiện
+speaker_id
+INTEGER
+FK → speakers.id, NULLABLE
+Diễn giả
+venue_id
+INTEGER
+FK → venues.id
+Địa điểm
+title
+VARCHAR(200)
+NOT NULL
+Tên phiên
+start_at
+DATETIME
+NOT NULL
+Bắt đầu
+end_at
+DATETIME
+NOT NULL
+Kết thúc
+description
+TEXT
+NULLABLE
+Nội dung phiên
+Bảng 3.4.6: Cấu trúc bảng attendees
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính attendee
+attendee_code
+VARCHAR(30)
+UNIQUE, NOT NULL
+Mã người tham dự
+full_name
+VARCHAR(150)
+NOT NULL
+Họ tên
+email
+VARCHAR(150)
+UNIQUE, NOT NULL
+Email
+phone
+VARCHAR(20)
+NULLABLE
+Số điện thoại
+organization
+VARCHAR(200)
+NULLABLE
+Đơn vị
+interests
+TEXT
+NULLABLE
+Chủ đề quan tâm
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian đăng ký
+Trường interests được sử dụng làm một trong các nguồn dữ liệu cho AI Recommendation, nhưng dữ liệu PII như email/phone không được đưa trực tiếp vào Context AI khi không cần thiết.
+Bảng 3.4.7: Cấu trúc bảng tickets
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa chính loại vé
+event_id
+INTEGER
+FK → events.id, INDEX
+Sự kiện
+ticket_code
+VARCHAR(40)
+UNIQUE, NOT NULL, INDEX
+Mã vé
+ticket_type
+VARCHAR(20)
+NOT NULL
+free/paid/vip
+price
+FLOAT
+DEFAULT 0
+Giá vé
+quota
+INTEGER
+NOT NULL, > 0
+Tổng số vé
+sold_count
+INTEGER
+DEFAULT 0
+Đã phát hành
+status
+VARCHAR(20)
+DEFAULT active
+Trạng thái vé
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian tạo
+Bảng 3.4.8: Cấu trúc bảng registrations
+Đây là bảng nghiệp vụ trung tâm của luồng đăng ký → thanh toán → check-in → khảo sát.
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa đăng ký
+event_id
+INTEGER
+FK → events.id
+Sự kiện
+attendee_id
+INTEGER
+FK → attendees.id
+Người tham dự
+ticket_id
+INTEGER
+FK → tickets.id
+Vé
+registration_status
+VARCHAR(20)
+DEFAULT pending
+Trạng thái đăng ký
+payment_status
+VARCHAR(20)
+DEFAULT unpaid
+Trạng thái thanh toán
+payment_ref
+VARCHAR(100)
+NULLABLE
+Mã giao dịch
+payment_amount
+FLOAT
+DEFAULT 0
+Số tiền thanh toán
+refund_status
+VARCHAR(20)
+DEFAULT none
+Trạng thái hoàn
+checked_in
+BOOLEAN
+DEFAULT FALSE
+Đã check-in
+checked_in_at
+DATETIME
+NULLABLE
+Thời điểm check-in
+feedback_rating
+INTEGER
+NULLABLE
+Điểm đánh giá
+feedback_text
+TEXT
+NULLABLE
+Phản hồi
+sentiment
+VARCHAR(20)
+NULLABLE
+Kết quả sentiment
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian đăng ký
+Việc để dữ liệu thanh toán, check-in và feedback của một Registration trong cùng thực thể là hợp lý vì các thuộc tính này phụ thuộc trực tiếp vào registration_id, không phụ thuộc một phần vào một thuộc tính khác của bảng.
+Bảng 3.4.9: Cấu trúc bảng ai_chat_history
+Tên trường
+Kiểu dữ liệu
+Ràng buộc
+Mô tả
+id
+INTEGER
+PK, Auto Inc
+Khóa lịch sử AI
+user_id
+INTEGER
+FK → users.id
+Người gửi yêu cầu
+event_id
+INTEGER
+FK → events.id, NULLABLE
+Sự kiện liên quan
+chat_type
+VARCHAR(30)
+NOT NULL
+recommendation/chat/predictive/sentiment
+user_message
+TEXT
+NOT NULL
+Nội dung yêu cầu
+ai_response
+TEXT
+NOT NULL
+Kết quả AI
+model_name
+VARCHAR(80)
+NULLABLE
+Tên model
+response_mode
+VARCHAR(20)
+DEFAULT live
+live/mock
+created_at
+DATETIME
+DEFAULT UTC_NOW
+Thời gian
+3.1.6. Tiêu chí 6: Thiết kế Kiến trúc hệ thống 3 tầng & Sơ đồ Luồng Dữ Liệu DFD
+Báo cáo mẫu sử dụng 3-Tier Architecture để phân tách rõ trách nhiệm giữa giao diện, nghiệp vụ và dữ liệu, đồng thời có một AI Service riêng tích hợp với kiến trúc. 
+Hình 3.3: Sơ đồ Kiến trúc 3 tầng tích hợp AI Service
+Kiến trúc đề xuất:
+Lớp Presentation
+Chịu trách nhiệm:
+hiển thị Dashboard; 
+form CRUD; 
+giao diện đăng ký; 
+giao diện thanh toán; 
+giao diện Check-in; 
+Chatbot; 
+kết quả Recommendation; 
+biểu đồ Predictive; 
+khảo sát. 
+Lớp Business
+Đây là lớp chứa logic nghiệp vụ thực sự, ví dụ:
+không cho đăng ký khi hết quota; 
+không tạo vé Paid khi Payment chưa hợp lệ; 
+không cho check-in vé đã sử dụng; 
+không cho tạo lịch trùng phòng; 
+kiểm tra quyền truy cập; 
+điều phối việc gọi AI. 
+Lớp Data
+SQLAlchemy ORM chịu trách nhiệm:
+CRUD; 
+transaction; 
+query; 
+relationship; 
+indexing; 
+rollback. 
+AI Service
+Lớp AI không được truy cập CSDL tùy tiện. Business Layer chuẩn bị dữ liệu cần thiết rồi mới truyền vào AI Service.
+Điều này tạo ranh giới:
+Database → Business Validation → AI Context → Gemini
+thay vì:
+User → Gemini → tự quyết định dữ liệu.
+Hình 3.3b: Sơ đồ Luồng Dữ liệu (DFD)
+Luồng dữ liệu chính:
+3.1.7. Tiêu chí 7: Xác định vị trí tích hợp AI, Sequence Diagram & Sơ đồ Pipeline
+Báo cáo mẫu xác định các AI Touchpoint và biểu diễn bằng Sequence Diagram cùng AI Pipeline. 
+Trong hệ thống mới có 4 điểm chạm AI:
+AI Touchpoint 1 — Recommendation
+Attendee
+   │
+   ▼
+Event Discovery
+   │
+   ▼
+User Profile + Participation History
+   │
+   ▼
+Recommendation Engine
+   │
+   ▼
+Top-N Events
+   │
+   ▼
+Personalized Event List
+AI Touchpoint 2 — Chatbot LLM/RAG
+User
+ │
+ ▼
+Chatbot
+ │
+ ▼
+Intent
+ │
+ ▼
+Retrieve Event/Schedule/Speaker/Ticket Data
+ │
+ ▼
+Build Context
+ │
+ ▼
+Gemini 2.0 Flash
+ │
+ ▼
+Answer Validation
+ │
+ ▼
+Response
+AI Touchpoint 3 — Predictive Analytics
+Historical Data
+      │
+      ▼
+Feature Engineering
+      │
+      ▼
+ML Model
+      │
+      ▼
+Attendance Prediction
+      │
+      ├── Expected Attendees
+      ├── Resource Demand
+      └── Budget Forecast
+AI Touchpoint 4 — Sentiment Analysis
+Survey/Comment
+      │
+      ▼
+Text Preprocessing
+      │
+      ▼
+Sentiment Model
+      │
+      ├── Positive
+      ├── Neutral
+      └── Negative
+      │
+      ▼
+Topic / Issue Extraction
+      │
+      ▼
+Event Evaluation Dashboard
+Hình 3.4: Sequence Diagram — Luồng xử lý chức năng AI
+Sequence Diagram cần thể hiện tối thiểu các thành phần:
+User → Flask Route → Business Service → AI Service → Database → Gemini/ML Model → AI Service → Flask → User
+Đối với Chatbot, Database phải được truy xuất trước khi gọi Gemini.
+3.1.8. Tiêu chí 8: Thiết kế Prompt có hệ thống và Luồng gọi AI sơ bộ
+Báo cáo mẫu tách Prompt khỏi mã nguồn, sử dụng thư mục prompts/, đồng thời phân biệt System Instruction và User Context. 
+Đối với hệ thống sự kiện, cấu trúc Prompt được thiết kế:
+prompts/
+├── chatbot_system_v1.txt
+├── chatbot_system_v2.txt
+├── chatbot_system_v3.txt
+├── recommendation_prompt.txt
+├── predictive_prompt.txt
+└── sentiment_prompt.txt
+Cấu trúc System Prompt
+ROLE:
+Bạn là Event Management Assistant.
+CONTEXT:
+Thông tin sự kiện được cung cấp từ hệ thống.
+RULES:
+1. Chỉ sử dụng thông tin có trong Context.
+2. Không tự tạo lịch trình.
+3. Không tự tạo tên diễn giả.
+4. Không tự tạo giá vé.
+5. Không tiết lộ PII.
+6. Nếu Context không đủ dữ liệu, phải nói rõ không tìm thấy thông tin.
+OUTPUT:
+Trả lời bằng tiếng Việt, rõ ràng, có cấu trúc.
+Dynamic Context
+Ví dụ:
+{{event_context}}
+{{schedule_context}}
+{{speaker_context}}
+{{ticket_context}}
+{{venue_context}}
+Tương tự báo cáo mẫu sử dụng placeholder {{product_table}}, hệ thống mới sử dụng Context động để hạn chế Hallucination. 
+Luồng gọi AI sơ bộ
+User Input
+   ↓
+Input Validation
+   ↓
+Rate Limiter
+   ↓
+Permission Check
+   ↓
+Database Retrieval
+   ↓
+PII Filtering
+   ↓
+Prompt Builder
+   ↓
+Gemini API
+   ↓
+Response Validation
+   ↓
+Markdown Renderer
+   ↓
+User
+3.1.9. Tiêu chí 9: Minh chứng sử dụng AI trong Phân tích & Thiết kế (4 mục AI-KT1)
+Báo cáo mẫu sử dụng 4 nhật ký AI-KT1, trong mỗi mục có mục tiêu gửi AI, phản hồi, phần áp dụng và phần sinh viên chỉnh sửa. 
+Bảng 3.5: Minh chứng sử dụng AI trong Giai đoạn 1 (Bài KT1)
+Mã
+Mục tiêu gửi AI
+Phản hồi AI cung cấp
+Phần áp dụng
+Phần sinh viên chỉnh sửa & Lý do
+AI-KT1-01
+Gợi ý Actor & Use Case cho hệ thống sự kiện
+AI đề xuất Admin, Event Manager, Staff, Attendee, Payment Gateway và nhiều UC
+Giữ cấu trúc 3 nhóm Actor nội bộ + khách tham dự
+Tinh gọn UC để tránh trùng nghiệp vụ và giữ 8 UC chính
+AI-KT1-02
+Thiết kế CSDL quản lý sự kiện
+AI gợi ý các bảng Event, Speaker, Venue, Ticket, Registration
+Sử dụng làm cơ sở thiết kế ERD
+Bổ sung trạng thái Payment, Check-in và Feedback vào Registration để giữ mô hình 9 bảng
+AI-KT1-03
+Thiết kế Prompt cho Event Chatbot
+AI tạo Prompt cơ bản hỏi đáp sự kiện
+Áp dụng cấu trúc System/User Context
+Bổ sung quy tắc chống Hallucination, không tự tạo lịch trình và giá vé
+AI-KT1-04
+Gợi ý Dashboard quản lý sự kiện
+AI đề xuất KPI số đăng ký, doanh thu, check-in, feedback
+Áp dụng KPI Cards + Chart.js
+Bổ sung Predictive Attendance và Sentiment Score để Dashboard phục vụ AI Analytics
+Điểm quan trọng của nhật ký AI là AI không được xem là nguồn quyết định cuối cùng. Sinh viên phải phân tích lại đề xuất của AI, loại bỏ các phần không phù hợp và ghi rõ lý do chỉnh sửa.
+Cách làm này giữ nguyên tinh thần của báo cáo mẫu, trong đó các phản hồi AI được sử dụng làm cơ sở tham khảo nhưng thiết kế cuối cùng do người phát triển kiểm chứng và điều chỉnh. 
+3.1.10. Tiêu chí 10: Tài liệu thiết kế và Kế hoạch phân rã công việc WBS
+Toàn bộ tài liệu phân tích và thiết kế của hệ thống được liên kết với WBS 4 Sprint đã xác lập ở Chương II.
+Các sản phẩm thiết kế chính bao gồm:
+Software Requirement Specification (SRS). 
+Use Case Diagram. 
+Activity Diagram cho đăng ký, thanh toán và check-in. 
+ERD 9 bảng. 
+Data Dictionary. 
+3-Tier Architecture Diagram. 
+DFD. 
+Sequence Diagram. 
+AI Processing Pipeline. 
+Prompt Templates. 
+RACI Matrix. 
+WBS 4 Sprint. 
+Do đó, tiêu chí 3.1.10 không chỉ xác nhận rằng tài liệu đã được tạo mà còn chứng minh khả năng liên kết giữa:
+Yêu cầu → Thiết kế → Công việc → Sản phẩm bàn giao → Kiểm thử.
+Đây là nguyên tắc quan trọng trong SDLC và cũng phù hợp với cách báo cáo mẫu đối chiếu tài liệu SRS, sơ đồ kỹ thuật và WBS như một bộ sản phẩm thống nhất. 
+CHƯƠNG IV: THIẾT KẾ HỆ THỐNG
+4.1. Mục tiêu của giai đoạn thiết kế
+Sau khi hoàn thành quá trình khảo sát hiện trạng và phân tích yêu cầu, nhóm chuyển sang giai đoạn thiết kế hệ thống.
+Mục tiêu của giai đoạn này là chuyển các yêu cầu nghiệp vụ thành mô hình thiết kế cụ thể, làm cơ sở cho quá trình lập trình, kiểm thử và triển khai hệ thống.
+Trong giai đoạn thiết kế, nhóm tập trung vào các nội dung:
+Thiết kế kiến trúc tổng thể. 
+Thiết kế Use Case. 
+Thiết kế Activity Diagram. 
+Thiết kế Sequence Diagram. 
+Thiết kế ERD. 
+Thiết kế Class Diagram. 
+Thiết kế Component Diagram. 
+Thiết kế Deployment Diagram. 
+Thiết kế luồng xử lý AI. 
+Thiết kế UI/UX và Wireframe. 
+Phân bổ trách nhiệm giữa các thành phần của hệ thống. 
+4.2. Kiến trúc tổng thể của hệ thống
+4.2.1. Kiến trúc được lựa chọn
+Do phạm vi đồ án tập trung vào Front-end và tích hợp AI thông qua API, nhóm lựa chọn kiến trúc Web Client kết hợp với các dịch vụ bên ngoài.
+Kiến trúc gồm ba khu vực chính:
+4.2.2. Các thành phần của hệ thống
+Thành phần Client
+Client chịu trách nhiệm:
+Hiển thị giao diện. 
+Tiếp nhận thao tác người dùng. 
+Xử lý logic giao diện. 
+Kiểm tra dữ liệu đầu vào. 
+Đọc và ghi dữ liệu. 
+Gửi yêu cầu đến Gemini API. 
+Hiển thị kết quả AI. 
+Firebase / LocalStorage
+Trong giai đoạn prototype, nhóm sử dụng LocalStorage khi cần lưu trữ cục bộ nhằm giảm độ phức tạp triển khai.
+Khi cần lưu trữ trực tuyến, nhóm sử dụng Firebase.
+Dữ liệu có thể bao gồm:
+Người dùng. 
+Sự kiện. 
+Đăng ký sự kiện. 
+Gemini API
+Gemini đóng vai trò là dịch vụ AI bên ngoài, hỗ trợ:
+Sinh mô tả sự kiện. 
+Cải thiện nội dung. 
+Hỏi đáp. 
+Đề xuất sự kiện. 
+4.3. Thiết kế Use Case
+4.3.1. Mục đích
+Use Case Diagram được sử dụng để xác định các tác nhân bên ngoài và các chức năng mà hệ thống cung cấp cho từng tác nhân.
+4.3.2. Xác định các tác nhân
+Hệ thống có ba tác nhân chính:
+Tác nhân
+Vai trò
+Người dùng
+Sử dụng các chức năng xem, tìm kiếm, đăng ký và tương tác AI
+Quản trị viên
+Quản lý dữ liệu và nội dung sự kiện
+Gemini AI
+Cung cấp dịch vụ xử lý và sinh nội dung AI
+4.3.3. Danh sách các Use Case chính
+Nhóm Người dùng
+Mã
+Use Case
+UC01
+Xem danh sách sự kiện
+UC02
+Tìm kiếm sự kiện
+UC03
+Lọc sự kiện
+UC04
+Xem chi tiết sự kiện
+UC05
+Đăng ký sự kiện
+UC06
+Hỏi đáp với AI Assistant
+UC07
+Nhận đề xuất sự kiện
+Nhóm Quản Trị Viên
+Mã
+Use Case
+UC08
+Thêm sự kiện
+UC09
+Chỉnh sửa sự kiện
+UC10
+Xóa sự kiện
+UC11
+Tạo mô tả sự kiện bằng AI
+UC12
+Cải thiện nội dung bằng AI
+4.3.4. Biểu Đồ Use Cases 
+Hình 1. Biểu đồ Use Case của hệ thống
+4.4. Đặc tả Use Case
+4.4.1. UC08 – Thêm sự kiện
+Thành phần
+Nội dung
+Mã
+UC08
+Tên
+Thêm sự kiện
+Tác nhân
+Quản trị viên
+Mục tiêu
+Tạo một sự kiện mới
+Điều kiện trước
+Quản trị viên có quyền quản lý
+Điều kiện sau
+Sự kiện được lưu thành công
+Luồng chính
+Nhập dữ liệu → kiểm tra → lưu
+Luồng thay thế
+Có thể sử dụng AI để tạo mô tả
+Ngoại lệ
+Thiếu dữ liệu hoặc dữ liệu không hợp lệ
+Ưu tiên
+Cao
+4.4.2. UC11 – Tạo mô tả sự kiện bằng AI
+Thành phần
+Nội dung
+Mã
+UC11
+Tên
+Tạo mô tả sự kiện bằng AI
+Tác nhân
+Quản trị viên, Gemini AI
+Mục tiêu
+Tự động tạo nội dung mô tả
+Điều kiện trước
+Thông tin cơ bản đã được nhập
+Điều kiện sau
+Nội dung AI được trả về
+Luồng chính
+Nhập dữ liệu → tạo Prompt → gọi Gemini → nhận kết quả
+Ngoại lệ
+API lỗi, hết quota hoặc mất kết nối
+Ưu tiên
+Cao
+4.4.3. UC06 – Hỏi đáp với AI Assistant
+Thành phần
+Nội dung
+Mã
+UC06
+Tên
+Hỏi đáp với AI Assistant
+Tác nhân
+Người dùng, Gemini AI
+Mục tiêu
+Hỗ trợ người dùng tìm hiểu thông tin
+Điều kiện trước
+Website hoạt động
+Điều kiện sau
+Câu trả lời được hiển thị
+Luồng chính
+Nhập câu hỏi → gửi Gemini → nhận kết quả → hiển thị
+Ngoại lệ
+AI không phản hồi
+Ưu tiên
+Cao
+4.5. Thiết kế Activity Diagram
+4.5.1. Activity Diagram – Đăng ký sự kiện
+Hình 2. Biểu đồ hoạt động đăng ký sự kiện
+4.5.2. Activity Diagram – Tạo sự kiện bằng AI
+Hình 3. Biểu đồ hoạt động tạo nội dung sự kiện bằng AI
+4.5.3. Activity Diagram – AI Assistant
+Hình 4. Biểu đồ hoạt động AI Assistant
+4.6. Thiết kế Sequence Diagram
+4.6.1. Sequence Diagram – Tạo mô tả sự kiện bằng AI
+Hình 5. Biểu đồ tuần tự tạo mô tả sự kiện bằng AI
+4.6.2. Sequence Diagram – AI Assistant
+Hình 6. Biểu đồ tuần tự AI Assistant
+4.7. Thiết kế ERD – Sơ đồ thực thể liên kết
+4.7.1. Mục tiêu
+ERD được sử dụng để mô hình hóa các đối tượng dữ liệu và quan hệ nghiệp vụ giữa chúng.
+4.7.2. Thực thể User
+USER
+--------------------------------
+id
+name
+email
+role
+createdAt
+4.7.3. Thực thể Event
+EVENT
+--------------------------------
+id
+name
+description
+date
+time
+location
+category
+capacity
+registeredCount
+status
+image
+createdAt
+updatedAt
+4.7.4. Thực thể Registration
+REGISTRATION
+--------------------------------
+id
+userId
+eventId
+registeredAt
+status
+4.7.5. Mối quan hệ giữa các thực thể
+USER 1 ───────── N REGISTRATION N ───────── 1 EVENT
+Một người dùng có thể đăng ký nhiều sự kiện.
+Một sự kiện có thể có nhiều người tham gia.
+REGISTRATION đóng vai trò là thực thể trung gian.
+4.7.6. Biểu đồ ERD
+Hình 7. Sơ đồ thực thể liên kết ERD
+4.8. Thiết kế Class Diagram
+Hình 8. Biểu đồ lớp của hệ thống
+4.9. Component Diagram
+Hình 9. Biểu đồ thành phần của hệ thống
+4.10. Thiết kế Deployment Diagram
+Hình 10. Biểu đồ triển khai hệ thống
+4.11. Thiết kế luồng xử lý AI
+4.11.1. Kiến trúc xử lý AI
+Người dùng
+    │
+    ▼
+AI Assistant UI
+    │
+    ▼
+JavaScript
+    │
+    ├── Kiểm tra dữ liệu
+    ├── Xây dựng Prompt
+    │
+    ▼
+Gemini API
+    │
+    ▼
+AI Processing
+    │
+    ▼
+Response
+    │
+    ▼
+JavaScript
+    │
+    ▼
+UI
+4.11.2. Prompt tạo mô tả sự kiện
+Bạn là trợ lý viết nội dung sự kiện.
+Hãy tạo mô tả chuyên nghiệp cho sự kiện:
+Tên: {eventName}
+Chủ đề: {topic}
+Đối tượng: {audience}
+Địa điểm: {location}
+Yêu cầu:
+- Nội dung rõ ràng
+- Dễ đọc
+- Phù hợp sinh viên
+- Không tự tạo thông tin không được cung cấp
+4.11.3. Prompt cải thiện nội dung
+Hãy cải thiện nội dung mô tả sự kiện sau.
+Nội dung hiện tại:
+{description}
+Yêu cầu:
+- Giữ nguyên ý nghĩa
+- Viết rõ ràng hơn
+- Chuyên nghiệp hơn
+- Không thêm thông tin không có trong nội dung gốc
+4.11.4. Prompt AI Assistant
+Bạn là AI Assistant của hệ thống quản lý sự kiện.
+Dữ liệu sự kiện:
+{events}
+Câu hỏi của người dùng:
+{question}
+Hãy trả lời dựa trên dữ liệu được cung cấp.
+4.12. Thiết kế UI/UX
+4.12.1. Nguyên tắc thiết kế
+Giao diện được thiết kế theo các nguyên tắc:
+Đơn giản. 
+Dễ hiểu. 
+Đồng nhất. 
+Hạn chế số bước thao tác. 
+Responsive. 
+Ưu tiên việc tìm kiếm và xem sự kiện. 
+AI được tích hợp ngay tại những vị trí cần thiết. 
+4.12.2. Thiết kế Sitemap
+Website
+│
+├── Trang chủ
+│   ├── Sự kiện nổi bật
+│   ├── Sự kiện sắp diễn ra
+│   └── AI Assistant
+│
+├── Sự kiện
+│   ├── Danh sách
+│   ├── Tìm kiếm
+│   ├── Lọc
+│   └── Chi tiết
+│
+├── Đăng ký
+│
+└── Admin
+    ├── Dashboard
+    ├── Quản lý sự kiện
+    │   ├── Thêm
+    │   ├── Sửa
+    │   └── Xóa
+    │
+    └── AI hỗ trợ nội dung
+Hình 4.11. Sơ đồ Sitemap của hệ thống
+4.12.3. Wireframe trang chủ
+┌────────────────────────────────────────────────────────┐
+│ LOGO        Trang chủ   Sự kiện   Đăng nhập            │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│       HỆ THỐNG QUẢN LÝ SỰ KIỆN                         │
+│       Khám phá và tham gia các sự kiện phù hợp          │
+│                                                        │
+│       [ 🔍 Tìm kiếm sự kiện................ ]           │
+│                                                        │
+├────────────────────────────────────────────────────────┤
+│                   SỰ KIỆN NỔI BẬT                      │
+│                                                        │
+│   ┌──────────┐  ┌──────────┐  ┌──────────┐             │
+│   │ Event 01 │  │ Event 02 │  │ Event 03 │             │
+│   │          │  │          │  │          │             │
+│   │ Chi tiết │  │ Chi tiết │  │ Chi tiết │             │
+│   └──────────┘  └──────────┘  └──────────┘             │
+│                                                        │
+│                         [ AI Assistant ]               │
+└────────────────────────────────────────────────────────┘
+Hình 4.12. Wireframe trang chủ
+4.12.4. Wireframe Dashboard Admin
+┌────────────────────────────────────────────────────────┐
+│ ADMIN DASHBOARD                                        │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  Tổng sự kiện     Sắp diễn ra     Đã kết thúc          │
+│      25                12              13              │
+│                                                        │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│ [ + Thêm sự kiện ]      [ Tìm kiếm ]                   │
+│                                                        │
+│ ┌────────┬──────────────┬──────────┬───────────────┐   │
+│ │ Event  │ Thời gian    │ Trạng thái│ Thao tác      │   │
+│ ├────────┼──────────────┼──────────┼───────────────┤   │
+│ │ ...    │ ...          │ ...      │ Sửa | Xóa     │   │
+│ └────────┴──────────────┴──────────┴───────────────┘   │
+└────────────────────────────────────────────────────────┘
+Hình 4.13. Wireframe Dashboard Admin
+4.12.5. Wireframe AI Assistant
+┌──────────────────────────────────────────────┐
+│              AI EVENT ASSISTANT              │
+├──────────────────────────────────────────────┤
+│                                              │
+│ AI: Xin chào! Tôi có thể giúp gì?            │
+│                                              │
+│ User: Có workshop công nghệ nào sắp tới?    │
+│                                              │
+│ AI: Hiện có các sự kiện...                   │
+│                                              │
+├──────────────────────────────────────────────┤
+│ Nhập câu hỏi........................ [Gửi]  │
+└──────────────────────────────────────────────┘
+Hình 4.14. Wireframe AI Assistant
+4.12.6. Wireframe Form tạo sự kiện
+┌──────────────────────────────────────────────┐
+│             THÊM SỰ KIỆN                     │
+├──────────────────────────────────────────────┤
+│                                              │
+│ Tên sự kiện                                  │
+│ [........................................]   │
+│                                              │
+│ Chủ đề                                       │
+│ [........................................]   │
+│                                              │
+│ Thời gian             Địa điểm               │
+│ [.................]   [................]     │
+│                                              │
+│ Mô tả                                        │
+│ [........................................]   │
+│ [........................................]   │
+│                                              │
+│ [✨ Tạo nội dung bằng AI]                    │
+│                                              │
+│             [ Lưu ]   [ Hủy ]                │
+└──────────────────────────────────────────────┘
+Hình 4.15. Wireframe Form tạo sự kiện
+4.13. Liên kết giữa yêu cầu và thiết kế
+Yêu cầu
+Thiết kế tương ứng
+Xem sự kiện
+UC01 + Event UI
+Tìm kiếm
+UC02 + Search UI
+Lọc
+UC03 + Filter UI
+Xem chi tiết
+UC04 + Event Detail
+Đăng ký
+UC05 + Registration
+AI Assistant
+UC06 + AI Component
+Đề xuất AI
+UC07 + AI Service
+Thêm sự kiện
+UC08 + Admin Form
+Sửa sự kiện
+UC09 + Admin Form
+Xóa sự kiện
+UC10 + Admin UI
+Tạo mô tả AI
+UC11 + Gemini API
+Cải thiện nội dung AI
+UC12 + Gemini API
+Bảng này giúp kết nối từ yêu cầu → Use Case → thiết kế → kiểm thử.
+4.14. Kết quả đạt được 
+Sau khi hoàn thành giai đoạn thiết kế, nhóm đạt được:
+Use Case Diagram. 
+Đặc tả Use Case. 
+Activity Diagram. 
+Sequence Diagram. 
+ERD. 
+Class Diagram. 
+Component Diagram. 
+Deployment Diagram. 
+Thiết kế luồng AI. 
+Thiết kế Prompt. 
+Sitemap. 
+Wireframe UI/UX. 
+Ma trận liên kết giữa yêu cầu và thiết kế. 
+Các thiết kế này tạo cơ sở trực tiếp cho giai đoạn phát triển hệ thống.
+4.15. Đánh giá giai đoạn thiết kế
+Giai đoạn thiết kế đã chuyển đổi các yêu cầu nghiệp vụ của hệ thống thành mô hình trực quan và cấu trúc dữ liệu cụ thể.
+Các biểu đồ UML giúp xác định rõ tác nhân, chức năng và luồng tương tác. ERD mô hình hóa dữ liệu và quan hệ nghiệp vụ. Activity Diagram thể hiện quá trình xử lý, trong khi Sequence Diagram mô tả sự tương tác giữa giao diện, JavaScript, dịch vụ dữ liệu và Gemini API.
+Bên cạnh đó, Component Diagram và Deployment Diagram giúp làm rõ kiến trúc triển khai của hệ thống trong điều kiện sử dụng Front-end thuần HTML/CSS/Vanilla JavaScript kết hợp các dịch vụ bên ngoài.
+Thiết kế hiện tại phù hợp với quy mô nhóm hai thành viên, hạn chế độ phức tạp không cần thiết nhưng vẫn tạo nền tảng để mở rộng các tính năng trong tương lai.
+4.16. Kết luận 
+Trong Chương IV, nhóm đã hoàn thành việc thiết kế hệ thống quản lý sự kiện có tích hợp AI trên cơ sở các yêu cầu đã được xác định ở giai đoạn khảo sát và phân tích.
+Hệ thống đã được mô hình hóa bằng nhiều loại biểu đồ UML, bao gồm Use Case Diagram, Activity Diagram, Sequence Diagram, Class Diagram, Component Diagram và Deployment Diagram. Đồng thời, nhóm đã xây dựng ERD để mô hình hóa các thực thể dữ liệu chính.
+Đối với thành phần AI, nhóm đã xác định rõ luồng giao tiếp với Gemini API và thiết kế các trường hợp sử dụng AI như tạo mô tả sự kiện, cải thiện nội dung, AI Assistant và đề xuất sự kiện.
+Ngoài ra, Sitemap và Wireframe đã được xây dựng nhằm định hình giao diện và trải nghiệm người dùng trước khi triển khai mã nguồn.
+Kết quả của chương này là cơ sở trực tiếp để nhóm chuyển sang giai đoạn phát triển và xây dựng sản phẩm thực tế.

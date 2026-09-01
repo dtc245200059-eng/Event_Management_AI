@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if event %}Chỉnh Sửa Sự Kiện{% else %}Tạo Sự Kiện Mới{% endif %} - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="glass-panel p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold mb-1">{% if event %}Chỉnh Sửa Sự Kiện{% else %}Tạo Sự Kiện Mới{% endif %}</h3>
+                        <p class="text-muted small mb-0">Nhập thông tin sự kiện hoặc tận dụng AI để sinh nội dung hấp dẫn</p>
+                    </div>
+                    <a href="{{ url_for('events.manage') }}" class="btn btn-secondary-glass btn-sm">Quay lại</a>
+                </div>
+
+                <form method="POST" id="eventForm">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label text-light small fw-semibold">Tên sự kiện *</label>
+                            <input type="text" name="title" id="eventTitle" value="{{ event.title if event else '' }}" class="form-control bg-dark border-secondary text-light" required placeholder="Ví dụ: Hội thảo Quốc tế về GenAI 2026">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-semibold">Danh mục *</label>
+                            <select name="category" id="eventCategory" class="form-select bg-dark text-light border-secondary">
+                                <option value="Trí tuệ nhân tạo" {% if event and event.category == 'Trí tuệ nhân tạo' %}selected{% endif %}>Trí tuệ nhân tạo</option>
+                                <option value="Cloud & DevOps" {% if event and event.category == 'Cloud & DevOps' %}selected{% endif %}>Cloud & DevOps</option>
+                                <option value="Khoa học dữ liệu" {% if event and event.category == 'Khoa học dữ liệu' %}selected{% endif %}>Khoa học dữ liệu</option>
+                                <option value="Startup & Đầu tư" {% if event and event.category == 'Startup & Đầu tư' %}selected{% endif %}>Startup & Đầu tư</option>
+                                <option value="Workshop" {% if event and event.category == 'Workshop' %}selected{% endif %}>Workshop</option>
+                                <option value="Kỹ thuật phần mềm" {% if event and event.category == 'Kỹ thuật phần mềm' %}selected{% endif %}>Kỹ thuật phần mềm</option>
+                            </select>
+                        </div>
+
+                        <!-- AI Generate Box Trigger -->
+                        <div class="col-12">
+                            <div class="p-3 rounded-3 d-flex justify-content-between align-items-center" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3);">
+                                <div>
+                                    <strong class="text-purple" style="color: #c084fc;"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> AI Content Generator</strong>
+                                    <div class="text-muted small">Tự động sinh bài viết mô tả sự kiện chuyên nghiệp và thu hút người tham dự dựa trên tên và chủ đề.</div>
+                                </div>
+                                <button type="button" class="btn btn-ai-glow btn-sm text-nowrap" id="generateDescBtn">
+                                    <i class="fa-solid fa-sparkles me-1"></i> Sinh Mô Tả Bằng AI
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label text-light small fw-semibold">Mô tả chi tiết sự kiện *</label>
+                            <textarea name="description" id="eventDescription" rows="8" class="form-control bg-dark border-secondary text-light" required placeholder="Mô tả nội dung, mục tiêu, đối tượng tham dự và lợi ích khi tham gia...">{{ event.description if event else '' }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-semibold">Thời gian bắt đầu *</label>
+                            <input type="datetime-local" name="start_date" value="{{ event.start_date.strftime('%Y-%m-%dT%H:%M') if event else '' }}" class="form-control bg-dark border-secondary text-light" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-semibold">Thời gian kết thúc *</label>
+                            <input type="datetime-local" name="end_date" value="{{ event.end_date.strftime('%Y-%m-%dT%H:%M') if event else '' }}" class="form-control bg-dark border-secondary text-light" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-semibold">Hình thức tổ chức</label>
+                            <select name="location_type" class="form-select bg-dark text-light border-secondary">
+                                <option value="offline" {% if event and event.location_type == 'offline' %}selected{% endif %}>Offline (Trực tiếp)</option>
+                                <option value="online" {% if event and event.location_type == 'online' %}selected{% endif %}>Online (Trực tuyến)</option>
+                                <option value="hybrid" {% if event and event.location_type == 'hybrid' %}selected{% endif %}>Hybrid (Kết hợp)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label text-light small fw-semibold">Địa điểm / Địa chỉ phòng họp</label>
+                            <input type="text" name="location_address" id="eventLocation" value="{{ event.location_address if event else '' }}" class="form-control bg-dark border-secondary text-light" placeholder="Trung tâm Hội nghị Quốc gia, Nam Từ Liêm, Hà Nội">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-semibold">Đường link Zoom/Meet (Nếu có)</label>
+                            <input type="url" name="online_meeting_url" value="{{ event.online_meeting_url if event else '' }}" class="form-control bg-dark border-secondary text-light" placeholder="https://meet.eventai.vn/...">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light small fw-semibold">Ảnh Banner URL</label>
+                            <input type="url" name="banner_url" value="{{ event.banner_url if event else '' }}" class="form-control bg-dark border-secondary text-light" placeholder="https://images.unsplash.com/...">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-semibold">Số lượng người tham dự tối đa</label>
+                            <input type="number" name="max_attendees" value="{{ event.max_attendees if event else 500 }}" class="form-control bg-dark border-secondary text-light">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-semibold">Trạng thái sự kiện</label>
+                            <select name="status" class="form-select bg-dark text-light border-secondary">
+                                <option value="published" {% if event and event.status == 'published' %}selected{% endif %}>Published (Công khai)</option>
+                                <option value="draft" {% if event and event.status == 'draft' %}selected{% endif %}>Draft (Bản nháp)</option>
+                                <option value="ongoing" {% if event and event.status == 'ongoing' %}selected{% endif %}>Ongoing (Đang diễn ra)</option>
+                                <option value="completed" {% if event and event.status == 'completed' %}selected{% endif %}>Completed (Đã kết thúc)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-light small fw-semibold">Tags / Từ khóa (cách nhau dấu phẩy)</label>
+                            <input type="text" name="tags" value="{{ event.tags if event else '' }}" class="form-control bg-dark border-secondary text-light" placeholder="AI, RAG, Python, Data">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-3 mt-4 fw-semibold">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Lưu Thông Tin Sự Kiện
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('generateDescBtn').addEventListener('click', async () => {
+    const title = document.getElementById('eventTitle').value.trim();
+    const category = document.getElementById('eventCategory').value;
+    const location = document.getElementById('eventLocation').value.trim();
+    const descField = document.getElementById('eventDescription');
+    const btn = document.getElementById('generateDescBtn');
+
+    if (!title) {
+        alert('Vui lòng nhập tên sự kiện trước khi sinh mô tả!');
+        document.getElementById('eventTitle').focus();
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang sinh nội dung...';
+
+    try {
+        const response = await fetch('/api/ai/generate-description', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title: title,
+                category: category,
+                location: location,
+                highlights: 'Chia sẻ kiến thức thực chiến, kết nối chuyên gia và cập nhật xu hướng công nghệ mới nhất.'
+            })
+        });
+        const data = await response.json();
+        if (data.success) {
+            descField.value = data.description;
+        } else {
+            alert(data.message || 'Không thể sinh mô tả.');
+        }
+    } catch (e) {
+        alert('Lỗi kết nối tới AI service.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-sparkles me-1"></i> Sinh Mô Tả Bằng AI';
+    }
+});
+</script>
+{% endblock %}

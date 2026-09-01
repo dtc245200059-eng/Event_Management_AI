@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+
+{% block title %}Hồ Sơ Cá Nhân - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h2 class="fw-bold mb-1"><i class="fa-solid fa-id-card text-primary me-2"></i>Hồ Sơ Cá Nhân</h2>
+            <p class="text-muted small mb-0">Quản lý thông tin tài khoản, hồ sơ sở thích AI và lịch sử đăng ký sự kiện</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('tickets.my_tickets') }}" class="btn btn-sm btn-primary-gradient rounded-pill px-3">
+                <i class="fa-solid fa-ticket me-1"></i> Quản Lý Vé
+            </a>
+            <a href="{{ url_for('main.event_list') }}" class="btn btn-sm btn-secondary-glass rounded-pill px-3">
+                <i class="fa-solid fa-compass me-1"></i> Khám Phá Sự Kiện
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- LEFT COLUMN: Profile Overview Card -->
+        <div class="col-lg-4">
+            <div class="glass-panel p-4 text-center position-relative mb-4">
+                <div class="position-relative d-inline-block mb-3">
+                    <img id="profileAvatarPreview" src="{{ user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200' }}" 
+                         class="rounded-circle shadow" width="110" height="110" 
+                         style="object-fit: cover; border: 3px solid #6366f1; background: #1e293b;">
+                    <span class="position-absolute bottom-0 end-0 badge rounded-circle p-2 bg-primary border border-2 border-dark" title="Tài khoản đang hoạt động">
+                        <i class="fa-solid fa-check text-white" style="font-size: 0.7rem;"></i>
+                    </span>
+                </div>
+
+                <h4 class="fw-bold mb-1 text-light">{{ user.full_name }}</h4>
+                <p class="text-muted small mb-2">@{{ user.username }} • <span class="badge bg-primary bg-opacity-75 text-uppercase">{{ user.role }}</span></p>
+                <div class="d-inline-flex align-items-center gap-1 text-muted small mb-3">
+                    <i class="fa-solid fa-envelope text-primary"></i> 
+                    <span>{{ user.email }}</span>
+                </div>
+
+                <!-- Attendee Snapshot Details -->
+                {% if user.attendee_profile %}
+                <div class="p-3 rounded-3 text-start mb-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.85rem;">
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span class="text-muted">Mã Tham Gia:</span>
+                        <code class="text-info fw-bold">{{ user.attendee_profile.attendee_code }}</code>
+                    </div>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span class="text-muted">Đơn vị:</span>
+                        <span class="text-light fw-medium text-end">{{ user.attendee_profile.organization or 'Chưa cập nhật' }}</span>
+                    </div>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span class="text-muted">Chức danh:</span>
+                        <span class="text-light fw-medium text-end">{{ user.attendee_profile.job_title or 'Thành viên' }}</span>
+                    </div>
+                    <div class="mb-2 d-flex justify-content-between">
+                        <span class="text-muted">Số điện thoại:</span>
+                        <span class="text-light fw-medium text-end">{{ user.phone or 'Chưa cập nhật' }}</span>
+                    </div>
+                    <hr class="my-2 border-secondary opacity-25">
+                    <div>
+                        <div class="text-muted mb-1 small"><i class="fa-solid fa-sparkles text-warning me-1"></i>Sở thích AI Đề Xuất:</div>
+                        <div class="text-info small fw-medium text-break">
+                            {{ user.attendee_profile.interests or 'Chưa thiết lập sở thích' }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between text-muted small px-2 py-1">
+                    <span>Tham gia:</span>
+                    <span>{{ user.created_at.strftime('%d/%m/%Y') if user.created_at else '2026' }}</span>
+                </div>
+            </div>
+
+            <!-- AI Recommendation Prompt Box -->
+            <div class="glass-panel p-3 text-start" style="background: rgba(99, 102, 241, 0.08); border-left: 4px solid #6366f1;">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <i class="fa-solid fa-brain text-primary"></i>
+                    <strong class="text-light small">AI Personalization</strong>
+                </div>
+                <p class="text-muted small mb-0" style="font-size: 0.8rem;">
+                    Cập nhật chính xác mục <strong>Sở thích</strong> để AI gợi ý cho bạn những sự kiện công nghệ và hòa nhạc phù hợp nhất!
+                </p>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Tabs (History, Edit Profile, Security) -->
+        <div class="col-lg-8">
+            <div class="glass-panel p-4">
+                <!-- Nav Tabs -->
+                <ul class="nav nav-pills mb-4 gap-2 border-bottom border-secondary border-opacity-25 pb-3" id="profileTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link btn-secondary-glass rounded-pill px-3 active" id="tab-history-btn" data-bs-toggle="pill" data-bs-target="#tab-history" type="button" role="tab">
+                            <i class="fa-solid fa-clock-rotate-left me-1 text-primary"></i> Lịch Sử Đăng Ký ({{ registrations|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link btn-secondary-glass rounded-pill px-3" id="tab-edit-btn" data-bs-toggle="pill" data-bs-target="#tab-edit" type="button" role="tab">
+                            <i class="fa-solid fa-user-pen me-1 text-warning"></i> Sửa Thông Tin Cá Nhân
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link btn-secondary-glass rounded-pill px-3" id="tab-security-btn" data-bs-toggle="pill" data-bs-target="#tab-security" type="button" role="tab">
+                            <i class="fa-solid fa-shield-halved me-1 text-success"></i> Đổi Mật Khẩu
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="profileTabContent">
+                    
+                    <!-- TAB 1: REGISTRATION HISTORY -->
+                    <div class="tab-pane fade show active" id="tab-history" role="tabpanel">
+                        <h5 class="fw-bold mb-3 text-light">Danh Sách Sự Kiện Đã Đăng Ký</h5>
+                        {% if registrations %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                                    <thead>
+                                        <tr class="text-muted small" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                            <th>SỰ KIỆN</th>
+                                            <th>LOẠI VÉ</th>
+                                            <th>THANH TOÁN</th>
+                                            <th>TRẠNG THÁI</th>
+                                            <th>THAO TÁC</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in registrations %}
+                                        <tr>
+                                            <td>
+                                                <div class="fw-bold text-light">{{ r.event.title }}</div>
+                                                <small class="text-muted"><i class="fa-solid fa-calendar me-1"></i>{{ r.event.start_date.strftime('%d/%m/%Y %H:%M') }}</small>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if r.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-2 py-1">
+                                                    {{ r.ticket.name if r.ticket else r.ticket_number }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if r.payment_status == 'paid' %}
+                                                    <span class="badge bg-success"><i class="fa-solid fa-check me-1"></i>Đã thanh toán</span>
+                                                {% elif r.payment_status == 'free' %}
+                                                    <span class="badge bg-info text-dark">Miễn phí</span>
+                                                {% elif r.registration_status == 'cancelled' %}
+                                                    <span class="badge bg-secondary">Đã hủy</span>
+                                                {% else %}
+                                                    <span class="badge bg-warning text-dark">Chờ thanh toán</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if r.registration_status == 'cancelled' %}
+                                                    <span class="badge bg-danger bg-opacity-75">Đã hủy vé</span>
+                                                {% elif r.checked_in %}
+                                                    <span class="badge bg-success"><i class="fa-solid fa-qrcode me-1"></i>Đã Check-in</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Chưa Check-in</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('tickets.view_ticket', reg_id=r.id) }}" class="btn btn-sm btn-outline-light rounded-pill px-3 py-1" style="font-size: 0.78rem;">
+                                                    Chi Tiết
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="fa-solid fa-ticket-simple fs-1 mb-3 opacity-50"></i>
+                                <h5>Chưa có lịch sử đăng ký sự kiện</h5>
+                                <p class="small mb-4">Bạn chưa tham gia sự kiện nào. Hãy khám phá các hội thảo công nghệ và đêm nhạc hấp dẫn ngay!</p>
+                                <a href="{{ url_for('main.event_list') }}" class="btn btn-primary-gradient btn-sm rounded-pill px-4">
+                                    <i class="fa-solid fa-magnifying-glass me-1"></i> Tìm Sự Kiện Ngay
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- TAB 2: EDIT PROFILE -->
+                    <div class="tab-pane fade" id="tab-edit" role="tabpanel">
+                        <h5 class="fw-bold mb-3 text-light">Chỉnh Sửa Thông Tin Cá Nhân</h5>
+                        <form method="POST" action="{{ url_for('auth.update_profile') }}">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Họ và Tên *</label>
+                                    <input type="text" name="full_name" class="form-control bg-dark border-secondary text-light" value="{{ user.full_name }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Số Điện Thoại</label>
+                                    <input type="text" name="phone" class="form-control bg-dark border-secondary text-light" value="{{ user.phone or '' }}" placeholder="Ví dụ: 0987654321">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Tên Đăng Nhập</label>
+                                    <input type="text" class="form-control bg-dark border-secondary text-muted" value="{{ user.username }}" readonly disabled>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Không thể thay đổi tên đăng nhập</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Địa Chỉ Email</label>
+                                    <input type="email" class="form-control bg-dark border-secondary text-muted" value="{{ user.email }}" readonly disabled>
+                                    <small class="text-muted" style="font-size: 0.75rem;">Email định danh tài khoản bảo mật</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Đơn Vị / Trường Học</label>
+                                    <input type="text" name="organization" class="form-control bg-dark border-secondary text-light" value="{{ user.attendee_profile.organization if user.attendee_profile else '' }}" placeholder="Ví dụ: Đại học CNTT & TT Thái Nguyên (ICTU)">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-light small fw-semibold">Chức Danh / Nghề Nghiệp</label>
+                                    <input type="text" name="job_title" class="form-control bg-dark border-secondary text-light" value="{{ user.attendee_profile.job_title if user.attendee_profile else '' }}" placeholder="Ví dụ: Kỹ sư AI, Sinh viên CNTT, Developer">
+                                </div>
+
+                                <!-- AI INTERESTS WITH QUICK CHIPS -->
+                                <div class="col-12">
+                                    <label class="form-label text-light small fw-semibold d-flex justify-content-between align-items-center">
+                                        <span><i class="fa-solid fa-wand-magic-sparkles text-warning me-1"></i>Sở Thích Sự Kiện (Dùng cho AI Đề Xuất)</span>
+                                        <span class="text-muted" style="font-size: 0.75rem;">Click vào các tag bên dưới để thêm nhanh</span>
+                                    </label>
+                                    <input type="text" name="interests" id="interestsInput" class="form-control bg-dark border-secondary text-light mb-2" 
+                                           value="{{ user.attendee_profile.interests if user.attendee_profile else '' }}" 
+                                           placeholder="Ví dụ: Trí tuệ nhân tạo, Machine Learning, Cloud & DevOps, Âm nhạc & Nghệ thuật...">
+                                    
+                                    <!-- Quick Select Chips -->
+                                    <div class="d-flex flex-wrap gap-2 pt-1">
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Trí tuệ nhân tạo (AI)">+ AI & LLM</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Machine Learning">+ Machine Learning</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Cloud & DevOps">+ Cloud & DevOps</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="An toàn thông tin">+ An toàn thông tin</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Âm nhạc & Nghệ thuật">+ Âm nhạc & Nghệ thuật</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Sinh viên ICTU">+ Sinh viên ICTU</button>
+                                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill quick-tag" data-tag="Khởi nghiệp & Đổi mới sáng tạo">+ Khởi nghiệp & Startup</button>
+                                    </div>
+                                </div>
+
+                                <!-- AVATAR SELECTION -->
+                                <div class="col-12">
+                                    <label class="form-label text-light small fw-semibold">Ảnh Đại Diện (Avatar URL)</label>
+                                    <input type="url" name="avatar_url" id="avatarUrlInput" class="form-control bg-dark border-secondary text-light mb-2" 
+                                           value="{{ user.avatar_url or '' }}" placeholder="https://images.unsplash.com/...">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="text-muted small" style="font-size: 0.78rem;">Hoặc chọn nhanh avatar mẫu:</span>
+                                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200" class="rounded-circle avatar-choice" width="36" height="36" style="cursor: pointer; object-fit: cover;" title="Avatar 1">
+                                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200" class="rounded-circle avatar-choice" width="36" height="36" style="cursor: pointer; object-fit: cover;" title="Avatar 2">
+                                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200" class="rounded-circle avatar-choice" width="36" height="36" style="cursor: pointer; object-fit: cover;" title="Avatar 3">
+                                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" class="rounded-circle avatar-choice" width="36" height="36" style="cursor: pointer; object-fit: cover;" title="Avatar 4">
+                                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200" class="rounded-circle avatar-choice" width="36" height="36" style="cursor: pointer; object-fit: cover;" title="Avatar 5">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 pt-2">
+                                <button type="submit" class="btn btn-primary-gradient px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                                    <i class="fa-solid fa-floppy-disk me-2"></i>Lưu Thay Đổi Thông Tin
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 3: CHANGE PASSWORD -->
+                    <div class="tab-pane fade" id="tab-security" role="tabpanel">
+                        <h5 class="fw-bold mb-3 text-light">Đổi Mật Khẩu Tài Khoản</h5>
+                        <p class="text-muted small mb-4">Để bảo mật tài khoản, vui lòng đặt mật khẩu có độ dài tối thiểu 6 ký tự kết hợp chữ cái và chữ số.</p>
+
+                        <form method="POST" action="{{ url_for('auth.change_password') }}" style="max-width: 500px;">
+                            <div class="mb-3">
+                                <label class="form-label text-light small fw-semibold">Mật Khẩu Hiện Tại *</label>
+                                <div class="input-group">
+                                    <input type="password" name="current_password" class="form-control bg-dark border-secondary text-light" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light small fw-semibold">Mật Khẩu Mới *</label>
+                                <input type="password" name="new_password" class="form-control bg-dark border-secondary text-light" minlength="6" required>
+                                <small class="text-muted" style="font-size: 0.75rem;">Độ dài tối thiểu 6 ký tự</small>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label text-light small fw-semibold">Xác Nhận Mật Khẩu Mới *</label>
+                                <input type="password" name="confirm_password" class="form-control bg-dark border-secondary text-light" minlength="6" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary-gradient px-4 py-2 rounded-pill fw-semibold shadow-sm">
+                                <i class="fa-solid fa-key me-2"></i>Cập Nhật Mật Khẩu Mới
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Check URL parameters for active tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const activeTab = urlParams.get('tab');
+    if (activeTab === 'edit') {
+        const editTabBtn = document.getElementById('tab-edit-btn');
+        if (editTabBtn) editTabBtn.click();
+    } else if (activeTab === 'security') {
+        const secTabBtn = document.getElementById('tab-security-btn');
+        if (secTabBtn) secTabBtn.click();
+    }
+
+    // 2. Quick Tags for Interests
+    const interestsInput = document.getElementById('interestsInput');
+    const quickTags = document.querySelectorAll('.quick-tag');
+    quickTags.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tag = btn.getAttribute('data-tag');
+            let current = interestsInput.value.trim();
+            if (current) {
+                if (!current.includes(tag)) {
+                    interestsInput.value = current + ', ' + tag;
+                }
+            } else {
+                interestsInput.value = tag;
+            }
+        });
+    });
+
+    // 3. Quick Avatar Selection
+    const avatarInput = document.getElementById('avatarUrlInput');
+    const avatarPreview = document.getElementById('profileAvatarPreview');
+    const avatarChoices = document.querySelectorAll('.avatar-choice');
+
+    avatarChoices.forEach(img => {
+        img.addEventListener('click', () => {
+            const url = img.src;
+            if (avatarInput) avatarInput.value = url;
+            if (avatarPreview) avatarPreview.src = url;
+        });
+    });
+
+    if (avatarInput) {
+        avatarInput.addEventListener('input', () => {
+            if (avatarInput.value.trim() && avatarPreview) {
+                avatarPreview.src = avatarInput.value.trim();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

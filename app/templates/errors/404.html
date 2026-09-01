@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}404 - Không Tìm Thấy Trang - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="glass-panel p-5 d-inline-block shadow-lg" style="max-width: 550px;">
+        <div class="display-1 fw-bold text-primary mb-2">404</div>
+        <h3 class="fw-bold mb-2">Không Tìm Thấy Trang Yêu Cầu</h3>
+        <p class="text-muted small mb-4">Đường dẫn bạn truy cập có thể đã bị thay đổi, xóa hoặc tạm thời không khả dụng.</p>
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary-gradient">
+            <i class="fa-solid fa-house me-1"></i> Trở Về Trang Chủ
+        </a>
+    </div>
+</div>
+{% endblock %}

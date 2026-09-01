@@ -1,0 +1,139 @@
+=== TABLE: users ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  username: VARCHAR(80) (PK=False, Nullable=False, Unique=True)
+  email: VARCHAR(150) (PK=False, Nullable=False, Unique=True)
+  password_hash: VARCHAR(255) (PK=False, Nullable=False, Unique=None)
+  full_name: VARCHAR(150) (PK=False, Nullable=False, Unique=None)
+  role: VARCHAR(20) (PK=False, Nullable=False, Unique=None)
+  phone: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  avatar_url: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  is_active: BOOLEAN (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  updated_at: DATETIME (PK=False, Nullable=True, Unique=None)
+
+=== TABLE: speakers ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  name: VARCHAR(150) (PK=False, Nullable=False, Unique=None)
+  title: VARCHAR(150) (PK=False, Nullable=True, Unique=None)
+  bio: TEXT (PK=False, Nullable=True, Unique=None)
+  avatar_url: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  organization: VARCHAR(200) (PK=False, Nullable=True, Unique=None)
+  email: VARCHAR(150) (PK=False, Nullable=True, Unique=None)
+  phone: VARCHAR(30) (PK=False, Nullable=True, Unique=None)
+  linkedin_url: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+
+=== TABLE: venues ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  venue_code: VARCHAR(30) (PK=False, Nullable=False, Unique=True)
+  name: VARCHAR(200) (PK=False, Nullable=False, Unique=None)
+  address: TEXT (PK=False, Nullable=False, Unique=None)
+  capacity: INTEGER (PK=False, Nullable=False, Unique=None)
+  room_name: VARCHAR(100) (PK=False, Nullable=True, Unique=None)
+  status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  description: TEXT (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+
+=== TABLE: events ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  event_code: VARCHAR(40) (PK=False, Nullable=False, Unique=True)
+  title: VARCHAR(255) (PK=False, Nullable=False, Unique=None)
+  description: TEXT (PK=False, Nullable=True, Unique=None)
+  category: VARCHAR(100) (PK=False, Nullable=False, Unique=None)
+  banner_url: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  start_date: DATETIME (PK=False, Nullable=False, Unique=None)
+  end_date: DATETIME (PK=False, Nullable=False, Unique=None)
+  location_type: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  location_address: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  online_meeting_url: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  max_attendees: INTEGER (PK=False, Nullable=True, Unique=None)
+  status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  tags: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  created_by: INTEGER (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  updated_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: created_by -> users.id
+
+=== TABLE: schedules ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  event_id: INTEGER (PK=False, Nullable=False, Unique=None)
+  speaker_id: INTEGER (PK=False, Nullable=True, Unique=None)
+  venue_id: INTEGER (PK=False, Nullable=True, Unique=None)
+  title: VARCHAR(200) (PK=False, Nullable=False, Unique=None)
+  description: TEXT (PK=False, Nullable=True, Unique=None)
+  start_at: DATETIME (PK=False, Nullable=False, Unique=None)
+  end_at: DATETIME (PK=False, Nullable=False, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: venue_id -> venues.id
+  FK: event_id -> events.id
+  FK: speaker_id -> speakers.id
+
+=== TABLE: attendees ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  attendee_code: VARCHAR(40) (PK=False, Nullable=False, Unique=True)
+  user_id: INTEGER (PK=False, Nullable=True, Unique=True)
+  full_name: VARCHAR(150) (PK=False, Nullable=False, Unique=None)
+  email: VARCHAR(150) (PK=False, Nullable=False, Unique=True)
+  phone: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  organization: VARCHAR(200) (PK=False, Nullable=True, Unique=None)
+  job_title: VARCHAR(100) (PK=False, Nullable=True, Unique=None)
+  interests: TEXT (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: user_id -> users.id
+
+=== TABLE: tickets ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  event_id: INTEGER (PK=False, Nullable=False, Unique=None)
+  ticket_code: VARCHAR(40) (PK=False, Nullable=False, Unique=True)
+  ticket_type: VARCHAR(30) (PK=False, Nullable=False, Unique=None)
+  name: VARCHAR(100) (PK=False, Nullable=False, Unique=None)
+  description: TEXT (PK=False, Nullable=True, Unique=None)
+  price: FLOAT (PK=False, Nullable=False, Unique=None)
+  quota: INTEGER (PK=False, Nullable=False, Unique=None)
+  sold_count: INTEGER (PK=False, Nullable=False, Unique=None)
+  status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: event_id -> events.id
+
+=== TABLE: registrations ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  registration_code: VARCHAR(50) (PK=False, Nullable=False, Unique=True)
+  event_id: INTEGER (PK=False, Nullable=False, Unique=None)
+  attendee_id: INTEGER (PK=False, Nullable=False, Unique=None)
+  ticket_id: INTEGER (PK=False, Nullable=False, Unique=None)
+  registration_status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  payment_status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  payment_ref: VARCHAR(100) (PK=False, Nullable=True, Unique=None)
+  payment_amount: FLOAT (PK=False, Nullable=True, Unique=None)
+  paid_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  refund_status: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  ticket_number: VARCHAR(50) (PK=False, Nullable=False, Unique=True)
+  qr_code_path: VARCHAR(255) (PK=False, Nullable=True, Unique=None)
+  checked_in: BOOLEAN (PK=False, Nullable=True, Unique=None)
+  checked_in_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  checked_in_by: VARCHAR(100) (PK=False, Nullable=True, Unique=None)
+  feedback_rating: INTEGER (PK=False, Nullable=True, Unique=None)
+  feedback_text: TEXT (PK=False, Nullable=True, Unique=None)
+  sentiment: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  sentiment_score: FLOAT (PK=False, Nullable=True, Unique=None)
+  feedback_submitted_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  updated_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: event_id -> events.id
+  FK: attendee_id -> attendees.id
+  FK: ticket_id -> tickets.id
+
+=== TABLE: ai_chat_history ===
+  id: INTEGER (PK=True, Nullable=False, Unique=None)
+  user_id: INTEGER (PK=False, Nullable=True, Unique=None)
+  event_id: INTEGER (PK=False, Nullable=True, Unique=None)
+  chat_type: VARCHAR(30) (PK=False, Nullable=False, Unique=None)
+  user_message: TEXT (PK=False, Nullable=False, Unique=None)
+  ai_response: TEXT (PK=False, Nullable=False, Unique=None)
+  model_name: VARCHAR(80) (PK=False, Nullable=True, Unique=None)
+  response_mode: VARCHAR(20) (PK=False, Nullable=True, Unique=None)
+  latency_ms: INTEGER (PK=False, Nullable=True, Unique=None)
+  created_at: DATETIME (PK=False, Nullable=True, Unique=None)
+  FK: user_id -> users.id
+  FK: event_id -> events.id
+

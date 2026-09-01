@@ -1,0 +1,473 @@
+==============================
+SKILL: architecture-design
+==============================
+---
+name: architecture-design
+description: Skill thiết kế kiến trúc hệ thống 3 tầng (3-Tier) tích hợp AI Service Layer, phân rã component, luồng dữ liệu DFD và tài liệu hóa quyết định kiến trúc ADR.
+---
+
+# Architecture Design Skill
+
+## Objective
+Chuyển hóa tài liệu yêu cầu nghiệp vụ đã được phê duyệt thành kiến trúc phần mềm mạch lạc, có khả năng mở rộng, phân tách trách nhiệm rõ ràng giữa Presentation - Business - Data và AI Service.
+
+## Inputs
+Đọc các tài liệu requirements đã duyệt:
+- `docs/requirements.md`
+- `docs/user-stories.md`
+- `docs/acceptance-criteria.md`
+
+## Process / Workflow
+1. **Lựa chọn Architectural Pattern**: Mô hình 3-Tier kết hợp Blueprint Factory Pattern và AI Service Orchestration.
+2. **Xác định các Components chính**:
+   - Presentation: HTML5/CSS3 Glassmorphic Templates, Jinja2, Vanilla JS, Chart.js, HTML5-QRCode.
+   - Business Logic: EventService, TicketService (Transactions), CheckinService, Auth RBAC.
+   - AI Service Layer: RAG Engine, Content Gen Engine, Recommendation Engine, Predictive & Sentiment Engine, Fallback Mock Engine.
+   - Data Layer: SQLAlchemy ORM và SQLite/PostgreSQL Database.
+3. **Định nghĩa ranh giới an toàn (Data Barrier)**:
+   - AI Service KHÔNG được truy cập CSDL tùy tiện. Luôn thông qua Business Layer để sanitize và build Context.
+4. **Mô hình hóa Luồng dữ liệu (DFD) & Sequence Diagram**.
+5. **Ghi nhận Quyết định Kiến trúc (ADR - Architectural Decision Records)**: Lý do chọn Flask, SQLAlchemy, SQLite, Gemini API và Offline Fallback.
+
+## Rules & Constraints
+- Không triển khai mã nguồn chi tiết trong pha này.
+- Không thay đổi yêu cầu nghiệp vụ đã được chốt.
+- Mỗi quyết định công nghệ quan trọng phải có Rationale (lý do & đánh giá trade-off).
+
+## Outputs
+Sinh và duy trì:
+- `docs/architecture.md`
+- `docs/architecture-decisions.md`
+
+## Verification (Human Gate 2)
+Kiểm tra ma trận truy vết (Traceability Matrix):
+- Mọi Functional Requirement (FR) đều phải được hiện thực hóa bởi ít nhất một Component kiến trúc.
+
+
+==============================
+SKILL: code-review
+==============================
+---
+name: code-review
+description: Skill thẩm định chất lượng mã nguồn, kiểm tra tính tuân thủ yêu cầu và kiến trúc, phát hiện code smells, duplicate code và đánh giá mức độ rủi ro (Critical, High, Medium, Low).
+---
+
+# Code Review Skill
+
+## Objective
+Đánh giá toàn diện mã nguồn hiện tại nhằm phát hiện lỗi tiềm ẩn, vi phạm kiến trúc, lỗ hổng hiệu năng, trùng lặp mã và đảm bảo tuân thủ các nguyên tắc kỹ thuật tốt nhất (Clean Code & Best Practices).
+
+## Inputs
+Đọc và rà soát:
+- Toàn bộ mã nguồn trong thư mục `app/`
+- `docs/requirements.md`
+- `docs/architecture.md`
+- `docs/database-design.md`
+
+## Process / Workflow
+1. **Kiểm tra Tính đúng đắn (Correctness)**: Code có xử lý đúng nghiệp vụ và ngoại lệ không?
+2. **Kiểm tra Tính tuân thủ Yêu cầu (Requirements Compliance)**: Có tính năng nào bị thiếu hoặc làm sai lệch không?
+3. **Kiểm tra Tính tuân thủ Kiến trúc (Architecture Compliance)**: 
+   - Có phân tách rõ Presentation - Business - Data không?
+   - AI Service có bị lộ truy cập trực tiếp vào CSDL không?
+4. **Kiểm tra Khả năng bảo trì (Maintainability)**: Đặt tên biến rõ ràng, hàm ngắn gọn, giảm trùng lặp.
+5. **Kiểm tra Hiệu năng (Performance)**: Đánh index CSDL, tránh N+1 queries.
+6. **Phân loại vấn đề phát hiện**:
+   - `CRITICAL`: Lỗi nghiêm trọng ảnh hưởng trực tiếp đến hệ thống hoặc bảo mật.
+   - `HIGH`: Vi phạm kiến trúc hoặc logic nghiệp vụ quan trọng.
+   - `MEDIUM`: Code smell, thiếu tối ưu hiệu năng hoặc thiếu comment.
+   - `LOW`: Vấn đề về format, thụt lề, chính tả.
+
+## Rules & Constraints
+- Không tự ý sửa code trong quá trình review.
+- Phải chỉ ra vị trí chính xác (file, dòng code) và đề xuất giải pháp khắc phục cụ thể.
+
+## Outputs
+Sinh và duy trì:
+- `docs/code-review.md`
+
+
+==============================
+SKILL: context-builder
+==============================
+---
+name: context-builder
+description: Skill định dạng và làm giàu dữ liệu truy xuất thành Grounded Context có cấu trúc, súc tích và chuẩn hóa để chèn vào Prompt Template của LLM.
+---
+
+# Context Builder Skill
+
+## Objective
+Chuyển đổi dữ liệu thô truy xuất từ CSDL thành đoạn văn bản ngữ cảnh (Context Block) có cấu trúc mạch lạc, chuẩn định dạng Markdown, giúp mô hình AI dễ hiểu và trích dẫn chính xác nhất.
+
+## Inputs
+- Dữ liệu thô từ `event-retrieval`.
+
+## Process / Workflow
+1. **Chuẩn hóa thông tin sự kiện**:
+   `[SỰ KIỆN]: <Tên> (<Mã>) | Thời gian: <Bắt đầu> - <Kết thúc> | Địa điểm: <Địa chỉ>`
+2. **Định dạng danh sách các Hạng vé**:
+   `+ <Tên vé> (<Loại>): <Giá tiền> VNĐ | Còn lại: <Số lượng còn>/<Tổng quota>`
+3. **Định dạng Lịch trình Timeline**:
+   `+ [<Giờ bắt đầu> - <Giờ kết thúc>]: <Tên phiên> | Diễn giả: <Họ tên> (<Đơn vị>) | Phòng: <Tên phòng>`
+4. **Kiểm soát dung lượng Context (Token Budgeting)**: Giới hạn độ dài ngữ cảnh để tránh lãng phí token và giảm độ trễ (latency).
+
+## Rules & Constraints
+- Không tự ý bịa thêm dữ liệu không có trong CSDL.
+- Loại bỏ các trường dữ liệu nội bộ không cần thiết (id kỹ thuật, hash mật khẩu).
+
+## Outputs
+Chuỗi văn bản `{{retrieved_context}}` sẵn sàng để chèn vào `rag-prompt`.
+
+
+==============================
+SKILL: database-design
+==============================
+---
+name: database-design
+description: Skill thiết kế mô hình dữ liệu quan hệ (ERD), chuẩn hóa 3NF, xác lập khóa chính/khóa ngoại PK-FK, ràng buộc toàn vẹn, đánh index và sinh mã SQL Schema.
+---
+
+# Database Design Skill
+
+## Objective
+Thiết kế cấu trúc cơ sở dữ liệu quan hệ chuẩn 3NF đảm bảo tính toàn vẹn dữ liệu, chống dị thường (anomalies), hỗ trợ transaction an toàn khi đặt vé và tối ưu hóa truy vấn cho RAG Chatbot.
+
+## Inputs
+Đọc:
+- `docs/requirements.md`
+- `docs/architecture.md`
+
+## Process / Workflow
+1. **Trích xuất thực thể (Entities)**: users, events, speakers, venues, schedules, attendees, tickets, registrations, ai_chat_history.
+2. **Xác định mối quan hệ (Relationships & Cardinality)**: 1-1, 1-N, N-N.
+3. **Chuẩn hóa dữ liệu (Normalization to 3NF)**:
+   - 1NF: Các thuộc tính đơn trị, khóa chính duy nhất.
+   - 2NF: Không phụ thuộc hàm từng phần vào khóa chính hợp thành.
+   - 3NF: Không phụ thuộc hàm bắc cầu (mọi trường không khóa chỉ phụ thuộc trực tiếp vào khóa chính).
+4. **Thiết lập ràng buộc (Constraints & Indexes)**:
+   - PK, FK, NOT NULL, UNIQUE (mã vé, email, username, mã sự kiện).
+   - Indexes cho các trường thường xuyên tìm kiếm và join (`event_id`, `attendee_id`, `ticket_number`, `category`).
+5. **Xây dựng Data Dictionary (Từ điển dữ liệu 9 bảng)**.
+6. **Sinh mã DDL SQL Schema**.
+
+## Rules & Constraints
+- Không viết code Flask Route trong pha này.
+- Phải đảm bảo mọi bảng có timestamp (`created_at`, `updated_at`).
+- Bảng `registrations` phải có ràng buộc Unique (`event_id`, `attendee_id`) để tránh trùng đăng ký.
+
+## Outputs
+Sinh và duy trì:
+- `docs/database-design.md`
+- `database/schema.sql`
+
+## Verification (Human Gate 3)
+Kỹ sư kiểm tra:
+- Có bảng nào vi phạm 3NF không?
+- Các khóa ngoại FK đã có ON DELETE hành vi phù hợp chưa (CASCADE / SET NULL / RESTRICT)?
+
+
+==============================
+SKILL: documentation
+==============================
+---
+name: documentation
+description: Skill tổng hợp và duy trì hệ thống tài liệu kỹ thuật của dự án (Requirements, Architecture, Database, Testing, Security, User Manual, API Guide, Traceability Matrix).
+---
+
+# Documentation Skill
+
+## Objective
+Xây dựng và chuẩn hóa toàn bộ tài liệu kỹ thuật, hướng dẫn cài đặt và kịch bản demo bàn giao hệ thống, đảm bảo tính liên kết xuyên suốt từ Yêu cầu → Thiết kế → Mã nguồn → Kiểm thử → Vận hành.
+
+## Inputs
+Đọc toàn bộ kết quả của các giai đoạn:
+- `docs/requirements.md`
+- `docs/architecture.md`
+- `docs/database-design.md`
+- `docs/test-report.md`
+- `docs/code-review.md`
+- `docs/security-review.md`
+
+## Process / Workflow
+1. **Tổng hợp Tài liệu Kiến trúc & Thiết kế**: Mô tả chi tiết sơ đồ 3 tầng, ERD 9 bảng 3NF và 4 điểm chạm AI.
+2. **Xây dựng Ma trận Truy vết (Traceability Matrix)**: Liên kết từng FR/NFR với Use Case, Model, Route và Test Case.
+3. **Viết Hướng dẫn Cài đặt & Vận hành (README)**: Hướng dẫn chạy cục bộ, migrate CSDL, chạy kiểm thử tự động và Docker container.
+4. **Xây dựng Kịch bản Demo (Demo Script)**: Các bước minh họa trực quan theo đúng tiêu chí chấm điểm Rubric đồ án.
+
+## Outputs
+- `README.md`
+- `docs/documentation.md`
+- Báo cáo tổng kết dự án.
+
+
+==============================
+SKILL: event-retrieval
+==============================
+---
+name: event-retrieval
+description: Skill truy xuất dữ liệu có cấu trúc từ CSDL SQLite (bảng events, schedules, speakers, venues, tickets) dựa trên ý định câu hỏi và bộ lọc sự kiện.
+---
+
+# Event Retrieval Skill
+
+## Objective
+Truy vấn dữ liệu liên quan từ Cơ sở dữ liệu nội bộ để cung cấp nguồn tri thức chính xác (Ground Truth), làm cơ sở tạo Context cho mô hình ngôn ngữ lớn (LLM).
+
+## Inputs
+- Đầu vào từ `question-analysis` (Intent, Event ID, Keywords).
+- Bảng dữ liệu CSDL SQLite qua SQLAlchemy ORM.
+
+## Process / Workflow
+1. **Truy vấn Thông tin Sự kiện cốt lõi**: Tên, mã, thời gian bắt đầu/kết thúc, địa điểm, mô tả, danh mục.
+2. **Truy vấn Lịch trình & Diễn giả (Schedules & Speakers)**: Các phiên họp trong sự kiện, diễn giả phụ trách, phòng hội thảo.
+3. **Truy vấn Hạng vé & Quota (Tickets)**: Loại vé, giá vé, số lượng vé còn lại, trạng thái mở bán.
+4. **Lọc và xếp hạng độ liên quan**: Chỉ lấy các thông tin liên quan trực tiếp đến câu hỏi để tối ưu hóa context size.
+
+## Rules & Constraints
+- Chỉ truy xuất các sự kiện đang ở trạng thái hợp lệ (`published`, `ongoing`).
+- Không truy xuất dữ liệu cá nhân nhạy cảm của người dùng khác (PII).
+
+## Outputs
+Danh sách các Python Dictionaries hoặc ORM Objects chứa dữ liệu thực tế để chuyển sang bước `context-builder`.
+
+
+==============================
+SKILL: implementation
+==============================
+---
+name: implementation
+description: Skill hướng dẫn quy trình lập trình có kỷ luật, đọc kỹ đặc tả, hiện thực hóa Flask Blueprint, Models, Services, Giao diện Jinja2 và chạy kiểm tra tự động.
+---
+
+# Implementation Skill
+
+## Objective
+Hiện thực hóa mã nguồn hệ thống một cách có cấu trúc, tuân thủ chặt chẽ tài liệu Requirements, Architecture và Database Design đã duyệt, đảm bảo tính mô-đun hóa, sạch đẹp và dễ bảo trì.
+
+## Inputs
+Đọc:
+- `docs/requirements.md`
+- `docs/architecture.md`
+- `docs/database-design.md`
+- `database/schema.sql`
+
+## Process / Workflow
+1. **Đọc và hiểu Đặc tả (Specification)**: Xác định rõ Input/Output, validation rules và edge cases.
+2. **Cấu hình môi trường**: File `.env`, extensions, config factory.
+3. **Hiện thực hóa Data Models**: SQLAlchemy models với type hints và helper methods.
+4. **Hiện thực hóa Business Services**: Tách riêng logic nghiệp vụ khỏi Route controllers.
+5. **Hiện thực hóa Routes / Controllers**: Flask Blueprints với error handling, session/auth checks.
+6. **Xây dựng Giao diện (Presentation)**: Jinja2 templates, CSS Glassmorphism, Responsive layout, Vanilla JS Fetch API.
+7. **Chạy Linter & Kiểm tra cú pháp**: Đảm bảo không có lỗi runtime.
+8. **Chạy Tests**: Xác nhận chức năng hoạt động đúng trước khi chuyển giao.
+
+## Rules & Constraints
+- Không tự ý sửa đổi Requirements hoặc Architecture khi code.
+- Nếu phát hiện đặc tả thiếu hoặc mâu thuẫn: Dừng lại và báo cáo xin ý kiến con người (Human Gate), không tự suy diễn.
+- Không hardcode API Keys hoặc mật khẩu trong mã nguồn.
+- Mọi thao tác ghi dữ liệu nhạy cảm (đặt vé, trừ quota) phải nằm trong Transaction an toàn có rollback.
+
+## Outputs
+- Mã nguồn hoàn chỉnh trong các thư mục `app/`, `seed.py`, `run.py`.
+- Báo cáo danh sách các file đã thay đổi/tạo mới.
+
+## Verification
+- Code sạch, comment rõ ràng, chạy mượt mà không có lỗi console hay crash server.
+
+
+==============================
+SKILL: question-analysis
+==============================
+---
+name: question-analysis
+description: Skill phân tích ý định (Intent) và trích xuất thực thể (Entity Extraction) từ câu hỏi ngôn ngữ tự nhiên của người dùng về sự kiện, diễn giả, lịch trình hoặc giá vé.
+---
+
+# Question Analysis Skill
+
+## Objective
+Phân tích câu hỏi đầu vào của người dùng thành cấu trúc có thể hiểu được để phục vụ việc truy vấn CSDL chính xác, xác định loại thông tin người dùng đang tìm kiếm.
+
+## Process / Workflow
+1. **Phát hiện Ý định (Intent Classification)**:
+   - `schedule_query`: Hỏi về mốc thời gian, phiên khai mạc, workshop, thời lượng.
+   - `speaker_query`: Hỏi về thông tin diễn giả, chức danh, kinh nghiệm, bài chia sẻ.
+   - `ticket_query`: Hỏi về các hạng vé, giá vé, quyền lợi vé VIP, cách đăng ký.
+   - `venue_query`: Hỏi về địa điểm, phòng họp, đường đi, hình thức Online/Offline.
+   - `general_query`: Chào hỏi, hỏi đáp chung về ban tổ chức.
+2. **Trích xuất Thực thể (Entity Extraction)**:
+   - Tên sự kiện (ví dụ: *Vietnam AI Summit*, *Cloud TechDay*).
+   - Tên diễn giả (ví dụ: *TS. Lê Quang Dũng*, *Phạm Phương Thảo*).
+   - Loại vé (ví dụ: *Vé VIP*, *Vé miễn phí*).
+3. **Chuẩn hóa truy vấn**: Loại bỏ ký tự đặc biệt, chuẩn hóa từ khóa tìm kiếm.
+
+## Outputs
+Cấu trúc Query Intent JSON để truyền sang bước Event Retrieval.
+
+
+==============================
+SKILL: rag-prompt
+==============================
+---
+name: rag-prompt
+description: Skill thiết kế System Prompt và User Prompt có cấu trúc 5 thành phần (Instructions, Context, Constraints, Few-shot Examples, Output Format) nhằm chống Hallucination cho RAG LLM.
+---
+
+# RAG Prompt Engineering Skill
+
+## Objective
+Xây dựng chỉ dẫn có cấu trúc chuẩn 5 thành phần để khai thác sức mạnh của mô hình ngôn ngữ lớn (Gemini 2.0 Flash) mà vẫn đảm bảo 100% độ chính xác, không bịa đặt thông tin và phản hồi thân thiện.
+
+## Cấu Trúc 5 Thành Phần của Prompt
+1. **Instructions (Chỉ dẫn vai trò)**:
+   - "Bạn là Event AI Assistant - Trợ lý ảo thông minh của Hệ thống Quản lý Sự kiện."
+2. **Context (Ngữ cảnh dữ liệu)**:
+   - Dữ liệu thực tế được chèn từ `context-builder`.
+3. **Constraints (Ràng buộc chống Hallucination & An toàn)**:
+   - Chỉ được trả lời dựa trên CONTEXT được cung cấp.
+   - Không được tự tạo lịch trình, không tự tạo tên diễn giả, không tự bịa giá vé.
+   - Nếu Context không có thông tin: Nói rõ là chưa tìm thấy dữ liệu và hướng dẫn liên hệ Ban tổ chức.
+   - Không tiết lộ thông tin PII.
+4. **Examples (Ví dụ mẫu Few-shot)**:
+   - Câu hỏi mẫu và câu trả lời mẫu chuẩn phong cách hỗ trợ.
+5. **Output Format (Định dạng đầu ra)**:
+   - Tiếng Việt, câu cú rõ ràng, sử dụng Markdown (in đậm, danh sách gạch đầu dòng).
+
+## Rules & Constraints
+- Tách System Prompt thành các file quản lý trong thư mục `prompts/`.
+- Quản lý phiên bản (v1, v2, v3) để đánh giá chất lượng phản hồi.
+
+## Outputs
+- `app/prompts/chatbot_system.txt`
+- `app/prompts/event_generator.txt`
+- `app/prompts/sentiment_prompt.txt`
+
+
+==============================
+SKILL: requirements-analysis
+==============================
+---
+name: requirements-analysis
+description: Skill chuyên môn hóa quy trình phân tích yêu cầu phần mềm, trích xuất điểm nghẽn nghiệp vụ, xây dựng User Stories, Acceptance Criteria và phát hiện mơ hồ theo chuẩn AI-Augmented SDLC.
+---
+
+# Requirements Analysis Skill
+
+## Objective
+Chuyển đổi bài toán thực tế và yêu cầu kinh doanh của hệ thống quản lý sự kiện thành tài liệu đặc tả yêu cầu phần mềm (SRS), danh sách User Stories và Acceptance Criteria có thể kiểm chứng được.
+
+## Inputs
+Đọc và phân tích:
+- `tailieu/Dự án hệ thống quản lý sự kiện có tích hợp AI (1).docx`
+- Yêu cầu của các bên liên quan (Stakeholders) và bảng RACI
+- 4 điểm nghẽn vận hành sự kiện truyền thống
+
+## Process / Workflow
+1. **Phân tích bối cảnh và mục tiêu**: Xác định các mục tiêu SMART và KPIs cần đo lường.
+2. **Xác lập phạm vi**: Phân định rõ ràng `In-Scope` và `Out-of-Scope`.
+3. **Trích xuất Actors & Use Cases**: Xác định 3 nhóm tác nhân (Admin, Staff, Attendee) và 8 Use Case cốt lõi + 4 Use Case AI.
+4. **Viết User Stories**: Định dạng `As a <role>, I want <feature>, so that <benefit>`.
+5. **Thiết lập Acceptance Criteria (AC)**: Định dạng `Given - When - Then`.
+6. **Xác định Yêu cầu Phi Chức Năng (NFR)**: 9 tiêu chuẩn chất lượng (Performance, Security, Reliability, Scalability, v.v.).
+7. **Phát hiện mơ hồ (Ambiguity Detection)**: Cảnh báo các yêu cầu thiếu rõ ràng trước khi chuyển sang bước Thiết kế.
+
+## Rules & Constraints
+- Không viết mã nguồn (source code) trong pha này.
+- Không tự ý thêm các tính năng ngoài phạm vi mà không có lý do nghiệp vụ.
+- Mọi Acceptance Criteria phải đo lường hoặc kiểm thử tự động được.
+
+## Outputs
+Sinh và duy trì các tài liệu:
+- `docs/requirements.md`
+- `docs/user-stories.md`
+- `docs/acceptance-criteria.md`
+
+## Verification (Human Gate 1)
+Con người (Kỹ sư / Giảng viên) kiểm duyệt:
+- Đã giải quyết triệt để 4 điểm nghẽn vận hành chưa?
+- Danh sách Use Cases có bị trùng lặp hoặc quá tải không?
+- Phạm vi In-Scope đã khả thi cho 4 Sprint chưa?
+
+
+==============================
+SKILL: security-review
+==============================
+---
+name: security-review
+description: Skill kiểm toán bảo mật ứng dụng web và an toàn AI theo chuẩn OWASP Top 10 và OWASP Top 10 for LLMs (SQL Injection, XSS, CSRF, PII Protection, Prompt Injection, Rate Limiting, API Key Security).
+---
+
+# Security Review Skill
+
+## Objective
+Kiểm toán an ninh bảo mật toàn diện cho cả tầng ứng dụng web truyền thống và tầng dịch vụ trí tuệ nhân tạo (AI/LLM), bảo vệ thông tin định danh cá nhân (PII) và ngăn chặn các nguy cơ tấn công mạng.
+
+## Inputs
+Đọc và quét mã nguồn:
+- `app/`
+- `.env` và `.env.example`
+- `app/prompts/`
+- Các luồng xử lý API
+
+## Checklist Kiểm Toán An Ninh
+1. **SQL Injection**: Kiểm tra việc sử dụng ORM SQLAlchemy / Parameterized Queries, tuyệt đối không nối chuỗi SQL thô.
+2. **XSS (Cross-Site Scripting)**: Kiểm tra việc escape HTML của Jinja2 template và sanitize dữ liệu render trong AJAX.
+3. **Authentication & Password Storage**: Mật khẩu phải được băm bằng PBKDF2/bcrypt với Salt (`werkzeug.security`), không lưu plain text.
+4. **Authorization & RBAC**: Kiểm tra các route quản trị (`@admin_required`, `@staff_required`), ngăn ngừa IDOR (Insecure Direct Object References) khi xem vé.
+5. **Secrets & API Key Protection**: `GEMINI_API_KEY`, `SECRET_KEY` phải lưu trong biến môi trường `.env`, không đưa vào Git.
+6. **PII Masking**: Lọc bỏ các thông tin nhạy cảm trước khi chèn vào Prompt gửi tới LLM bên ngoài.
+7. **Prompt Injection Defense**: Thiết lập System Instructions nghiêm ngặt, cách ly User Input khỏi lệnh hệ thống.
+8. **Rate Limiting & DoS Protection**: Giới hạn số lượt gọi API AI trên phút cho mỗi IP/User.
+9. **Anti-Hallucination & Grounding**: Buộc AI chỉ trả lời dựa trên Context truy xuất từ CSDL, fallback an toàn khi không tìm thấy.
+
+## Outputs
+Sinh và duy trì:
+- `docs/security-review.md`
+
+
+==============================
+SKILL: testing
+==============================
+---
+name: testing
+description: Skill xây dựng chiến lược kiểm thử phần mềm tự động (Pytest), thiết lập Test Scenarios, Test Cases, Unit Tests, Integration Tests và xuất Test Report.
+---
+
+# Testing Skill
+
+## Objective
+Đảm bảo chất lượng hệ thống thông qua việc thiết kế và thực thi tự động các bộ kiểm thử phần mềm, xác thực các yêu cầu chức năng, phi chức năng, biên giới hạn và các tình huống ngoại lệ.
+
+## Inputs
+Đọc:
+- `docs/requirements.md`
+- `docs/user-stories.md`
+- `docs/acceptance-criteria.md`
+
+## Process / Workflow
+1. **Phân tích Test Scenarios**: Lập danh sách các kịch bản kiểm thử (Happy path, Negative path, Boundary tests, Race condition tests).
+2. **Thiết kế Test Cases**: Mỗi ca kiểm thử có `ID`, `Mô tả`, `Điều kiện tiên quyết`, `Dữ liệu đầu vào`, `Kết quả kỳ vọng`.
+3. **Viết Automated Tests với Pytest**:
+   - `test_auth.py`: Kiểm thử băm mật khẩu, đăng nhập đúng/sai, phân quyền RBAC.
+   - `test_tickets_and_quota.py`: Kiểm thử giới hạn quota vé, trừ số lượng đúng, chuyển trạng thái sold out.
+   - `test_checkin.py`: Kiểm thử xác thực mã vé QR, phát hiện và chặn check-in lặp lại (409 Conflict).
+   - `test_ai_services.py`: Kiểm thử RAG pipeline, Fallback Mock Engine, Recommendation, Predictive Analytics.
+4. **Thực thi Tests**: Chạy `python -m pytest -v`.
+5. **Phân tích Test Failures (nếu có)**: Tìm nguyên nhân gốc và sửa lỗi trong mã nguồn.
+6. **Đo lường độ bao phủ (Requirements Coverage)**.
+
+## Rules & Constraints
+- TUYỆT ĐỐI KHÔNG sửa đổi test case chỉ để làm test pass một cách giả tạo.
+- Tests phải độc lập (Isolated) bằng cách sử dụng in-memory database hoặc rollback sau mỗi test.
+
+## Outputs
+Sinh và duy trì:
+- `docs/test-plan.md`
+- `docs/test-report.md`
+- Các file kiểm thử trong thư mục `tests/`
+
+## Verification
+- 100% test cases trong Test Suite đạt kết quả PASSED.
+
+

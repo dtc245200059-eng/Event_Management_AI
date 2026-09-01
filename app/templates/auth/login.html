@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Đăng Nhập - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-panel p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold mb-1">Đăng Nhập Hệ Thống</h3>
+                    <p class="text-muted small">Truy cập tài khoản để quản lý vé và nhận hỗ trợ AI</p>
+                </div>
+
+                <!-- Quick Accounts Hint for Demo -->
+                <div class="p-3 mb-3 rounded-3"
+                    style="background: rgba(99, 102, 241, 0.1); border: 1px dashed rgba(99, 102, 241, 0.4); font-size: 0.8rem;">
+                    <strong class="text-primary d-block mb-1"><i class="fa-solid fa-key me-1"></i> Tài khoản Demo có
+                        sẵn:</strong>
+                    <div>• <strong>Admin:</strong> <code>admin</code> / <code>Admin@123</code></div>
+                    <div>• <strong>Staff Check-in:</strong> <code>staff1</code> / <code>Staff@123</code></div>
+                    <div>• <strong>Khách mời:</strong> <code>attendee1</code> / <code>User@123</code></div>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next')) }}">
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-semibold">Tên đăng nhập hoặc Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i
+                                    class="fa-solid fa-user"></i></span>
+                            <input type="text" name="username" class="form-control bg-dark border-secondary text-light"
+                                required placeholder="admin hoặc email...">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-light small fw-semibold">Mật khẩu</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i
+                                    class="fa-solid fa-lock"></i></span>
+                            <input type="password" name="password"
+                                class="form-control bg-dark border-secondary text-light" required
+                                placeholder="Nhập mật khẩu...">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="remember" id="rememberMe">
+                            <label class="form-check-label text-muted small" for="rememberMe">Ghi nhớ đăng nhập</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-gradient w-100 py-2 fw-semibold">Đăng Nhập
+                        Ngay</button>
+                </form>
+
+                <div class="text-center mt-4 pt-3 border-top border-secondary border-opacity-25 text-muted small">
+                    Chưa có tài khoản? <a href="{{ url_for('auth.register') }}" class="text-primary fw-semibold">Đăng ký
+                        tại đây</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
