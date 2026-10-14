@@ -2,6 +2,7 @@
 Predictive Analytics Service: Attendance Probability and Resource Forecast.
 """
 from datetime import datetime
+from app.extensions import db
 from app.models import Event, Registration
 
 def predict_event_attendance(event_id):
@@ -11,7 +12,7 @@ def predict_event_attendance(event_id):
     - Thời điểm đăng ký (Đăng ký sát ngày có xu hướng show-up cao hơn)
     - Trạng thái thanh toán
     """
-    event = Event.query.get(event_id)
+    event = db.session.get(Event, event_id)
     if not event:
         return None
 
