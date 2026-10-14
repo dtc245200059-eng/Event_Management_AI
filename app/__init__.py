@@ -21,7 +21,7 @@ def create_app(config_name='default'):
     from app.models.user import User
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
 
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -35,6 +35,7 @@ def create_app(config_name='default'):
     from app.routes.checkin import checkin_bp
     from app.routes.admin import admin_bp
     from app.routes.ai import ai_bp
+    from app.routes.notifications import notifications_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -44,16 +45,42 @@ def create_app(config_name='default'):
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(ai_bp, url_prefix='/ai')
     app.register_blueprint(ai_bp, url_prefix='/api/ai', name_prefix='api_')
+    app.register_blueprint(notifications_bp)
 
     # Register Error Handlers
     register_error_handlers(app)
 
-    # Context processors (e.g. current year, app title)
+    # Context processors (e.g. current year, app title, user notifications)
     @app.context_processor
     def inject_globals():
+        user_notifications = []
+        unread_notif_count = 0
+        from flask_login import current_user
+        if current_user.is_authenticated:
+            try:
+                from app.models.notification import Notification
+                from app.models.event import Registration
+                if current_user.attendee_profile:
+                    regs = current_user.attendee_profile.registrations.filter(Registration.registration_status != 'cancelled').all()
+                    event_ids = [r.event_id for r in regs]
+                    if event_ids:
+                        user_notifications = Notification.query.filter(
+                            Notification.event_id.in_(event_ids),
+                            Notification.status == 'sent'
+                        ).order_by(Notification.sent_at.desc()).limit(5).all()
+                        unread_notif_count = len(user_notifications)
+                elif current_user.is_admin or current_user.is_organizer:
+                    user_notifications = Notification.query.filter_by(status='sent').order_by(Notification.sent_at.desc()).limit(5).all()
+                    unread_notif_count = len(user_notifications)
+            except Exception:
+                user_notifications = []
+                unread_notif_count = 0
+
         return {
             'app_title': 'EventAI Pro - Quản Lý Sự Kiện Tích Hợp AI',
-            'current_year': 2026
+            'current_year': 2026,
+            'recent_notifications': user_notifications,
+            'unread_notif_count': unread_notif_count
         }
 
     # Security & Permission Headers

@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from sqlalchemy import func
 from app.extensions import db
 from app.models import Event, User, Registration, Ticket, Attendee, AIChatHistory
+from app.services.sentiment_service import summarize_event_feedback_groups
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -52,6 +53,10 @@ def dashboard():
         "sentiment_data": [positive_count, neutral_count, negative_count]
     }
 
+    # AI Feedback Opinion Groups Summary (for first event or overall)
+    featured_event = events[0] if events else None
+    feedback_summary_data = summarize_event_feedback_groups(featured_event.id) if featured_event else None
+
     return render_template(
         'admin/dashboard.html',
         total_events=total_events,
@@ -60,10 +65,12 @@ def dashboard():
         total_checked_in=total_checked_in,
         checkin_rate=checkin_rate,
         events=events,
+        featured_event=featured_event,
         feedbacks=feedbacks,
         positive_count=positive_count,
         neutral_count=neutral_count,
         negative_count=negative_count,
+        feedback_summary_data=feedback_summary_data,
         ai_logs=ai_logs,
         chart_data=chart_data
     )
@@ -75,7 +82,8 @@ def users_list():
     users = User.query.order_by(User.created_at.desc()).all()
     total_users = len(users)
     total_admins = sum(1 for u in users if u.role == 'admin')
-    total_staff = sum(1 for u in users if u.role == 'staff')
+    total_organizers = sum(1 for u in users if u.role == 'organizer')
+    total_staff = sum(1 for u in users if u.role in ('staff', 'checkin_staff'))
     total_attendees = sum(1 for u in users if u.role == 'attendee')
 
     return render_template(
@@ -83,6 +91,7 @@ def users_list():
         users=users,
         total_users=total_users,
         total_admins=total_admins,
+        total_organizers=total_organizers,
         total_staff=total_staff,
         total_attendees=total_attendees
     )
@@ -107,7 +116,7 @@ def create_user():
         flash('Mật khẩu khởi tạo phải có tối thiểu 6 ký tự!', 'danger')
         return redirect(url_for('admin.users_list'))
 
-    if role not in ['admin', 'staff', 'attendee']:
+    if role not in ['admin', 'organizer', 'staff', 'attendee']:
         flash('Vai trò (Role) không hợp lệ!', 'danger')
         return redirect(url_for('admin.users_list'))
 
@@ -131,7 +140,7 @@ def create_user():
     db.session.add(new_user)
     db.session.flush()
 
-    code_prefix = 'STF' if role == 'staff' else ('ADM' if role == 'admin' else 'ATT')
+    code_prefix = 'STF' if role == 'staff' else ('ADM' if role == 'admin' else ('ORG' if role == 'organizer' else 'ATT'))
     attendee_code = f"{code_prefix}-2026-{new_user.id:04d}"
     attendee = Attendee(
         attendee_code=attendee_code,
@@ -152,13 +161,13 @@ def create_user():
 @login_required
 @admin_required
 def change_user_role(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
     if user.id == current_user.id:
         flash('Bạn không thể tự thay đổi vai trò của chính mình để tránh mất quyền quản trị!', 'warning')
         return redirect(url_for('admin.users_list'))
 
     new_role = request.form.get('role', '').strip().lower()
-    if new_role not in ['admin', 'staff', 'attendee']:
+    if new_role not in ['admin', 'organizer', 'staff', 'attendee']:
         flash('Vai trò phân quyền không hợp lệ!', 'danger')
         return redirect(url_for('admin.users_list'))
 
@@ -166,7 +175,12 @@ def change_user_role(user_id):
     user.role = new_role
     db.session.commit()
 
-    role_names = {'admin': 'Quản Trị Viên (Admin)', 'staff': 'Nhân Viên (Staff)', 'attendee': 'Khách Mời (Attendee)'}
+    role_names = {
+        'admin': 'Quản Trị Viên (Admin)',
+        'organizer': 'Ban Tổ Chức (Organizer)',
+        'staff': 'Nhân Viên Soát Vé (Staff)',
+        'attendee': 'Khách Mời (Attendee)'
+    }
     flash(f'Đã phân quyền thành công tài khoản @{user.username}: chuyển từ {role_names.get(old_role, old_role)} sang {role_names.get(new_role, new_role)}.', 'success')
     return redirect(url_for('admin.users_list'))
 
@@ -174,7 +188,7 @@ def change_user_role(user_id):
 @login_required
 @admin_required
 def toggle_user_status(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
     if user.id == current_user.id:
         flash('Bạn không thể tự khóa tài khoản của chính mình!', 'warning')
         return redirect(url_for('admin.users_list'))
