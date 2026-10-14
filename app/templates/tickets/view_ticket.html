@@ -5,322 +5,181 @@
 {% block content %}
 <div class="container py-5">
     <div class="row justify-content-center">
-        <!-- Digital Boarding Pass Ticket Card -->
+        <!-- Digital Boarding Pass Ticket Card (Apple Wallet Style) -->
         <div class="col-md-9 col-lg-7">
 
             {% if registration.registration_status == 'cancelled' %}
-            <div class="alert alert-danger p-3 mb-4 rounded-3 d-flex align-items-center gap-3">
-                <i class="fa-solid fa-ban fs-2"></i>
+            <div class="alert alert-danger p-3 mb-4 rounded-4 d-flex align-items-center gap-3">
+                <i class="fa-solid fa-ban fs-3"></i>
                 <div>
                     <strong class="d-block">VÉ ĐÃ BỊ HỦY THAM DỰ</strong>
-                    <small>Bạn đã thực hiện hủy vé này. Mã QR dưới đây đã bị vô hiệu hóa và không thể sử dụng để check-in tại sự kiện.</small>
+                    <small>Mã QR dưới đây đã bị vô hiệu hóa và không thể sử dụng để check-in tại sự kiện.</small>
                 </div>
             </div>
             {% endif %}
 
-            <div class="glass-panel p-0 overflow-hidden shadow-lg border-2 {% if registration.registration_status == 'cancelled' %}border-danger opacity-75{% elif registration.ticket.ticket_type == 'vip' %}border-warning{% elif registration.ticket.price > 0 %}border-info{% else %}border-primary{% endif %} mb-4 position-relative digital-ticket-card" id="digitalTicketCard">
-
-                <!-- Ticket Header with Blurred Event Image Background & Subtle Tint Overlay -->
-                <div class="ticket-header-container p-4 position-relative overflow-hidden {% if registration.registration_status == 'cancelled' %}ticket-header-cancelled{% elif registration.ticket.ticket_type == 'vip' %}ticket-header-vip{% else %}ticket-header-standard{% endif %}">
-                    
-                    <!-- Background Event Banner with Blur (<60%) -->
+            <div class="apple-card p-0 mb-4 digital-ticket-card" id="digitalTicketCard">
+                <!-- Ticket Header with Blurred Event Image Background -->
+                <div class="ticket-header-container p-4 p-md-5 position-relative overflow-hidden">
                     {% set banner_url = registration.event.banner_url or 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800' %}
                     <div class="ticket-header-bg" style="background-image: url('{{ banner_url }}');"></div>
-                    
-                    <!-- Color Tint Overlay (giảm độ hiển thị tối thiểu) -->
-                    <div class="ticket-header-overlay"></div>
 
-                    <!-- Header Content (Sharp foreground) -->
                     <div class="position-relative d-flex justify-content-between align-items-center gap-3" style="z-index: 2;">
                         <div>
-                            <span class="badge bg-dark bg-opacity-75 text-white text-uppercase fw-bold mb-2 border border-light border-opacity-20 shadow-sm" style="color: #ffffff !important;">
+                            <span class="badge bg-secondary mb-2">
                                 {% if registration.registration_status == 'cancelled' %}
-                                <i class="fa-solid fa-ban me-1 text-danger"></i> VÉ ĐÃ BỊ HỦY BỎ
+                                <i class="fa-solid fa-ban me-1 text-danger"></i> VÉ ĐÃ HỦY
                                 {% else %}
-                                <i class="fa-solid fa-certificate text-warning me-1"></i> THẺ THAM DỰ CHÍNH THỨC
+                                <i class="fa-solid fa-circle-check text-success me-1"></i> THẺ THAM DỰ CHÍNH THỨC
                                 {% endif %}
                             </span>
-                            <h4 class="fw-extrabold mb-0 text-white ticket-event-title" style="color: #ffffff !important; text-shadow: 0 2px 10px rgba(0,0,0,0.85), 0 1px 4px rgba(0,0,0,0.95);">{{ registration.event.title }}</h4>
+                            <h4 class="mb-0 fw-bold" style="color: var(--text-primary);">{{ registration.event.title }}</h4>
                         </div>
                         <div class="text-end flex-shrink-0">
-                            {% if registration.ticket.ticket_type == 'vip' %}
-                                <div class="badge badge-ticket-vip px-3 py-2 text-start">
-                                    <div class="d-flex align-items-center gap-1">
-                                        <i class="fa-solid fa-crown text-warning"></i>
-                                        <span>{{ registration.ticket.name }}</span>
-                                    </div>
-                                    <div class="small fw-extrabold text-warning mt-1" style="font-size: 0.78rem;">
-                                        {% if registration.ticket.price > 0 %}{{ "{:,.0f}".format(registration.ticket.price) }} VNĐ{% else %}VIP KHÁCH MỜI{% endif %}
-                                    </div>
-                                </div>
-                            {% elif registration.ticket.price > 0 %}
-                                <div class="badge badge-ticket-pro px-3 py-2 text-start">
-                                    <div class="d-flex align-items-center gap-1">
-                                        <i class="fa-solid fa-gem" style="color: #38bdf8;"></i>
-                                        <span>{{ registration.ticket.name }}</span>
-                                    </div>
-                                    <div class="small fw-extrabold mt-1" style="color: #38bdf8; font-size: 0.78rem;">
-                                        {{ "{:,.0f}".format(registration.ticket.price) }} VNĐ
-                                    </div>
-                                </div>
-                            {% else %}
-                                <div class="badge badge-ticket-free px-3 py-2 text-start">
-                                    <div class="d-flex align-items-center gap-1">
-                                        <i class="fa-solid fa-gift text-success"></i>
-                                        <span>{{ registration.ticket.name }}</span>
-                                    </div>
-                                    <div class="small fw-extrabold text-success mt-1" style="font-size: 0.78rem;">
-                                        VÉ MIỄN PHÍ
-                                    </div>
-                                </div>
-                            {% endif %}
+                            <span class="badge {% if registration.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-3 py-2 fw-semibold">
+                                {{ registration.ticket.name }}
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Ticket Body with QR Code -->
+                <!-- Ticket Body with QR Code & Metadata -->
                 <div class="p-4 p-md-5">
-                    <div class="row align-items-center ticket-content-row">
-                        <div class="col-md-6 mb-4 mb-md-0 ticket-info-col">
+                    <div class="row align-items-center g-4">
+                        <div class="col-md-6">
                             <div class="mb-4">
-                                <span class="checkout-label d-block mb-1">HỌ VÀ TÊN KHÁCH HÀNG</span>
-                                <h4 class="fw-bold text-light mb-1">{{ registration.attendee.full_name }}</h4>
-                                <span class="text-info small fw-semibold"><i class="fa-solid fa-building me-1"></i>{{ registration.attendee.organization or 'Khách mời tự do' }}</span>
+                                <span class="small fw-semibold d-block mb-1" style="color: var(--text-secondary);">HỌ VÀ TÊN</span>
+                                <h4 class="fw-semibold mb-1" style="color: var(--text-primary);">{{ registration.attendee.full_name }}</h4>
+                                <span class="small" style="color: var(--text-tertiary);"><i class="fa-solid fa-building me-1"></i>{{ registration.attendee.organization or 'Khách mời tự do' }}</span>
                             </div>
 
                             <div class="mb-4">
-                                <span class="checkout-label d-block mb-1">THỜI GIAN TỔ CHỨC</span>
-                                <h5 class="fw-bold text-light mb-0">
+                                <span class="small fw-semibold d-block mb-1" style="color: var(--text-secondary);">THỜI GIAN TỔ CHỨC</span>
+                                <div class="fw-medium" style="color: var(--text-primary);">
                                     <i class="fa-solid fa-calendar-day text-primary me-2"></i>{{ registration.event.start_date.strftime('%H:%M • Ngày %d/%m/%Y') }}
-                                </h5>
+                                </div>
                             </div>
 
                             <div class="mb-4">
-                                <span class="checkout-label d-block mb-1">ĐỊA ĐIỂM TỔ CHỨC</span>
-                                <strong class="text-light d-block fs-6">
+                                <span class="small fw-semibold d-block mb-1" style="color: var(--text-secondary);">ĐỊA ĐIỂM</span>
+                                <div class="fw-medium" style="color: var(--text-primary);">
                                     <i class="fa-solid fa-location-dot text-danger me-2"></i>{{ registration.event.location_address or 'Hội trường chính' }}
-                                </strong>
+                                </div>
                             </div>
 
-                            <div class="checkout-spec-box p-3 rounded-3" style="font-size: 0.85rem;">
-                                <div class="mb-1"><span class="text-muted">Mã đơn:</span> <code class="text-primary fw-bold">{{ registration.registration_code }}</code></div>
-                                <div><span class="text-muted">Thanh toán:</span> <strong class="text-success text-uppercase">{{ registration.payment_status }}</strong></div>
+                            <div class="p-3 rounded-3" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline); font-size: 0.85rem;">
+                                <div class="mb-1"><span style="color: var(--text-secondary);">Mã đơn:</span> <code class="text-primary fw-bold">{{ registration.registration_code }}</code></div>
+                                <div><span style="color: var(--text-secondary);">Thanh toán:</span> <strong class="text-success text-uppercase">{{ registration.payment_status }}</strong></div>
                             </div>
                         </div>
 
                         <!-- QR Code Frame -->
-                        <div class="col-md-6 text-center ticket-qr-col">
-                            <div class="ticket-qr-frame mb-3 position-relative d-inline-block p-3 rounded-4 bg-white shadow">
+                        <div class="col-md-6 text-center">
+                            <div class="ticket-qr-frame mb-3 position-relative d-inline-block">
                                 <img src="{{ url_for('static', filename=registration.qr_code_path) }}"
-                                    alt="Ticket QR Code" width="220" height="220"
-                                    class="img-fluid {% if registration.registration_status == 'cancelled' %}grayscale opacity-25{% endif %}"
-                                    style="max-width: 220px; width: 100%; height: auto; aspect-ratio: 1/1;">
-                                {% if registration.registration_status == 'cancelled' %}
-                                <div class="position-absolute top-50 start-50 translate-middle text-danger fw-extrabold fs-4 text-uppercase px-3 py-2 rounded"
-                                    style="background: rgba(0,0,0,0.9); border: 2px solid #ef4444; transform: translate(-50%, -50%) rotate(-15deg) !important;">
-                                    VÔ HIỆU HÓA
-                                </div>
-                                {% endif %}
+                                    alt="Ticket QR Code" width="200" height="200"
+                                    class="img-fluid {% if registration.registration_status == 'cancelled' %}opacity-25{% endif %}"
+                                    style="max-width: 200px; width: 100%; height: auto;">
                             </div>
-                            <div class="fw-extrabold font-monospace ticket-number-display {% if registration.registration_status == 'cancelled' %}text-decoration-line-through text-danger{% else %}text-info{% endif %} fs-5">
+                            <div class="font-monospace small fw-bold" style="color: var(--text-primary); letter-spacing: 0.05em;">
                                 {{ registration.ticket_number }}
                             </div>
-                            <small class="text-muted d-block mb-3" style="font-size: 0.78rem;">Xuất trình mã này tại quầy để nhân viên quét check-in</small>
-
-                            <!-- Download & Print Ticket Actions -->
-                            <div class="d-flex justify-content-center flex-wrap gap-2">
-                                <a href="{{ url_for('tickets.download_qr', reg_id=registration.id) }}" class="btn btn-download-qr" download title="Tải file ảnh vector SVG mã QR của vé">
-                                    <i class="fa-solid fa-cloud-arrow-down me-1"></i> Tải Mã Vé QR
-                                </a>
-                                <button type="button" class="btn btn-print-ticket" onclick="window.print()" title="In thẻ vé tham dự hoặc lưu file PDF">
-                                    <i class="fa-solid fa-print me-1"></i> In Thẻ Vé
-                                </button>
-                            </div>
+                            <small class="d-block mt-1" style="color: var(--text-tertiary);">Xuất trình mã QR tại cửa đón tiếp để check-in</small>
                         </div>
                     </div>
 
-                    <!-- Cancel Ticket Action if not checked in -->
-                    {% if registration.registration_status != 'cancelled' and not registration.checked_in %}
-                    <div class="pt-4 mt-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i> Bận việc không thể tham dự? Bạn có thể hủy vé để nhường suất.</small>
-                        <button type="button" class="btn btn-cancel-ticket" data-bs-toggle="modal" data-bs-target="#cancelTicketModal">
-                            <i class="fa-solid fa-ban me-1"></i> Hủy Vé Này
-                        </button>
+                    <!-- Bottom Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center pt-4 mt-4 border-top" style="border-color: var(--border-hairline) !important;">
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="window.print()">
+                                <i class="fa-solid fa-print me-1"></i> In Thẻ Vé
+                            </button>
+                            <a href="{{ url_for('static', filename=registration.qr_code_path) }}" download="ticket-qr-{{ registration.ticket_number }}.png" class="btn btn-sm btn-secondary">
+                                <i class="fa-solid fa-download me-1"></i> Tải Ảnh QR
+                            </a>
+                        </div>
+                        {% if registration.registration_status != 'cancelled' %}
+                        <form method="POST" action="{{ url_for('tickets.cancel_ticket', reg_id=registration.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đăng ký vé này không? Quota vé sẽ được hoàn trả cho sự kiện.');">
+                            <button type="submit" class="btn btn-sm btn-link text-danger p-0">
+                                <i class="fa-solid fa-xmark me-1"></i> Hủy Đăng Ký Vé
+                            </button>
+                        </form>
+                        {% endif %}
                     </div>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Modal Hủy Vé -->
-            {% if registration.registration_status != 'cancelled' and not registration.checked_in %}
-            <div class="modal fade" id="cancelTicketModal" tabindex="-1" aria-labelledby="cancelTicketModalLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content glass-panel border-danger border-opacity-50">
-                        <div class="modal-header border-secondary border-opacity-25">
-                            <h5 class="modal-title text-danger fw-bold" id="cancelTicketModalLabel">
-                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Xác Nhận Hủy Vé Tham Dự
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body py-4 text-start">
-                            <p class="mb-2">Bạn có chắc chắn muốn hủy đăng ký vé cho sự kiện:</p>
-                            <h6 class="fw-bold text-info mb-3">"{{ registration.event.title }}"</h6>
-
-                            <div class="p-3 rounded-2 small mb-3" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
-                                <div class="text-danger fw-bold mb-1"><i class="fa-solid fa-circle-info me-1"></i> Lưu ý quan trọng:</div>
-                                <div>• Mã vé <code>{{ registration.ticket_number }}</code> sẽ bị vô hiệu hóa hoàn toàn trên hệ thống check-in.</div>
-                                <div>• Suất vé của bạn sẽ được hoàn trả về hệ thống cho người tham dự khác đăng ký.</div>
-                            </div>
-                        </div>
-                        <div class="modal-footer border-secondary border-opacity-25">
-                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng (Giữ Vé)</button>
-                            <form method="POST" action="{{ url_for('tickets.cancel_ticket', reg_id=registration.id) }}">
-                                <button type="submit" class="btn btn-sm btn-danger px-3">
-                                    <i class="fa-solid fa-trash-can me-1"></i> Xác Nhận Hủy Vé
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+            <!-- Back to My Tickets Link -->
+            <div class="text-center">
+                <a href="{{ url_for('tickets.my_tickets') }}" class="small" style="color: var(--text-secondary);">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại Danh Sách Vé Của Tôi
+                </a>
             </div>
-            {% endif %}
-
-            <!-- FEEDBACK & REVIEW SECTION (Khảo sát sau sự kiện) -->
-            {% if registration.registration_status != 'cancelled' %}
-            <div class="glass-panel p-4">
-                <h5 class="fw-bold mb-2"><i class="fa-solid fa-star text-warning me-2"></i>Đánh Giá & Phản Hồi Sự Kiện</h5>
-                <p class="text-muted small mb-3">Ý kiến đóng góp của bạn giúp Ban tổ chức nâng cao chất lượng sự kiện và cung cấp dữ liệu cho AI phân tích cảm xúc (Sentiment Analysis).</p>
-
-                {% if registration.feedback_rating %}
-                <div class="alert alert-info">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <strong>Đánh giá của bạn:</strong>
-                        <div class="text-warning">
-                            {% for i in range(registration.feedback_rating) %}★{% endfor %}
-                            {% for i in range(5 - registration.feedback_rating) %}☆{% endfor %}
-                        </div>
-                        <span class="badge {% if registration.sentiment == 'positive' %}bg-success{% elif registration.sentiment == 'negative' %}bg-danger{% else %}bg-secondary{% endif %}">
-                            Cảm xúc: {{ registration.sentiment or 'Đã ghi nhận' }}
-                        </span>
-                    </div>
-                    <p class="mb-0 text-light italic">"{{ registration.feedback_text or 'Không có nhận xét chi tiết' }}"</p>
-                </div>
-                {% else %}
-                <form method="POST" action="{{ url_for('tickets.submit_feedback', reg_id=registration.id) }}">
-                    <!-- Interactive Star Rating Box -->
-                    <div class="star-rating-box mb-3 text-center">
-                        <label class="form-label text-light small fw-semibold d-block mb-2">Mức độ hài lòng của bạn *</label>
-                        
-                        <!-- Interactive 5-Star Rating Buttons -->
-                        <div class="star-rating-group mb-2 justify-content-center" id="starRatingGroup">
-                            <button type="button" class="star-btn" data-value="1" title="1 Sao - Thất vọng">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                            <button type="button" class="star-btn" data-value="2" title="2 Sao - Chưa hài lòng">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                            <button type="button" class="star-btn" data-value="3" title="3 Sao - Bình thường, tạm ổn">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                            <button type="button" class="star-btn" data-value="4" title="4 Sao - Tốt, đáng tham gia">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                            <button type="button" class="star-btn active" data-value="5" title="5 Sao - Xuất sắc, rất hài lòng">
-                                <i class="fa-solid fa-star"></i>
-                            </button>
-                        </div>
-
-                        <input type="hidden" name="feedback_rating" id="feedbackRatingInput" value="5" required>
-
-                        <!-- Rating Label Badge -->
-                        <div class="mt-2">
-                            <span class="star-rating-badge bg-success bg-opacity-25 text-success border border-success border-opacity-50" id="ratingLabelBadge">
-                                <i class="fa-solid fa-face-grin-stars"></i> 5 Sao - Xuất sắc, rất hài lòng!
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label text-light small fw-semibold">
-                            Ý kiến đóng góp chi tiết <span class="text-muted fw-normal">(Không bắt buộc / Tùy chọn)</span>
-                        </label>
-                        <textarea name="feedback_text" rows="3" class="form-control bg-dark border-secondary text-light rounded-3"
-                            placeholder="Chia sẻ thêm cảm nhận của bạn về diễn giả, nội dung, âm thanh, quy trình check-in... (hoặc để trống nếu không có)"></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary-gradient px-4 py-2 rounded-pill fw-semibold shadow-sm">
-                        <i class="fa-solid fa-paper-plane me-2"></i>Gửi Đánh Giá Sự Kiện
-                    </button>
-                </form>
-                {% endif %}
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const starGroup = document.getElementById('starRatingGroup');
-    const ratingInput = document.getElementById('feedbackRatingInput');
-    const badge = document.getElementById('ratingLabelBadge');
-    if (!starGroup || !ratingInput || !badge) return;
+<!-- DEDICATED INDEPENDENT PRINT-ONLY TICKET (STRICTLY 1 PAGE A4) -->
+<div class="print-only-ticket" id="printOnlyTicket">
+    <div class="print-ticket-box">
+        <div class="print-ticket-header">
+            <div class="print-header-inner">
+                <div>
+                    <div class="print-ticket-brand">EVENTAI PRO &bull; EVENT PASS</div>
+                    <div class="print-ticket-sub">THẺ THAM DỰ SỰ KIỆN CHÍNH THỨC</div>
+                </div>
+                <div class="print-ticket-type">
+                    {{ registration.ticket.name | upper }}
+                </div>
+            </div>
+        </div>
 
-    const stars = starGroup.querySelectorAll('.star-btn');
-    let currentRating = 5;
+        <div class="print-ticket-body">
+            <h1 class="print-event-title">{{ registration.event.title }}</h1>
 
-    const ratingDescriptions = {
-        1: { text: '1 Sao - Thất vọng, cần cải thiện nhiều', icon: 'fa-face-frown', badgeClass: 'bg-danger bg-opacity-25 text-danger border-danger' },
-        2: { text: '2 Sao - Chưa hài lòng', icon: 'fa-face-meh', badgeClass: 'bg-warning bg-opacity-25 text-warning border-warning' },
-        3: { text: '3 Sao - Bình thường, tạm ổn', icon: 'fa-face-meh-blank', badgeClass: 'bg-info bg-opacity-25 text-info border-info' },
-        4: { text: '4 Sao - Tốt, sự kiện chất lượng', icon: 'fa-face-smile', badgeClass: 'bg-primary bg-opacity-25 text-primary border-primary' },
-        5: { text: '5 Sao - Xuất sắc, rất hài lòng!', icon: 'fa-face-grin-stars', badgeClass: 'bg-success bg-opacity-25 text-success border-success' }
-    };
+            <div class="print-details-container">
+                <div class="print-info-side">
+                    <div class="print-field">
+                        <span class="print-field-label">NGƯỜI THAM DỰ</span>
+                        <span class="print-field-value bold">{{ registration.attendee.full_name }}</span>
+                        <span class="print-field-sub">{{ registration.attendee.organization or 'Khách mời tự do' }}</span>
+                    </div>
 
-    function updateStars(val) {
-        stars.forEach(s => {
-            const sVal = parseInt(s.dataset.value);
-            if (sVal <= val) {
-                s.classList.add('active');
-            } else {
-                s.classList.remove('active');
-            }
-        });
+                    <div class="print-field">
+                        <span class="print-field-label">THỜI GIAN TỔ CHỨC</span>
+                        <span class="print-field-value">&#128197; {{ registration.event.start_date.strftime('%d/%m/%Y') }} &nbsp; &#128336; {{ registration.event.start_date.strftime('%H:%M') }}</span>
+                        <span class="print-field-sub">Vui lòng có mặt trước giờ khai mạc 15 phút</span>
+                    </div>
 
-        const info = ratingDescriptions[val] || ratingDescriptions[5];
-        badge.className = `star-rating-badge border ${info.badgeClass}`;
-        badge.innerHTML = `<i class="fa-solid ${info.icon}"></i> ${info.text}`;
-    }
+                    <div class="print-field">
+                        <span class="print-field-label">ĐỊA ĐIỂM</span>
+                        <span class="print-field-value">&#128205; {{ registration.event.location_address or 'Hội trường chính' }}</span>
+                    </div>
 
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            currentRating = parseInt(star.dataset.value);
-            ratingInput.value = currentRating;
-            updateStars(currentRating);
-        });
+                    <div class="print-field">
+                        <span class="print-field-label">MÃ ĐƠN &amp; THANH TOÁN</span>
+                        <span class="print-field-value monospace">{{ registration.registration_code }} &bull; {{ registration.payment_status | upper }}</span>
+                    </div>
+                </div>
 
-        star.addEventListener('mouseenter', () => {
-            const hoverVal = parseInt(star.dataset.value);
-            stars.forEach(s => {
-                const sVal = parseInt(s.dataset.value);
-                if (sVal <= hoverVal) {
-                    s.classList.add('hover-active');
-                } else {
-                    s.classList.remove('hover-active');
-                }
-            });
-        });
-    });
+                <div class="print-qr-side">
+                    <div class="print-qr-frame">
+                        <img src="{{ url_for('static', filename=registration.qr_code_path) }}" alt="QR Code Check-in" class="print-qr-image">
+                    </div>
+                    <div class="print-ticket-number monospace">
+                        MÃ VÉ: {{ registration.ticket_number }}
+                    </div>
+                    <div class="print-checkin-notice">
+                        Xuất trình mã QR tại cửa soát vé để check-in vào hội trường
+                    </div>
+                </div>
+            </div>
 
-    starGroup.addEventListener('mouseleave', () => {
-        stars.forEach(s => s.classList.remove('hover-active'));
-        updateStars(currentRating);
-    });
-
-    // Init
-    updateStars(5);
-});
-</script>
+            <div class="print-ticket-footer">
+                <div>Nền tảng Quản trị Sự kiện Thông minh EventAI Pro &bull; Hỗ trợ: support@eventai.vn</div>
+                <div>Xác thực số: {{ registration.id }}-{{ registration.registration_code }} &bull; In ngày: {{ now.strftime('%d/%m/%Y') if now else 'Hôm nay' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

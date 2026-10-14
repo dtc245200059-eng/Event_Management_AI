@@ -4,78 +4,77 @@
 {% block event_id %}{{ event.id }}{% endblock %}
 
 {% block content %}
-<div class="container py-4" id="eventDetailRoot" data-event-id="{{ event.id }}">
+<div class="container py-4 py-md-5" id="eventDetailRoot" data-event-id="{{ event.id }}">
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-3">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Trang chủ</a></li>
-            <li class="breadcrumb-item"><a href="{{ url_for('main.event_list') }}">Sự kiện</a></li>
-            <li class="breadcrumb-item active text-light" aria-current="page">{{ event.title }}</li>
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" style="color: var(--text-secondary);">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('main.event_list') }}" style="color: var(--text-secondary);">Sự kiện</a></li>
+            <li class="breadcrumb-item active" aria-current="page" style="color: var(--text-primary); font-weight: 500;">{{ event.title }}</li>
         </ol>
     </nav>
 
-    <!-- Event Hero Card -->
-    <div class="glass-panel p-0 overflow-hidden mb-4 shadow-lg">
+    <!-- Event Hero Showcase Card -->
+    <div class="apple-card p-0 overflow-hidden mb-5">
         <div class="row g-0">
             <div class="col-lg-7 position-relative">
-                <img src="{{ event.banner_url }}" alt="{{ event.title }}" class="w-100 h-100" style="min-height: 360px; object-fit: cover;">
+                <img src="{{ event.banner_url }}" alt="{{ event.title }}" class="w-100 h-100" style="min-height: 380px; max-height: 480px; object-fit: cover;">
                 <span class="event-badge-category m-3">{{ event.category }}</span>
             </div>
-            <div class="col-lg-5 p-4 p-md-4 d-flex flex-column justify-content-between">
+            <div class="col-lg-5 p-4 p-md-5 d-flex flex-column justify-content-between" style="background-color: var(--surface-primary);">
                 <div>
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <span class="badge bg-primary text-uppercase" style="letter-spacing: 0.05em;">{{ event.location_type }}</span>
-                        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge bg-secondary text-uppercase">{{ event.location_type }}</span>
+                        <span class="badge bg-success">
                             <i class="fa-solid fa-circle-dot me-1"></i> {{ event.status }}
                         </span>
                     </div>
-                    <h2 class="fw-bold mb-3 event-detail-title">{{ event.title }}</h2>
+                    <h2 class="mb-4" style="font-size: 1.75rem; line-height: 1.25;">{{ event.title }}</h2>
                     
                     <!-- Event Info Highlights Box -->
-                    <div class="event-info-box p-3 rounded-3 mb-3" style="background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.2);">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-calendar-day text-primary fs-5" style="width: 22px;"></i>
+                    <div class="p-3 rounded-3 mb-4" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fa-solid fa-calendar-day text-primary fs-5" style="width: 20px;"></i>
                             <div>
-                                <span class="text-muted small d-block">Bắt đầu:</span>
-                                <strong class="text-light">{{ event.start_date.strftime('%H:%M • Ngày %d/%m/%Y') }}</strong>
+                                <span class="small d-block" style="color: var(--text-secondary);">Bắt đầu:</span>
+                                <strong style="color: var(--text-primary);">{{ event.start_date.strftime('%H:%M • Ngày %d/%m/%Y') }}</strong>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <i class="fa-solid fa-calendar-check text-info fs-5" style="width: 22px;"></i>
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <i class="fa-solid fa-calendar-check text-secondary fs-5" style="width: 20px;"></i>
                             <div>
-                                <span class="text-muted small d-block">Kết thúc:</span>
-                                <strong class="text-light">{{ event.end_date.strftime('%H:%M • Ngày %d/%m/%Y') }}</strong>
+                                <span class="small d-block" style="color: var(--text-secondary);">Kết thúc:</span>
+                                <strong style="color: var(--text-primary);">{{ event.end_date.strftime('%H:%M • Ngày %d/%m/%Y') }}</strong>
                             </div>
                         </div>
-                        <div class="d-flex align-items-start gap-2">
-                            <i class="fa-solid fa-location-dot text-danger fs-5 mt-1" style="width: 22px;"></i>
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="fa-solid fa-location-dot text-danger fs-5 mt-1" style="width: 20px;"></i>
                             <div>
-                                <span class="text-muted small d-block">Địa điểm:</span>
-                                <strong class="text-light">{{ event.location_address or 'Trực tuyến qua Zoom' }}</strong>
+                                <span class="small d-block" style="color: var(--text-secondary);">Địa điểm:</span>
+                                <strong style="color: var(--text-primary);">{{ event.location_address or 'Trực tuyến qua Zoom' }}</strong>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Action Button Placed Directly Below Date, Time & Venue -->
-                    <div class="hero-action-area mb-2">
+                    <!-- Action Area -->
+                    <div class="mb-2">
                         {% if is_registered %}
-                            <div class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-3 mb-0 shadow-sm" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35);">
+                            <div class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-4 mb-0" style="background-color: var(--accent-green-subtle); border: 1px solid rgba(52, 199, 89, 0.3);">
                                 <div>
-                                    <div class="fw-bold text-success"><i class="fa-solid fa-circle-check me-1"></i> Bạn đã sở hữu vé sự kiện này!</div>
-                                    <small class="text-muted">Mã vé: <strong class="font-monospace text-primary">{{ user_registration.ticket_number }}</strong></small>
+                                    <div class="fw-semibold text-success"><i class="fa-solid fa-circle-check me-1"></i> Bạn đã có vé tham gia!</div>
+                                    <small style="color: var(--text-secondary);">Mã vé: <strong class="font-monospace text-primary">{{ user_registration.ticket_number }}</strong></small>
                                 </div>
-                                <a href="{{ url_for('tickets.view_ticket', reg_id=user_registration.id) }}" class="btn btn-sm btn-primary-gradient px-3 py-2">
-                                    <i class="fa-solid fa-qrcode me-1"></i> Xem Vé QR
+                                <a href="{{ url_for('tickets.view_ticket', reg_id=user_registration.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fa-solid fa-qrcode me-1"></i> Thẻ Vé QR
                                 </a>
                             </div>
                         {% else %}
-                            <a href="#ticketSection" class="btn btn-hero-buy-ticket w-100 py-3 d-flex align-items-center justify-content-center gap-2">
-                                <i class="fa-solid fa-ticket-simple fs-5"></i>
-                                <span>ĐĂNG KÝ / MUA VÉ THAM GIA NGAY</span>
-                                <i class="fa-solid fa-arrow-down ms-1"></i>
+                            <a href="#ticketSection" class="btn btn-primary w-100 py-3 d-flex align-items-center justify-content-center gap-2">
+                                <i class="fa-solid fa-ticket-simple fs-6"></i>
+                                <span>Đăng Ký / Mua Vé Tham Gia Ngay</span>
                             </a>
-                            <div class="text-center mt-2 text-muted" style="font-size: 0.78rem;">
-                                <i class="fa-solid fa-shield-halved text-success me-1"></i> Xác nhận vé tức thì • Mã QR điện tử • Hoàn tiền linh hoạt
+                            <div class="text-center mt-2 small" style="color: var(--text-tertiary); font-size: 0.78rem;">
+                                <i class="fa-solid fa-shield-halved text-success me-1"></i> Xác nhận vé tức thì • Mã QR điện tử • Hoàn vé linh hoạt
                             </div>
                         {% endif %}
                     </div>
@@ -84,43 +83,43 @@
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-5">
         <!-- Left: Event Description & Agenda -->
-        <div class="col-lg-8 mb-4">
+        <div class="col-lg-8">
             <!-- Event Description -->
-            <div class="glass-panel p-4 mb-4">
-                <h4 class="fw-bold mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i>Giới Thiệu Sự Kiện</h4>
-                <div class="text-light opacity-90 lh-lg" style="white-space: pre-line;">
+            <div class="apple-card p-4 p-md-5 mb-5">
+                <h4 class="mb-3">Giới Thiệu Sự Kiện</h4>
+                <div style="color: var(--text-secondary); line-height: 1.7; white-space: pre-line;">
                     {{ event.description }}
                 </div>
             </div>
 
             <!-- Agenda / Schedules Timeline -->
-            <div class="glass-panel p-4 mb-4">
-                <h4 class="fw-bold mb-3"><i class="fa-solid fa-timeline text-info me-2"></i>Lịch Trình Chi Tiết (Agenda)</h4>
+            <div class="apple-card p-4 p-md-5 mb-5">
+                <h4 class="mb-4">Lịch Trình Chi Tiết (Agenda)</h4>
                 {% if schedules %}
-                    <div class="position-relative ps-4 border-start border-primary border-2 ms-2">
+                    <div class="position-relative ps-4 border-start border-2 ms-2" style="border-color: var(--accent-primary) !important;">
                         {% for s in schedules %}
                         <div class="mb-4 position-relative">
-                            <div class="position-absolute top-0 start-0 translate-middle-x bg-primary rounded-circle" style="width: 12px; height: 12px; margin-left: -17px; margin-top: 6px;"></div>
-                            <div class="glass-panel p-3">
+                            <div class="position-absolute top-0 start-0 translate-middle-x rounded-circle" style="width: 10px; height: 10px; margin-left: -17px; margin-top: 6px; background-color: var(--accent-primary);"></div>
+                            <div class="p-3 rounded-3" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="badge bg-primary bg-opacity-25 text-primary border border-primary border-opacity-50">
+                                    <span class="badge bg-primary">
                                         {{ s.start_at.strftime('%H:%M') }} - {{ s.end_at.strftime('%H:%M') }}
                                     </span>
                                     {% if s.venue %}
-                                        <small class="text-muted"><i class="fa-solid fa-door-open me-1"></i>{{ s.venue.name }}</small>
+                                        <small style="color: var(--text-secondary);"><i class="fa-solid fa-door-open me-1"></i>{{ s.venue.name }}</small>
                                     {% endif %}
                                 </div>
-                                <h6 class="fw-bold mb-2 text-light">{{ s.title }}</h6>
+                                <h6 class="fw-semibold mb-2" style="color: var(--text-primary);">{{ s.title }}</h6>
                                 {% if s.description %}
-                                    <p class="text-muted small mb-2">{{ s.description }}</p>
+                                    <p class="small mb-2" style="color: var(--text-secondary);">{{ s.description }}</p>
                                 {% endif %}
                                 {% if s.speaker %}
-                                    <div class="d-flex align-items-center gap-2 pt-2 border-top border-secondary border-opacity-25">
-                                        <img src="{{ s.speaker.avatar_url or 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100' }}" class="rounded-circle" width="30" height="30" style="object-fit: cover;">
-                                        <small class="fw-semibold text-info">{{ s.speaker.name }}</small>
-                                        <small class="text-muted">({{ s.speaker.organization or 'Diễn giả' }})</small>
+                                    <div class="d-flex align-items-center gap-2 pt-2 border-top" style="border-color: var(--border-hairline) !important;">
+                                        <img src="{{ s.speaker.avatar_url or 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100' }}" class="rounded-circle" width="28" height="28" style="object-fit: cover;" alt="Speaker">
+                                        <small class="fw-medium text-primary">{{ s.speaker.name }}</small>
+                                        <small style="color: var(--text-secondary);">({{ s.speaker.organization or 'Diễn giả' }})</small>
                                     </div>
                                 {% endif %}
                             </div>
@@ -128,53 +127,47 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-muted small">Ban tổ chức đang cập nhật lịch trình chi tiết.</p>
+                    <p class="small" style="color: var(--text-secondary);">Ban tổ chức đang cập nhật lịch trình chi tiết.</p>
                 {% endif %}
             </div>
         </div>
 
         <!-- Right: Tickets & Registration Box -->
         <div class="col-lg-4">
-            <div class="glass-panel p-4 sticky-top" style="top: 100px;" id="ticketSection">
-                <h4 class="fw-bold mb-3"><i class="fa-solid fa-ticket-simple text-warning me-2"></i>Chọn Loại Vé</h4>
+            <div class="apple-card p-4 sticky-top" style="top: 80px;" id="ticketSection">
+                <h4 class="mb-3">Chọn Hạng Vé</h4>
 
                 {% if is_registered %}
-                    <div class="alert alert-success text-center p-3 rounded-4 shadow-sm border-0" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <div class="p-4 rounded-4 text-center mb-3" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                         <i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
-                        <h6 class="fw-bold mb-1">Bạn Đã Đăng Ký Tham Dự!</h6>
-                        <p class="small text-muted mb-3">Mã số vé của bạn: <strong class="text-primary font-monospace">{{ user_registration.ticket_number }}</strong></p>
-                        <a href="{{ url_for('tickets.view_ticket', reg_id=user_registration.id) }}" class="btn btn-sm btn-primary-gradient w-100 py-2">
-                            <i class="fa-solid fa-qrcode me-1"></i> Xem Vé Điện Tử & Mã QR
+                        <h6 class="fw-bold mb-1">Bạn Đã Đăng Ký Tham Dự</h6>
+                        <p class="small mb-3" style="color: var(--text-secondary);">Mã số vé của bạn: <strong class="text-primary font-monospace">{{ user_registration.ticket_number }}</strong></p>
+                        <a href="{{ url_for('tickets.view_ticket', reg_id=user_registration.id) }}" class="btn btn-sm btn-primary w-100 py-2">
+                            <i class="fa-solid fa-qrcode me-1"></i> Xem Vé Điện Tử & QR
                         </a>
                     </div>
                 {% else %}
                     <form method="POST" action="{{ url_for('tickets.register_ticket', event_id=event.id) }}" id="ticketBookingForm">
-                        <div class="d-flex flex-column gap-3 mb-3">
+                        <div class="d-flex flex-column gap-3 mb-4">
                             {% for ticket in tickets %}
-                            <label class="ticket-option-card {% if ticket.ticket_type == 'vip' %}ticket-vip{% endif %} {% if not ticket.is_available %}ticket-disabled{% endif %} {% if loop.first and ticket.is_available %}selected{% endif %}" for="ticket_{{ ticket.id }}">
-                                <input class="ticket-radio-input" type="radio" name="ticket_id" id="ticket_{{ ticket.id }}" value="{{ ticket.id }}" {% if loop.first and ticket.is_available %}checked{% endif %} {% if not ticket.is_available %}disabled{% endif %}>
-                                <div class="p-3">
+                            <label class="p-3 rounded-3 d-block position-relative ticket-option-card" for="ticket_{{ ticket.id }}" style="background-color: var(--surface-secondary); border: 1px solid var(--border-regular); cursor: pointer; transition: var(--transition-fast);">
+                                <input class="ticket-radio-input" type="radio" name="ticket_id" id="ticket_{{ ticket.id }}" value="{{ ticket.id }}" {% if loop.first and ticket.is_available %}checked{% endif %} {% if not ticket.is_available %}disabled{% endif %} style="position: absolute; top: 16px; left: 16px;">
+                                <div class="ps-4">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span class="custom-radio-indicator">
-                                                <i class="fa-solid fa-circle-dot radio-checked-icon {% if ticket.ticket_type == 'vip' %}text-warning{% else %}text-primary{% endif %}"></i>
-                                                <i class="fa-regular fa-circle radio-unchecked-icon"></i>
-                                            </span>
-                                            <strong class="text-light fs-6">{{ ticket.name }}</strong>
-                                        </div>
-                                        <span class="badge {% if ticket.ticket_type == 'vip' %}badge-ticket-vip{% elif ticket.price > 0 %}badge-ticket-pro{% else %}badge-ticket-free{% endif %} text-uppercase fw-bold px-2 py-1">
+                                        <strong style="color: var(--text-primary);">{{ ticket.name }}</strong>
+                                        <span class="badge {% if ticket.ticket_type == 'vip' %}bg-warning text-dark{% elif ticket.price > 0 %}bg-primary{% else %}bg-success{% endif %} text-uppercase">
                                             {{ ticket.ticket_type }}
                                         </span>
                                     </div>
-                                    <div class="fs-5 fw-bold text-success mb-1 ps-4">
+                                    <div class="fs-5 fw-bold mb-1" style="color: var(--accent-green);">
                                         {% if ticket.price == 0 %}
-                                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">Miễn Phí</span>
+                                            Miễn Phí
                                         {% else %}
                                             {{ "{:,.0f}".format(ticket.price) }} VNĐ
                                         {% endif %}
                                     </div>
-                                    <small class="text-muted d-block mb-2 ps-4">{{ ticket.description or 'Quyền lợi tham dự cơ bản' }}</small>
-                                    <div class="d-flex justify-content-between text-muted small ps-4">
+                                    <small class="d-block mb-2" style="color: var(--text-secondary);">{{ ticket.description or 'Quyền lợi tham dự chuẩn' }}</small>
+                                    <div class="d-flex justify-content-between small" style="color: var(--text-tertiary);">
                                         <span><i class="fa-solid fa-ticket text-primary me-1"></i>Còn lại: <strong>{{ ticket.remaining_quota }}</strong> vé</span>
                                         {% if not ticket.is_available %}
                                             <span class="text-danger fw-bold"><i class="fa-solid fa-ban me-1"></i>HẾT VÉ</span>
@@ -186,48 +179,79 @@
                         </div>
 
                         {% if current_user.is_authenticated %}
-                            <button type="submit" class="btn btn-buy-ticket w-100 py-3 mt-1 shadow-lg">
-                                <i class="fa-solid fa-bolt me-2"></i> Tiếp Tục Đăng Ký Mua Vé
+                            <button type="submit" class="btn btn-primary w-100 py-3">
+                                Tiếp Tục Đăng Ký Vé <i class="fa-solid fa-arrow-right ms-1"></i>
                             </button>
                         {% else %}
-                            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-buy-ticket w-100 py-3 mt-1 shadow-lg">
-                                <i class="fa-solid fa-lock me-2"></i> Đăng Nhập Để Đăng Ký Vé
+                            <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary w-100 py-3">
+                                <i class="fa-solid fa-lock me-2"></i> Đăng Nhập Để Đăng Ký
                             </a>
                         {% endif %}
                     </form>
                 {% endif %}
 
                 <!-- DIRECT INLINE AI ASSISTANT CHATBOX -->
-                <div class="mt-4 p-3 rounded-4 inline-ai-chatbox" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3);">
+                <div class="mt-4 p-3 rounded-4" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center gap-2 text-primary">
-                            <i class="fa-solid fa-robot fs-5"></i>
-                            <strong class="small fw-bold">Trợ Lý AI Về Sự Kiện Này</strong>
+                            <i class="fa-solid fa-sparkles"></i>
+                            <strong class="small fw-semibold">Hỏi Đáp AI Về Sự Kiện</strong>
                         </div>
-                        <span class="badge bg-primary bg-opacity-25 text-primary small" style="font-size: 0.68rem;">RAG Grounded</span>
+                        <span class="badge bg-secondary" style="font-size: 0.68rem;">RAG Grounded</span>
                     </div>
 
                     <!-- Inline Chat Output -->
-                    <div id="inlineAiChatOutput" class="p-2 mb-2 rounded-3 text-light small overflow-y-auto" style="max-height: 180px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); font-size: 0.85rem; line-height: 1.5; display: none;">
+                    <div id="inlineAiChatOutput" class="p-3 mb-2 rounded-3 small overflow-y-auto" style="max-height: 180px; background: var(--surface-primary); border: 1px solid var(--border-hairline); line-height: 1.5; display: none; color: var(--text-primary);">
                         <!-- AI answer will render here -->
                     </div>
 
                     <!-- Quick Suggestions -->
                     <div class="d-flex gap-1 overflow-x-auto pb-2 mb-2">
-                        <button type="button" class="btn btn-xs btn-outline-info rounded-pill py-0 px-2 inline-quick-q" style="font-size: 0.72rem; white-space: nowrap;" data-q="Lịch trình sự kiện này gồm những phiên nào?">📅 Lịch trình</button>
-                        <button type="button" class="btn btn-xs btn-outline-warning rounded-pill py-0 px-2 inline-quick-q" style="font-size: 0.72rem; white-space: nowrap;" data-q="Diễn giả của sự kiện này là ai?">🎤 Diễn giả</button>
-                        <button type="button" class="btn btn-xs btn-outline-success rounded-pill py-0 px-2 inline-quick-q" style="font-size: 0.72rem; white-space: nowrap;" data-q="Các hạng vé và quyền lợi cụ thể?">🎟️ Quyền lợi vé</button>
+                        <button type="button" class="btn btn-xs btn-secondary text-nowrap inline-quick-q" data-q="Lịch trình sự kiện này gồm những phiên nào?">📅 Lịch trình</button>
+                        <button type="button" class="btn btn-xs btn-secondary text-nowrap inline-quick-q" data-q="Diễn giả của sự kiện này là ai?">🎤 Diễn giả</button>
+                        <button type="button" class="btn btn-xs btn-secondary text-nowrap inline-quick-q" data-q="Các hạng vé và quyền lợi cụ thể?">🎟️ Quyền lợi vé</button>
                     </div>
 
                     <!-- Input Form -->
                     <div class="input-group">
-                        <input type="text" id="inlineAiQuestionInput" class="form-control form-control-sm hero-search-input" placeholder="Hỏi AI về lịch trình, diễn giả, vé..." style="font-size: 0.85rem;">
-                        <button class="btn btn-sm btn-primary-gradient px-3" type="button" id="inlineAiSubmitBtn">
+                        <input type="text" id="inlineAiQuestionInput" class="form-control form-control-sm" placeholder="Hỏi AI về lịch trình, diễn giả, vé..." style="height: 38px;">
+                        <button class="btn btn-sm btn-primary px-3" type="button" id="inlineAiSubmitBtn">
                             <i class="fa-solid fa-paper-plane"></i>
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MOBILE STICKY BOOKING CTA BAR -->
+    <div class="mobile-event-sticky-bar d-md-none">
+        <div class="price-info">
+            {% if is_registered %}
+                <span class="price-label">Trạng thái</span>
+                <span class="price-amount text-success" style="font-size: 0.95rem;"><i class="fa-solid fa-circle-check me-1"></i>Đã có vé</span>
+            {% else %}
+                <span class="price-label">Giá vé từ</span>
+                <span class="price-amount" style="color: var(--accent-green); font-size: 1.05rem;">
+                    {% if tickets and tickets|length > 0 %}
+                        {% set min_price = tickets|map(attribute='price')|min %}
+                        {% if min_price == 0 %}Miễn Phí{% else %}{{ "{:,.0f}".format(min_price) }}đ{% endif %}
+                    {% else %}
+                        Liên hệ
+                    {% endif %}
+                </span>
+            {% endif %}
+        </div>
+        <div>
+            {% if is_registered %}
+                <a href="{{ url_for('tickets.view_ticket', reg_id=user_registration.id) }}" class="btn btn-sm btn-primary px-3">
+                    <i class="fa-solid fa-qrcode me-1"></i> Xem vé
+                </a>
+            {% else %}
+                <a href="#ticketSection" class="btn btn-sm btn-primary px-3" onclick="document.getElementById('ticketSection').scrollIntoView({behavior: 'smooth'}); return false;">
+                    Chọn vé ngay <i class="fa-solid fa-arrow-down ms-1 small"></i>
+                </a>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -237,11 +261,15 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Interactive Ticket Option Card Selection
-    const ticketCards = document.querySelectorAll('.ticket-option-card:not(.ticket-disabled)');
+    const ticketCards = document.querySelectorAll('.ticket-option-card');
     ticketCards.forEach(card => {
         card.addEventListener('click', () => {
-            ticketCards.forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
+            ticketCards.forEach(c => {
+                c.style.borderColor = 'var(--border-regular)';
+                c.style.backgroundColor = 'var(--surface-secondary)';
+            });
+            card.style.borderColor = 'var(--accent-primary)';
+            card.style.backgroundColor = 'var(--accent-primary-subtle)';
             const radio = card.querySelector('.ticket-radio-input');
             if (radio && !radio.disabled) {
                 radio.checked = true;
@@ -285,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (outputBox) {
             outputBox.style.display = 'block';
-            outputBox.innerHTML = '<div class="text-info"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang truy xuất dữ liệu sự kiện và xử lý cùng AI...</div>';
+            outputBox.innerHTML = '<div style="color: var(--accent-primary);"><i class="fa-solid fa-spinner fa-spin me-1"></i> Đang truy xuất dữ liệu sự kiện và xử lý cùng AI...</div>';
         }
         if (submitBtn) submitBtn.disabled = true;
 
@@ -301,7 +329,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const data = await response.json();
             if (data.success && outputBox) {
-                // Parse simple markdown to HTML (bold, bullet points)
                 let text = data.response;
                 text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
                 text = text.replace(/\n- /g, '<br>• ');
@@ -309,10 +336,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const badge = data.mode === 'live' 
                     ? '<span class="badge bg-success" style="font-size:0.65rem;">Gemini Live</span>' 
-                    : '<span class="badge bg-info" style="font-size:0.65rem;">Local RAG</span>';
+                    : '<span class="badge bg-secondary" style="font-size:0.65rem;">Local RAG</span>';
 
                 outputBox.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-1 pb-1 border-bottom border-secondary border-opacity-25">
+                    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom" style="border-color: var(--border-hairline) !important;">
                         <strong class="text-primary small"><i class="fa-solid fa-robot me-1"></i>Trả lời:</strong>
                         ${badge}
                     </div>

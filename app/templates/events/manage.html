@@ -3,66 +3,80 @@
 {% block title %}Quản Lý Sự Kiện - EventAI Pro{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-4 py-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1">Quản Lý Danh Sách Sự Kiện</h2>
-            <p class="text-muted small mb-0">Quản trị viên & Ban tổ chức tạo lập, chỉnh sửa và cấu hình nội dung sự kiện</p>
+            <span class="apple-badge mb-2 d-inline-flex align-items-center gap-1">
+                <i class="fa-solid fa-calendar-check text-primary"></i> Quản Trị Tổ Chức
+            </span>
+            <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Danh Sách Sự Kiện</h1>
+            <p class="text-secondary small mb-0">Quản trị viên & Ban tổ chức tạo lập, tinh chỉnh và quản lý toàn diện sự kiện.</p>
         </div>
-        <a href="{{ url_for('events.create') }}" class="btn btn-primary-gradient">
-            <i class="fa-solid fa-plus me-1"></i> Tạo Sự Kiện Mới
+        <a href="{{ url_for('events.create') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="fa-solid fa-plus me-1.5"></i> Tạo Sự Kiện Mới
         </a>
     </div>
 
-    <div class="glass-panel p-4">
+    <div class="apple-card p-4">
+        {% if events %}
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+            <table class="table align-middle mb-0">
                 <thead>
-                    <tr class="text-muted small">
+                    <tr class="text-secondary small">
                         <th>MÃ / TÊN SỰ KIỆN</th>
                         <th>DANH MỤC</th>
                         <th>THỜI GIAN</th>
                         <th>HÌNH THỨC</th>
                         <th>ĐĂNG KÝ</th>
                         <th>TRẠNG THÁI</th>
-                        <th>THAO TÁC</th>
+                        <th class="text-end">THAO TÁC</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for evt in events %}
                     <tr>
                         <td>
-                            <div class="fw-bold text-light">{{ evt.title }}</div>
-                            <small class="text-info font-monospace">{{ evt.event_code }}</small>
+                            <div class="fw-semibold">{{ evt.title }}</div>
+                            <small class="text-secondary font-monospace">{{ evt.event_code }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-secondary">{{ evt.category }}</span>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20 rounded-pill px-2.5 py-1">{{ evt.category }}</span>
                         </td>
                         <td>
-                            <div class="small text-light">{{ evt.start_date.strftime('%d/%m/%Y %H:%M') }}</div>
-                            <small class="text-muted">đến {{ evt.end_date.strftime('%d/%m/%Y %H:%M') }}</small>
+                            <div class="small fw-medium">{{ evt.start_date.strftime('%d/%m/%Y %H:%M') }}</div>
+                            <small class="text-secondary">đến {{ evt.end_date.strftime('%d/%m/%Y %H:%M') }}</small>
                         </td>
                         <td>
-                            <span class="badge bg-dark border text-uppercase">{{ evt.location_type }}</span>
+                            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 text-uppercase" style="font-size: 0.72rem;">{{ evt.location_type }}</span>
                         </td>
                         <td>
-                            <strong class="text-success">{{ evt.total_registered }}</strong> / {{ evt.max_attendees }}
+                            <span class="fw-semibold text-primary">{{ evt.total_registered }}</span>
+                            <span class="text-secondary">/ {{ evt.max_attendees }}</span>
                         </td>
                         <td>
-                            <span class="badge {% if evt.status == 'published' %}bg-success{% elif evt.status == 'ongoing' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            <span class="badge {% if evt.status == 'published' %}bg-success bg-opacity-10 text-success border border-success border-opacity-20{% elif evt.status == 'ongoing' %}bg-warning bg-opacity-10 text-warning border border-warning border-opacity-20{% else %}bg-secondary bg-opacity-10 text-secondary{% endif %} rounded-pill px-2.5 py-1 text-capitalize">
                                 {{ evt.status }}
                             </span>
                         </td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a href="{{ url_for('main.event_detail', event_id=evt.id) }}" class="btn btn-xs btn-outline-info py-1 px-2" title="Xem trên web">
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{{ url_for('main.event_detail', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Xem trên web">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
-                                <a href="{{ url_for('events.edit', event_id=evt.id) }}" class="btn btn-xs btn-outline-warning py-1 px-2" title="Chỉnh sửa">
+                                <a href="{{ url_for('events.schedules', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Lịch trình & Phiên">
+                                    <i class="fa-solid fa-timeline"></i>
+                                </a>
+                                <a href="{{ url_for('events.manage_tickets', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Hạng vé & Quota">
+                                    <i class="fa-solid fa-ticket"></i>
+                                </a>
+                                <a href="{{ url_for('notifications.create', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Gửi thông báo AI">
+                                    <i class="fa-solid fa-paper-plane text-primary"></i>
+                                </a>
+                                <a href="{{ url_for('events.edit', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Chỉnh sửa">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
-                                <form method="POST" action="{{ url_for('events.delete', event_id=evt.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa sự kiện này không?');">
-                                    <button type="submit" class="btn btn-xs btn-outline-danger py-1 px-2" title="Xóa">
+                                <form method="POST" action="{{ url_for('events.delete', event_id=evt.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa sự kiện này không?');" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-secondary text-danger rounded-pill px-2.5 py-1" title="Xóa">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
                                 </form>
@@ -73,6 +87,18 @@
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="avatar-placeholder rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: var(--bg-secondary);">
+                <i class="fa-regular fa-calendar-xmark fs-4 text-secondary"></i>
+            </div>
+            <h6 class="fw-semibold mb-1">Chưa có sự kiện nào</h6>
+            <p class="text-secondary small mb-4">Bạn chưa tạo sự kiện nào trong hệ thống. Hãy tạo sự kiện mới ngay hôm nay!</p>
+            <a href="{{ url_for('events.create') }}" class="btn btn-primary rounded-pill px-4">
+                <i class="fa-solid fa-plus me-1"></i> Tạo Sự Kiện Đầu Tiên
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

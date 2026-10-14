@@ -3,58 +3,93 @@
 {% block title %}Trang Chủ - Nền Tảng Quản Lý Sự Kiện Thông Minh EventAI Pro{% endblock %}
 
 {% block content %}
-<!-- HERO SECTION -->
-<section class="hero-section text-center text-md-start">
+<!-- APPLE-INSPIRED HERO SECTION -->
+<section class="hero-section text-center text-lg-start">
     <div class="container position-relative">
-        <div class="row align-items-center min-vh-75 py-5">
-            <div class="col-lg-7 mb-5 mb-lg-0">
-                <div class="hero-badge d-inline-flex align-items-center mb-3">
-                    <i class="fa-solid fa-sparkles text-primary me-2"></i>
-                    <span>Tích Hợp Trí Tuệ Nhân Tạo Thông Minh Agentic AI & RAG</span>
+        <div class="row align-items-center py-4 py-lg-5 g-5">
+            <!-- Left Hero Content -->
+            <div class="col-lg-6">
+                <div class="hero-badge">
+                    <i class="fa-solid fa-sparkles text-primary"></i>
+                    <span>Trí Tuệ Nhân Tạo Agentic AI & RAG</span>
                 </div>
-                <h1 class="display-3 fw-bold mb-3 tracking-tight">
-                    Trải Nghiệm Sự Kiện <br>
-                    <span class="gradient-text">Đột Phá & Đẳng Cấp</span>
+                <h1 class="hero-title mb-3">
+                    Trải Nghiệm Sự Kiện <span class="gradient-text">Đột Phá & Đẳng Cấp</span>
                 </h1>
-                <p class="hero-lead mb-4 text-muted fs-5">
-                    Hệ thống quản lý, phân phối vé điện tử QR Code chống giả mạo, check-in tốc độ cao cùng Chatbot AI cố
-                    vấn theo ngữ cảnh thời gian thực.
+                <p class="hero-lead mb-4">
+                    Hệ thống quản lý sự kiện thông minh, phân phối vé QR Code chống giả mạo, check-in tức thì và Cố vấn AI phản hồi ngữ cảnh thời gian thực.
                 </p>
-                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
-                    <a href="{{ url_for('main.event_list') }}"
-                        class="btn btn-primary-gradient btn-lg px-4 py-3 shadow-lg">
-                        <i class="fa-solid fa-compass me-2"></i>Khám Phá Sự Kiện
+                <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-5">
+                    <a href="{{ url_for('main.event_list') }}" class="btn btn-lg btn-primary">
+                        Khám Phá Sự Kiện <i class="fa-solid fa-arrow-right ms-1"></i>
                     </a>
-                    <a href="#upcomingEventsSection" class="btn btn-secondary-glass btn-lg px-4 py-3">
-                        <i class="fa-solid fa-calendar-days me-2"></i>Lịch Trình Sắp Tới
+                    <a href="#upcomingEventsSection" class="btn btn-lg btn-secondary">
+                        Lịch Trình Sắp Tới
                     </a>
                 </div>
 
-                <!-- Live stats counter -->
-                <div class="row mt-5 pt-3 border-top border-secondary border-opacity-25 text-start">
+                <!-- Minimal Apple Metrics Row -->
+                <div class="row pt-4 border-top text-center text-lg-start" style="border-color: var(--border-hairline) !important;">
                     <div class="col-4">
-                        <div class="fs-3 fw-bold text-primary">{{ featured_events|length }}+</div>
-                        <div class="text-muted small">Sự Kiện Đỉnh Cao</div>
+                        <div class="fs-2 fw-bold" style="color: var(--text-primary); letter-spacing: -0.02em;">{{ featured_events|length }}+</div>
+                        <div class="small" style="color: var(--text-secondary);">Sự Kiện Đỉnh Cao</div>
                     </div>
                     <div class="col-4">
-                        <div class="fs-3 fw-bold text-info">10,000+</div>
-                        <div class="text-muted small">Lượt Đăng Ký</div>
+                        <div class="fs-2 fw-bold" style="color: var(--text-primary); letter-spacing: -0.02em;">10,000+</div>
+                        <div class="small" style="color: var(--text-secondary);">Lượt Đăng Ký</div>
                     </div>
                     <div class="col-4">
-                        <div class="fs-3 fw-bold text-success">99.8%</div>
-                        <div class="text-muted small">Hài Lòng</div>
+                        <div class="fs-2 fw-bold" style="color: var(--accent-green); letter-spacing: -0.02em;">99.8%</div>
+                        <div class="small" style="color: var(--text-secondary);">Hài Lòng</div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-5">
+
+            <!-- Right Hero Visual Showcase: Featured Events Carousel -->
+            <div class="col-lg-6">
                 <div class="position-relative">
-                    <div class="hero-glow-blob"></div>
                     {% if featured_events %}
-                    <!-- HERO FEATURED EVENTS CAROUSEL SLIDESHOW -->
-                    <div id="heroEventsCarousel" class="carousel slide carousel-fade hero-carousel-card"
-                        data-bs-ride="carousel" data-bs-interval="3500">
-                        <!-- Indicators -->
-                        <div class="carousel-indicators hero-carousel-indicators mb-2">
+                    <div id="heroEventsCarousel" class="carousel slide carousel-fade hero-carousel-card shadow-sm" data-bs-ride="carousel" data-bs-interval="4500">
+                        <!-- Carousel Slides -->
+                        <div class="carousel-inner">
+                            {% for evt in featured_events[:5] %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <div class="hero-slide-item clickable-event-card position-relative"
+                                    data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}"
+                                    title="Nhấp để xem chi tiết {{ evt.title }}" style="cursor: pointer;">
+                                    <img src="{{ evt.banner_url }}" class="hero-slide-img" alt="{{ evt.title }}">
+                                    <!-- Badges on top -->
+                                    <span class="event-badge-category" title="{{ evt.category }}">
+                                        {{ evt.category }}
+                                    </span>
+                                    <div class="position-absolute top-0 end-0 m-3 z-3">
+                                        <span class="badge bg-danger text-white rounded-pill px-3 py-1 shadow-sm">
+                                            <i class="fa-solid fa-fire me-1"></i> Tiêu Biểu
+                                        </span>
+                                    </div>
+
+                                    <!-- Bottom Overlay with Clear Hierarchy -->
+                                    <div class="hero-slide-overlay text-white">
+                                        <div class="hero-slide-label mb-1">SỰ KIỆN NỔI BẬT</div>
+                                        <h3 class="hero-slide-title fw-bold mb-2 text-white">{{ evt.title }}</h3>
+                                        <div class="hero-slide-meta d-flex flex-wrap align-items-center gap-3 mb-2">
+                                            <span><i class="fa-solid fa-calendar-day me-1"></i>{{ evt.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
+                                            <span><i class="fa-solid fa-users me-1"></i>{{ evt.total_registered }} đã đăng ký</span>
+                                        </div>
+                                        <div class="hero-slide-footer d-flex justify-content-between align-items-center pt-2">
+                                            <span class="text-truncate me-2" style="max-width: 240px;"><i class="fa-solid fa-location-dot me-1"></i>{{ evt.location_address or 'Trực tuyến qua Zoom' }}</span>
+                                            <span class="badge bg-light text-dark rounded-pill px-3 py-1.5 fw-semibold flex-shrink-0">
+                                                Xem chi tiết <i class="fa-solid fa-chevron-right ms-1 small"></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Repositioned Slim Indicators -->
+                        <div class="carousel-indicators mb-2">
                             {% for evt in featured_events[:5] %}
                             <button type="button" data-bs-target="#heroEventsCarousel"
                                 data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}"
@@ -63,64 +98,14 @@
                             {% endfor %}
                         </div>
 
-                        <!-- Carousel Slides -->
-                        <div class="carousel-inner">
-                            {% for evt in featured_events[:5] %}
-                            <div class="carousel-item {% if loop.first %}active{% endif %}">
-                                <div class="hero-slide-item clickable-event-card position-relative"
-                                    data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}"
-                                    title="Nhấp vào ảnh để xem chi tiết sự kiện {{ evt.title }}">
-                                    <img src="{{ evt.banner_url }}" class="hero-slide-img" alt="{{ evt.title }}">
-                                    <!-- Badges on top -->
-                                    <div class="position-absolute top-0 start-0 m-3 z-3">
-                                        <span class="event-badge-category">
-                                            <i class="fa-solid fa-layer-group me-1" style="font-size: 0.7rem;"></i>{{
-                                            evt.category }}
-                                        </span>
-                                    </div>
-                                    <div class="position-absolute top-0 end-0 m-3 z-3">
-                                        <span
-                                            class="badge bg-danger text-white rounded-pill px-3 py-2 shadow-sm fw-bold"
-                                            style="letter-spacing: 0.04em;">
-                                            <i class="fa-solid fa-fire me-1"></i> TIÊU BIỂU
-                                        </span>
-                                    </div>
-
-                                    <!-- Bottom Gradient Overlay with Event Info -->
-                                    <div class="hero-slide-overlay text-white">
-                                        <div class="d-flex align-items-center gap-2 mb-1 text-info small fw-bold">
-                                            <i class="fa-solid fa-sparkles"></i>
-                                            <span>SỰ KIỆN TIÊU BIỂU NỔI BẬT</span>
-                                        </div>
-                                        <h4 class="fw-bold mb-2 text-white text-truncate-2">{{ evt.title }}</h4>
-                                        <div class="d-flex align-items-center gap-3 text-white-50 small mb-2">
-                                            <span><i class="fa-solid fa-calendar-day text-primary me-1"></i>{{
-                                                evt.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
-                                            <span><i class="fa-solid fa-users text-info me-1"></i>{{
-                                                evt.total_registered }} đã đăng ký</span>
-                                        </div>
-                                        <div
-                                            class="d-flex justify-content-between align-items-center pt-2 border-top border-white border-opacity-10 text-white-50 small">
-                                            <span class="text-truncate" style="max-width: 250px;"><i
-                                                    class="fa-solid fa-location-dot text-danger me-1"></i>{{
-                                                evt.location_address or 'Trực tuyến qua Zoom' }}</span>
-                                            <span class="text-primary fw-bold">Xem chi tiết <i
-                                                    class="fa-solid fa-arrow-right ms-1"></i></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-
                         <!-- Prev / Next Controls -->
-                        <button class="carousel-control-prev hero-carousel-control ms-2" type="button"
-                            data-bs-target="#heroEventsCarousel" data-bs-slide="prev">
-                            <i class="fa-solid fa-chevron-left text-white"></i>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Trước</span>
                         </button>
-                        <button class="carousel-control-next hero-carousel-control me-2" type="button"
-                            data-bs-target="#heroEventsCarousel" data-bs-slide="next">
-                            <i class="fa-solid fa-chevron-right text-white"></i>
+                        <button class="carousel-control-next" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Sau</span>
                         </button>
                     </div>
                     {% endif %}
@@ -131,25 +116,22 @@
 </section>
 
 <!-- AI RECOMMENDED EVENTS SECTION (AUTO-SCROLL & DRAG SWIPE) -->
-<section class="py-5" style="background: rgba(99, 102, 241, 0.03);">
+<section class="py-5" style="background-color: var(--bg-secondary);">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
-                    <span class="badge bg-purple px-2 py-1" style="background: #8b5cf6;"><i
-                            class="fa-solid fa-sparkles me-1"></i> AI Powered</span>
-                    <h3 class="fw-bold mb-0">Gợi Ý Riêng Cho Bạn</h3>
+                    <span class="badge bg-primary"><i class="fa-solid fa-sparkles me-1"></i> AI Powered</span>
+                    <h3 class="mb-0">Gợi Ý Riêng Cho Bạn</h3>
                 </div>
-                <p class="section-subtitle mb-0">Mô hình AI phân tích sở thích và hồ sơ để đề xuất các sự kiện phù hợp
-                    nhất</p>
+                <p class="section-subtitle mb-0">Mô hình AI phân tích sở thích để đề xuất các sự kiện phù hợp nhất</p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span
-                    class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 px-3 py-2 rounded-pill small d-none d-sm-inline-block">
-                    <i class="fa-solid fa-arrows-left-right me-1"></i> Tự động trượt • Kéo chuột để duyệt
+                <span class="small d-none d-sm-inline-block" style="color: var(--text-tertiary);">
+                    <i class="fa-solid fa-arrows-left-right me-1"></i> Tự động trượt • Kéo để duyệt
                 </span>
-                <a href="{{ url_for('main.event_list') }}" class="btn btn-sm btn-secondary-glass rounded-pill px-3">
-                    Xem Tất Cả <i class="fa-solid fa-arrow-right ms-1"></i>
+                <a href="{{ url_for('main.event_list') }}" class="btn btn-sm btn-secondary">
+                    Xem Tất Cả <i class="fa-solid fa-chevron-right ms-1 small"></i>
                 </a>
             </div>
         </div>
@@ -159,29 +141,26 @@
             <div class="ai-slider-track d-flex gap-3 overflow-x-auto pb-3 pt-2" id="aiRecommendationsContainer">
                 {% for evt in featured_events[:6] %}
                 <div class="ai-slider-item">
-                    <div class="event-card clickable-event-card h-100"
-                        data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}">
-                        <div class="event-card-img-wrapper">
+                    <div class="apple-card clickable-event-card h-100" data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}" style="cursor: pointer;">
+                        <div class="event-card-img-wrapper position-relative">
                             <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}">
                             <span class="event-badge-category">{{ evt.category }}</span>
-                            <div
-                                style="position: absolute; bottom: 8px; right: 8px; background: rgba(99, 102, 241, 0.9); color: white; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                            <div style="position: absolute; bottom: 8px; right: 8px; background: var(--accent); color: white; font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-pill); backdrop-filter: blur(8px); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 ✨ Phù hợp 85%
                             </div>
                         </div>
-                        <div class="event-card-body d-flex flex-column">
-                            <h5 class="event-card-title">{{ evt.title }}</h5>
+                        <div class="event-card-body d-flex flex-column p-4">
+                            <h5 class="event-card-title mb-2" style="font-size: 1.05rem;">{{ evt.title }}</h5>
                             <div class="event-meta-item">
-                                <i class="fa-solid fa-calendar-day text-primary"></i>
+                                <i class="fa-solid fa-calendar-day text-primary" style="font-size: 0.85rem;"></i>
                                 <span>{{ evt.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
                             </div>
                             <div class="event-meta-item">
-                                <i class="fa-solid fa-location-dot text-danger"></i>
+                                <i class="fa-solid fa-location-dot text-danger" style="font-size: 0.85rem;"></i>
                                 <span class="text-truncate">{{ evt.location_address or 'Hội trường chính' }}</span>
                             </div>
                             <div class="mt-auto pt-3">
-                                <a href="{{ url_for('main.event_detail', event_id=evt.id) }}"
-                                    class="btn btn-sm btn-primary-gradient w-100">Xem Chi Tiết</a>
+                                <a href="{{ url_for('main.event_detail', event_id=evt.id) }}" class="btn btn-sm btn-secondary w-100">Xem Chi Tiết</a>
                             </div>
                         </div>
                     </div>
@@ -195,52 +174,61 @@
 <!-- ALL UPCOMING EVENTS WITH PAGINATION -->
 <section class="py-5" id="upcomingEventsSection">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
             <div>
-                <h3 class="fw-bold mb-1">Sự Kiện Sắp Diễn Ra</h3>
-                <p class="section-subtitle mb-0">Khám phá các hội thảo, workshop và diễn đàn công nghệ đỉnh cao</p>
+                <h3 class="mb-1">Sự Kiện Sắp Diễn Ra</h3>
+                <p class="section-subtitle mb-0">Khám phá các hội thảo, diễn đàn công nghệ và workshop thực chiến</p>
+            </div>
+            <div style="min-width: 280px; width: 100%; max-width: 380px;">
+                <form method="GET" action="{{ url_for('main.event_list') }}">
+                    <div class="apple-search-box">
+                        <i class="fa-solid fa-magnifying-glass apple-search-icon"></i>
+                        <input type="text" name="q" class="apple-search-input" placeholder="Tìm tên sự kiện, chủ đề..." autocomplete="off">
+                    </div>
+                </form>
             </div>
         </div>
 
-        <!-- Categories pills -->
+        <!-- Categories Capsule Pills -->
         <div class="d-flex gap-2 overflow-x-auto pb-3 mb-4">
             {% for cat in categories %}
             <a href="{{ url_for('main.event_list', category=cat if cat != 'Tất cả' else '') }}"
-                class="btn btn-sm btn-secondary-glass text-nowrap rounded-pill px-3">
+                class="btn btn-sm btn-secondary text-nowrap">
                 {{ cat }}
             </a>
             {% endfor %}
         </div>
 
         <!-- Events Grid -->
-        <div class="row" id="homeEventsGrid">
+        <div class="row g-4" id="homeEventsGrid">
             {% for evt in featured_events %}
-            <div class="col-md-6 col-lg-4 mb-4 home-event-card-wrapper" data-index="{{ loop.index0 }}">
-                <div class="event-card clickable-event-card h-100"
-                    data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}">
-                    <div class="event-card-img-wrapper">
+            <div class="col-md-6 col-lg-4 home-event-card-wrapper" data-index="{{ loop.index0 }}">
+                <div class="apple-card clickable-event-card h-100 d-flex flex-column"
+                    data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}" style="cursor: pointer;">
+                    <div class="event-card-img-wrapper position-relative">
                         <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}">
                         <span class="event-badge-category">{{ evt.category }}</span>
-                        <div class="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75">
-                            <i class="fa-solid fa-users me-1 text-info"></i> {{ evt.total_registered }} đã đăng ký
+                        <div class="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style="backdrop-filter: blur(8px);">
+                            <i class="fa-solid fa-users me-1"></i> {{ evt.total_registered }} đã đăng ký
                         </div>
                     </div>
-                    <div class="event-card-body d-flex flex-column">
-                        <h5 class="event-card-title">{{ evt.title }}</h5>
-                        <p class="event-card-desc text-truncate-2 mb-3">
+                    <div class="event-card-body d-flex flex-column flex-grow-1 p-4">
+                        <h5 class="event-card-title mb-2">{{ evt.title }}</h5>
+                        <p class="event-card-desc mb-3">
                             {{ evt.description }}
                         </p>
                         <div class="event-meta-item">
-                            <i class="fa-solid fa-calendar-day text-primary"></i>
+                            <i class="fa-solid fa-calendar-day text-primary" style="font-size: 0.85rem;"></i>
                             <span>{{ evt.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
                         </div>
                         <div class="event-meta-item">
-                            <i class="fa-solid fa-location-dot text-danger"></i>
+                            <i class="fa-solid fa-location-dot text-danger" style="font-size: 0.85rem;"></i>
                             <span class="text-truncate">{{ evt.location_address or 'Trực tuyến qua Zoom' }}</span>
                         </div>
-                        <div class="mt-auto pt-3 d-flex gap-2">
-                            <a href="{{ url_for('main.event_detail', event_id=evt.id) }}"
-                                class="btn btn-sm btn-primary-gradient flex-grow-1">Xem Chi Tiết</a>
+                        <div class="mt-auto pt-3">
+                            <a href="{{ url_for('main.event_detail', event_id=evt.id) }}" class="btn btn-sm btn-primary w-100">
+                                Xem Chi Tiết & Đặt Vé
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -248,36 +236,33 @@
             {% endfor %}
         </div>
 
-        <!-- MODERN ROUNDED PAGINATION CONTROLS -->
-        <div class="d-flex flex-column align-items-center justify-content-center gap-2 mt-4 pt-2"
-            id="homePaginationSection">
+        <!-- ROUNDED PAGINATION CONTROLS -->
+        <div class="d-flex flex-column align-items-center justify-content-center gap-2 mt-5" id="homePaginationSection">
             <div class="custom-pagination-container" id="homePaginationControls">
                 <button class="page-btn-nav" id="homePrevPageBtn" disabled>
-                    <i class="fa-solid fa-chevron-left me-1"></i> Trang Trước
+                    <i class="fa-solid fa-chevron-left me-1 small"></i> Trước
                 </button>
                 <div class="d-flex align-items-center gap-1" id="homePageNumbers">
                     <!-- Dynamically generated circle page buttons -->
                 </div>
                 <button class="page-btn-nav" id="homeNextPageBtn">
-                    Trang Sau <i class="fa-solid fa-chevron-right ms-1"></i>
+                    Sau <i class="fa-solid fa-chevron-right ms-1 small"></i>
                 </button>
             </div>
-            <div class="text-muted small" id="homePaginationInfo" style="font-size: 0.82rem;">
+            <div class="small" id="homePaginationInfo" style="color: var(--text-tertiary);">
                 <!-- Page Info -->
             </div>
         </div>
 
-        <!-- EXPLORE ALL EVENTS CTA BANNER -->
+        <!-- EXPLORE ALL EVENTS BANNER -->
         <div class="text-center mt-5 pt-3">
-            <div class="p-4 rounded-4 position-relative overflow-hidden"
-                style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%); border: 1px solid rgba(99, 102, 241, 0.3);">
-                <h4 class="fw-bold mb-2">Bạn muốn tìm kiếm thêm nhiều sự kiện hấp dẫn khác?</h4>
-                <p class="text-muted small mb-3">Hàng chục hội thảo công nghệ, âm nhạc nghệ thuật và workshop thực chiến
-                    đang chờ đón bạn.</p>
-                <a href="{{ url_for('main.event_list') }}"
-                    class="btn btn-primary-gradient btn-lg px-4 py-2 rounded-pill shadow">
-                    <i class="fa-solid fa-magnifying-glass me-2"></i> Khám Phá Toàn Bộ {{ featured_events|length }} Sự
-                    Kiện Trên Hệ Thống
+            <div class="p-4 p-md-5 rounded-4 position-relative" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                <h4 class="mb-2 fw-semibold">Bạn muốn tìm kiếm thêm nhiều sự kiện công nghệ khác?</h4>
+                <p class="small mb-4" style="color: var(--text-secondary); max-width: 600px; margin-left: auto; margin-right: auto;">
+                    Hàng chục hội thảo khoa học, diễn đàn trí tuệ nhân tạo và workshop thực chiến đang sẵn sàng chào đón bạn.
+                </p>
+                <a href="{{ url_for('main.event_list') }}" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-magnifying-glass me-2"></i> Khám Phá Toàn Bộ {{ featured_events|length }} Sự Kiện
                 </a>
             </div>
         </div>

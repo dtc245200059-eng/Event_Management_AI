@@ -8,148 +8,141 @@
         <div class="col-lg-10 col-xl-9">
             
             <!-- Header -->
-            <div class="text-center mb-4">
-                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35);">
+            <div class="text-center mb-5">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2" style="background: var(--accent-green-subtle); border: 1px solid rgba(52, 199, 89, 0.25);">
                     <i class="fa-solid fa-shield-halved text-success"></i>
-                    <span class="small fw-bold text-success text-uppercase">Cổng Thanh Toán Trực Tuyến Bảo Mật</span>
+                    <span class="small fw-semibold text-success">Cổng Thanh Toán Trực Tuyến Bảo Mật</span>
                 </div>
-                <h2 class="fw-bold mb-1">Xác Nhận Đơn Hàng & Thanh Toán Vé</h2>
+                <h2 class="mb-1">Xác Nhận & Thanh Toán Vé</h2>
                 <p class="section-subtitle">Mã đơn đăng ký: <strong class="font-monospace text-primary">#{{ registration.registration_code }}</strong></p>
             </div>
 
             <div class="row g-4">
                 <!-- Left Column: Event Preview & Ticket Details -->
                 <div class="col-lg-6">
-                    <div class="glass-panel p-4 h-100 shadow-sm d-flex flex-column justify-content-between">
+                    <div class="apple-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between">
                         <div>
-                            <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                            <h5 class="mb-4 d-flex align-items-center gap-2">
                                 <i class="fa-solid fa-file-invoice text-primary"></i>
-                                <span>Thông Tin Đơn Hàng Vé</span>
+                                <span>Thông Tin Đơn Hàng</span>
                             </h5>
 
                             <!-- Event Banner Preview -->
-                            <div class="position-relative rounded-3 overflow-hidden mb-3 shadow-sm" style="max-height: 180px;">
+                            <div class="position-relative rounded-3 overflow-hidden mb-4" style="max-height: 180px;">
                                 <img src="{{ registration.event.banner_url }}" alt="{{ registration.event.title }}" class="w-100 h-100" style="object-fit: cover; min-height: 160px;">
-                                <span class="event-badge-category m-2" style="font-size: 0.75rem;">{{ registration.event.category }}</span>
+                                <span class="event-badge-category m-2">{{ registration.event.category }}</span>
                             </div>
 
-                            <!-- Structured Order Specs (No overlapping, separated rows) -->
-                            <div class="checkout-spec-box p-3 rounded-3 mb-3">
+                            <!-- Structured Order Specs -->
+                            <div class="p-3 rounded-3 mb-4" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                                 <!-- Event Title -->
-                                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                                    <div class="checkout-label mb-1"><i class="fa-solid fa-calendar-star me-1 text-primary"></i> TÊN SỰ KIỆN:</div>
-                                    <div class="checkout-value fw-bold fs-6 text-light lh-sm">{{ registration.event.title }}</div>
+                                <div class="mb-3 pb-2 border-bottom" style="border-color: var(--border-hairline) !important;">
+                                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-calendar-star me-1 text-primary"></i> TÊN SỰ KIỆN:</div>
+                                    <div class="fw-semibold" style="color: var(--text-primary);">{{ registration.event.title }}</div>
                                 </div>
 
-                                <!-- Ticket Category (Full Width Row to prevent overflow) -->
-                                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                                    <div class="checkout-label mb-1"><i class="fa-solid fa-ticket-simple me-1 text-warning"></i> HẠNG VÉ ĐĂNG KÝ:</div>
+                                <!-- Ticket Category -->
+                                <div class="mb-3 pb-2 border-bottom" style="border-color: var(--border-hairline) !important;">
+                                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-ticket-simple me-1 text-warning"></i> HẠNG VÉ:</div>
                                     <div>
-                                        <span class="badge {% if registration.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-3 py-2 fs-6 fw-bold" style="white-space: normal; line-height: 1.4; display: inline-block; max-width: 100%;">
+                                        <span class="badge {% if registration.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-3 py-1">
                                             {{ registration.ticket.name }}
                                         </span>
                                     </div>
                                 </div>
 
                                 <!-- Ticket Code & Time -->
-                                <div class="row g-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                                    <div class="col-12 col-sm-6 mb-2 mb-sm-0">
-                                        <div class="checkout-label mb-1"><i class="fa-solid fa-hashtag me-1 text-info"></i> MÃ VÉ HỆ THỐNG:</div>
-                                        <span class="checkout-value font-monospace small fw-bold text-primary">{{ registration.ticket_number }}</span>
+                                <div class="row g-2 mb-3 pb-2 border-bottom" style="border-color: var(--border-hairline) !important;">
+                                    <div class="col-sm-6 mb-2 mb-sm-0">
+                                        <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-hashtag me-1 text-primary"></i> MÃ VÉ:</div>
+                                        <span class="font-monospace small fw-bold text-primary">{{ registration.ticket_number }}</span>
                                     </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="checkout-label mb-1"><i class="fa-solid fa-clock me-1 text-success"></i> THỜI GIAN:</div>
-                                        <span class="checkout-value small">{{ registration.event.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
+                                    <div class="col-sm-6">
+                                        <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-clock me-1 text-success"></i> THỜI GIAN:</div>
+                                        <span class="small" style="color: var(--text-primary);">{{ registration.event.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
                                     </div>
                                 </div>
 
                                 <!-- Attendee Info -->
-                                <div class="row g-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                                    <div class="col-12 col-sm-6 mb-2 mb-sm-0">
-                                        <div class="checkout-label mb-1"><i class="fa-solid fa-user me-1 text-info"></i> HỌ & TÊN:</div>
-                                        <strong class="checkout-value">{{ registration.attendee.full_name }}</strong>
+                                <div class="row g-2 mb-3 pb-2 border-bottom" style="border-color: var(--border-hairline) !important;">
+                                    <div class="col-sm-6 mb-2 mb-sm-0">
+                                        <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-user me-1 text-primary"></i> HỌ TÊN:</div>
+                                        <strong style="color: var(--text-primary);">{{ registration.attendee.full_name }}</strong>
                                     </div>
-                                    <div class="col-12 col-sm-6">
-                                        <div class="checkout-label mb-1"><i class="fa-solid fa-phone me-1 text-success"></i> ĐIỆN THOẠI:</div>
-                                        <span class="checkout-value">{{ registration.attendee.phone or '0987654321' }}</span>
+                                    <div class="col-sm-6">
+                                        <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-phone me-1 text-success"></i> ĐIỆN THOẠI:</div>
+                                        <span class="small" style="color: var(--text-primary);">{{ registration.attendee.phone or '0987654321' }}</span>
                                     </div>
-                                </div>
-
-                                <!-- Email -->
-                                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
-                                    <div class="checkout-label mb-1"><i class="fa-solid fa-envelope me-1 text-secondary"></i> EMAIL NHẬN VÉ ĐIỆN TỬ:</div>
-                                    <div class="checkout-value">{{ registration.attendee.email }}</div>
                                 </div>
 
                                 <!-- Location -->
                                 <div>
-                                    <div class="checkout-label mb-1"><i class="fa-solid fa-location-dot me-1 text-danger"></i> ĐỊA ĐIỂM TỔ CHỨC:</div>
-                                    <div class="checkout-value small">{{ registration.event.location_address or 'Trực tuyến qua Zoom & Livestream' }}</div>
+                                    <div class="small fw-semibold mb-1" style="color: var(--text-secondary);"><i class="fa-solid fa-location-dot me-1 text-danger"></i> ĐỊA ĐIỂM:</div>
+                                    <div class="small" style="color: var(--text-primary);">{{ registration.event.location_address or 'Trực tuyến qua Zoom' }}</div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Total Payment Amount -->
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3 mt-2" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35);">
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background: var(--accent-green-subtle); border: 1px solid rgba(52, 199, 89, 0.25);">
                             <div>
-                                <span class="checkout-label d-block text-success mb-1" style="font-size: 0.8rem;">TỔNG SỐ TIỀN CẦN THANH TOÁN:</span>
-                                <strong class="fs-3 text-success fw-extrabold">{{ "{:,.0f}".format(registration.payment_amount) }} VNĐ</strong>
+                                <span class="d-block small fw-semibold text-success mb-1">TỔNG SỐ TIỀN CẦN THANH TOÁN:</span>
+                                <strong class="fs-4 text-success">{{ "{:,.0f}".format(registration.payment_amount) }} VNĐ</strong>
                             </div>
-                            <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2">
+                            <span class="badge bg-success">
                                 <i class="fa-solid fa-shield-check me-1"></i> Chờ Thanh Toán
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right Column: Dynamic Payment QR & Confirmation -->
+                <!-- Right Column: Payment QR & Confirmation -->
                 <div class="col-lg-6">
-                    <div class="glass-panel p-4 h-100 shadow-sm d-flex flex-column justify-content-between">
+                    <div class="apple-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between">
                         <div>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
-                                    <i class="fa-solid fa-qrcode text-warning"></i>
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-qrcode text-primary"></i>
                                     <span>Quét Mã QR Thanh Toán</span>
                                 </h5>
-                                <div class="d-flex align-items-center gap-1 text-warning small font-monospace" id="paymentTimer">
+                                <div class="d-flex align-items-center gap-1 small font-monospace" style="color: var(--accent-orange);" id="paymentTimer">
                                     <i class="fa-regular fa-clock"></i>
                                     <span id="countdownDisplay">14:59</span>
                                 </div>
                             </div>
 
                             <!-- Live Dynamic QR Code Card -->
-                            <div class="text-center p-3 rounded-3 mb-3 bg-white text-dark shadow-sm position-relative">
-                                <div class="d-flex justify-content-between align-items-center mb-2 px-2">
-                                    <span class="badge bg-danger">VNPAY-QR</span>
-                                    <span class="badge bg-primary">VIETQR NAPAS 24/7</span>
-                                    <span class="badge bg-success" style="background: #a50064 !important;">MoMo</span>
+                            <div class="text-center p-4 rounded-4 mb-3" style="background-color: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                                <div class="d-flex justify-content-center gap-2 mb-3">
+                                    <span class="badge bg-secondary">VNPAY-QR</span>
+                                    <span class="badge bg-secondary">VIETQR NAPAS 24/7</span>
                                 </div>
 
-                                <!-- Dynamic SVG Vector QR Code -->
-                                <div class="my-2 p-2 d-inline-block bg-white rounded-3 border shadow-sm">
-                                    <img src="{{ url_for('static', filename=pay_qr_url) }}" alt="Mã QR Thanh Toán" width="200" height="200" style="display: block; margin: 0 auto;">
+                                <!-- Dynamic QR Image Box -->
+                                <div class="my-2 p-3 d-inline-block bg-white rounded-3 shadow-sm" style="border: 1px solid rgba(0,0,0,0.08);">
+                                    <img src="{{ url_for('static', filename=pay_qr_url) }}" alt="Mã QR Thanh Toán" width="190" height="190" style="display: block; margin: 0 auto;">
                                 </div>
 
-                                <div class="small fw-semibold text-muted mb-2">
+                                <div class="small mt-2" style="color: var(--text-secondary);">
                                     Mở App Ngân hàng hoặc Ví MoMo/VNPAY quét mã để thanh toán tức thì
                                 </div>
 
                                 <!-- Bank Transfer Reference Details -->
-                                <div class="checkout-bank-details p-2 rounded-2 text-start small font-monospace" style="background: #f1f5f9; border: 1px dashed #cbd5e1; font-size: 0.82rem;">
+                                <div class="mt-3 p-3 rounded-3 text-start small font-monospace" style="background: var(--surface-primary); border: 1px solid var(--border-hairline);">
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted">Ngân hàng:</span>
-                                        <strong>MB Bank (Quân Đội)</strong>
+                                        <span style="color: var(--text-secondary);">Ngân hàng:</span>
+                                        <strong style="color: var(--text-primary);">MB Bank (Quân Đội)</strong>
                                     </div>
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted">Số tài khoản:</span>
-                                        <strong>0901234567</strong>
+                                        <span style="color: var(--text-secondary);">Số tài khoản:</span>
+                                        <strong style="color: var(--text-primary);">0901234567</strong>
                                     </div>
                                     <div class="d-flex justify-content-between mb-1">
-                                        <span class="text-muted">Chủ tài khoản:</span>
-                                        <strong>CONG TY CONG NGHE EVENTAI</strong>
+                                        <span style="color: var(--text-secondary);">Chủ tài khoản:</span>
+                                        <strong style="color: var(--text-primary);">CONG TY CONG NGHE EVENTAI</strong>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Nội dung CK:</span>
+                                        <span style="color: var(--text-secondary);">Nội dung CK:</span>
                                         <strong class="text-primary">THANHTOAN {{ registration.registration_code }}</strong>
                                     </div>
                                 </div>
@@ -160,12 +153,12 @@
                         <form method="POST" action="{{ url_for('tickets.checkout', reg_id=registration.id) }}" class="mt-3">
                             <input type="hidden" name="payment_method" value="vnpay">
 
-                            <button type="submit" class="btn btn-buy-ticket w-100 py-3 fs-6">
-                                <i class="fa-solid fa-circle-check me-2 fs-5"></i> XÁC NHẬN ĐÃ QUÉT MÃ & HOÀN TẤT
+                            <button type="submit" class="btn btn-primary w-100 py-3">
+                                <i class="fa-solid fa-circle-check me-2"></i> Xác Nhận Đã Quét Mã & Hoàn Tất
                             </button>
 
-                            <div class="text-center mt-2 text-muted" style="font-size: 0.78rem;">
-                                <i class="fa-solid fa-lock text-success me-1"></i> Giao dịch bảo mật chuẩn PCI-DSS • Vé điện tử sẽ được cấp ngay lập tức
+                            <div class="text-center mt-2 small" style="color: var(--text-tertiary); font-size: 0.78rem;">
+                                <i class="fa-solid fa-lock text-success me-1"></i> Giao dịch bảo mật chuẩn PCI-DSS • Thẻ vé điện tử phát hành ngay
                             </div>
                         </form>
                     </div>

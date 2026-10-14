@@ -3,66 +3,66 @@
 {% block title %}Cổng Vận Hành Soát Vé QR - EventAI Pro{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-5">
     <!-- Header Section -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-5 gap-3">
         <div>
-            <h2 class="fw-bold mb-1"><i class="fa-solid fa-qrcode text-info me-2"></i>Cổng Vận Hành Soát Vé Chuyên Nghiệp</h2>
-            <p class="text-muted small mb-0">Hệ thống quét mã QR tự động qua Camera, phân tích tệp ảnh vé và kiểm soát danh sách người tham dự theo thời gian thực</p>
+            <h2 class="mb-1">Cổng Vận Hành Soát Vé QR</h2>
+            <p class="section-subtitle mb-0">Quét mã QR tự động qua Camera, phân tích tệp ảnh vé và kiểm soát danh sách người tham dự thời gian thực</p>
         </div>
         <div class="d-flex flex-wrap align-items-center gap-2">
-            <span id="cameraStatusBadge" class="badge bg-secondary py-2 px-3 fs-6">
+            <span id="cameraStatusBadge" class="badge bg-secondary py-2 px-3">
                 <i class="fa-solid fa-camera me-1"></i> <span id="cameraStatusText">Camera: Chưa mở</span>
             </span>
-            <span class="badge bg-primary bg-opacity-25 border border-primary text-info py-2 px-3 fs-6">
-                <i class="fa-solid fa-users me-1"></i> Tổng vé: <strong>{{ total_regs }}</strong>
+            <span class="badge bg-primary py-2 px-3">
+                <i class="fa-solid fa-users me-1"></i> Tổng vé: <strong class="ms-1">{{ total_regs }}</strong>
             </span>
-            <span class="badge bg-success bg-opacity-25 border border-success text-success py-2 px-3 fs-6">
-                <i class="fa-solid fa-circle-check me-1"></i> Đã vào: <strong>{{ total_checked }}</strong> ({{ overall_rate }}%)
+            <span class="badge bg-success py-2 px-3">
+                <i class="fa-solid fa-circle-check me-1"></i> Đã vào: <strong class="ms-1">{{ total_checked }}</strong> ({{ overall_rate }}%)
             </span>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-pills mb-4 gap-2 p-2 rounded-3 border border-secondary border-opacity-25" id="checkinTabs" role="tablist" style="background: var(--spec-box-bg);">
+    <ul class="nav nav-pills mb-4 gap-2 p-2 rounded-4 flex-nowrap overflow-x-auto text-nowrap" id="checkinTabs" role="tablist" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active px-4 py-2 fw-semibold" id="scanner-tab" data-bs-toggle="pill" data-bs-target="#scannerPane" type="button" role="tab" aria-controls="scannerPane" aria-selected="true">
-                <i class="fa-solid fa-camera-viewfinder me-2"></i>1. Quét QR & Camera Soát Vé
+            <button class="nav-link active px-4 py-2" id="scanner-tab" data-bs-toggle="pill" data-bs-target="#scannerPane" type="button" role="tab" aria-controls="scannerPane" aria-selected="true">
+                <i class="fa-solid fa-camera me-2"></i>1. Quét QR & Camera Soát Vé
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2 fw-semibold" id="roster-tab" data-bs-toggle="pill" data-bs-target="#rosterPane" type="button" role="tab" aria-controls="rosterPane" aria-selected="false">
+            <button class="nav-link px-4 py-2" id="roster-tab" data-bs-toggle="pill" data-bs-target="#rosterPane" type="button" role="tab" aria-controls="rosterPane" aria-selected="false">
                 <i class="fa-solid fa-clipboard-user me-2"></i>2. Danh Sách & Soát Vé Theo Sự Kiện
             </button>
         </li>
     </ul>
 
-    <!-- Insecure Origin Warning Banner (Auto-detected if opened via LAN IP HTTP) -->
-    <div id="insecureContextAlert" class="alert alert-warning d-none border-warning border-opacity-50 p-3 mb-4 rounded-3 shadow-sm" style="background: rgba(255, 193, 7, 0.1);">
+    <!-- Insecure Origin Warning Banner -->
+    <div id="insecureContextAlert" class="alert alert-warning d-none border-warning border-opacity-50 p-3 mb-4 rounded-3 shadow-sm" style="background: var(--accent-orange-subtle);">
         <div class="d-flex align-items-start gap-3">
             <i class="fa-solid fa-triangle-exclamation text-warning fs-3 mt-1"></i>
             <div class="flex-grow-1">
                 <h6 class="fw-bold text-warning mb-1">Trình duyệt chặn truy cập Camera trên địa chỉ IP nội bộ (HTTP không bảo mật)</h6>
-                <p class="small mb-2 text-light text-opacity-75">
+                <p class="small mb-2" style="color: var(--text-secondary);">
                     Các trình duyệt hiện đại (Chrome, Edge, Safari) chỉ cho phép cấp quyền Camera trên <strong>HTTPS</strong> hoặc địa chỉ <strong>localhost / 127.0.0.1</strong>.
                 </p>
                 <div class="d-flex flex-wrap gap-2">
                     <a id="redirectLocalhostBtn" href="http://localhost:5000/checkin/" class="btn btn-warning btn-sm text-dark fw-bold">
-                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Chuyển sang http://localhost:5000
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Chuyển sang localhost:5000
                     </a>
-                    <a id="redirect127Btn" href="http://127.0.0.1:5000/checkin/" class="btn btn-outline-warning btn-sm">
-                        <i class="fa-solid fa-link me-1"></i> Chuyển sang http://127.0.0.1:5000
+                    <a id="redirect127Btn" href="http://127.0.0.1:5000/checkin/" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-link me-1"></i> Chuyển sang 127.0.0.1:5000
                     </a>
                     <button class="btn btn-secondary btn-sm" onclick="document.getElementById('chromeFlagsGuide').classList.toggle('d-none')">
-                        <i class="fa-solid fa-gear me-1"></i> Hướng dẫn bật quyền trên điện thoại/IP LAN
+                        <i class="fa-solid fa-gear me-1"></i> Hướng dẫn IP LAN
                     </button>
                 </div>
                 <!-- Collapsible Chrome Flags Guide -->
-                <div id="chromeFlagsGuide" class="d-none mt-3 p-3 rounded-2 bg-dark bg-opacity-75 small text-light border border-secondary border-opacity-25">
-                    <p class="fw-bold text-info mb-1"><i class="fa-brands fa-chrome me-1"></i> Cách cho phép Camera qua IP LAN trên Google Chrome / Edge:</p>
-                    <ol class="ps-3 mb-0 text-muted">
-                        <li>Truy cập vào: <code class="text-warning">chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></li>
-                        <li>Bật <strong>Enabled</strong> và dán URL: <code class="text-warning" id="currentOriginCode">http://192.168.1.157:5000</code></li>
+                <div id="chromeFlagsGuide" class="d-none mt-3 p-3 rounded-2 small border" style="background: var(--surface-primary); border-color: var(--border-hairline) !important;">
+                    <p class="fw-bold text-primary mb-1"><i class="fa-brands fa-chrome me-1"></i> Cách cho phép Camera qua IP LAN trên Google Chrome / Edge:</p>
+                    <ol class="ps-3 mb-0" style="color: var(--text-secondary);">
+                        <li>Truy cập: <code class="text-primary">chrome://flags/#unsafely-treat-insecure-origin-as-secure</code></li>
+                        <li>Bật <strong>Enabled</strong> và dán URL: <code class="text-primary" id="currentOriginCode">http://192.168.1.157:5000</code></li>
                         <li>Nhấn <strong>Relaunch</strong> trình duyệt để áp dụng.</li>
                     </ol>
                 </div>
@@ -73,81 +73,86 @@
     <!-- Tab Contents -->
     <div class="tab-content" id="checkinTabsContent">
 
-        <!-- ========================================== -->
         <!-- TAB 1: LIVE SCANNER & REALTIME RESULT -->
-        <!-- ========================================== -->
         <div class="tab-pane fade show active" id="scannerPane" role="tabpanel" aria-labelledby="scanner-tab">
-            <div class="row">
+            <div class="row g-4">
                 <!-- QR Scanner Box -->
-                <div class="col-lg-6 mb-4">
-                    <div class="glass-panel p-4 h-100 d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0"><i class="fa-solid fa-camera text-primary me-2"></i>Quét Mã QR Vé</h5>
-                            <!-- Camera device selector dropdown -->
-                            <div class="d-flex align-items-center gap-2">
-                                <select id="cameraSelect" class="form-select form-select-sm bg-dark border-secondary text-light" style="max-width: 180px;">
-                                    <option value="">Đang tìm camera...</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <!-- Camera Viewfinder Box -->
-                        <div class="position-relative mb-3">
-                            <div id="qr-reader" style="width: 100%; border-radius: 12px; overflow: hidden; background: #0b0f19; min-height: 280px; border: 2px dashed rgba(255, 255, 255, 0.15);" class="d-flex align-items-center justify-content-center">
-                                <div id="scannerPlaceholder" class="text-center p-4">
-                                    <i class="fa-solid fa-camera-viewfinder text-primary fs-1 mb-2 opacity-75"></i>
-                                    <p class="text-muted small mb-0">Nhấn nút <strong>"Mở Camera Quét"</strong> bên dưới để bắt đầu quét mã vé</p>
+                <div class="col-lg-6">
+                    <div class="apple-card p-4 p-md-5 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-camera text-primary"></i>
+                                    <span>Quét Mã QR Vé</span>
+                                </h5>
+                                <div class="d-flex align-items-center gap-2">
+                                    <select id="cameraSelect" class="form-select form-select-sm" style="max-width: 180px; height: 36px;">
+                                        <option value="">Đang tìm camera...</option>
+                                    </select>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- Action Controls -->
-                        <div class="d-flex flex-wrap gap-2 mb-3">
-                            <button id="startScanBtn" class="btn btn-primary-gradient btn-sm flex-grow-1 py-2">
-                                <i class="fa-solid fa-play me-1"></i> Mở Camera Quét
-                            </button>
-                            <button id="switchCameraBtn" class="btn btn-info btn-sm px-3 py-2 text-dark fw-bold d-none">
-                                <i class="fa-solid fa-camera-rotate me-1"></i> Đổi Cam
-                            </button>
-                            <button id="stopScanBtn" class="btn btn-secondary-glass btn-sm flex-grow-1 py-2" disabled>
-                                <i class="fa-solid fa-stop me-1"></i> Tắt Camera
-                            </button>
-                        </div>
-
-                        <!-- Alternative Scan Method: Image Upload & File Scan -->
-                        <div class="p-3 rounded-3 mb-3" style="background: rgba(255, 255, 255, 0.03); border: 1px dashed rgba(255, 255, 255, 0.15);">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-light small fw-bold"><i class="fa-solid fa-image text-warning me-1"></i> Tải hoặc Kéo thả ảnh mã QR vé:</span>
-                                <small class="text-muted">SVG, PNG, JPG, WebP</small>
+                            
+                            <!-- Camera Viewfinder Box -->
+                            <div class="position-relative mb-3">
+                                <div id="qr-reader" style="width: 100%; border-radius: var(--radius-lg); overflow: hidden; background: var(--bg-secondary); min-height: 280px; border: 2px dashed var(--border-regular);" class="d-flex align-items-center justify-content-center">
+                                    <div id="scannerPlaceholder" class="text-center p-4">
+                                        <i class="fa-solid fa-camera text-primary fs-1 mb-2 opacity-75"></i>
+                                        <p class="small mb-0" style="color: var(--text-secondary);">Nhấn nút <strong>"Mở Camera Quét"</strong> bên dưới để bắt đầu soát vé</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="input-group input-group-sm">
-                                <input type="file" id="qrImageInput" class="form-control bg-dark border-secondary text-light" accept="image/*">
-                                <button id="scanImageBtn" class="btn btn-outline-warning" type="button">
-                                    <i class="fa-solid fa-magnifying-glass me-1"></i> Quét Ảnh
+                            
+                            <!-- Action Controls -->
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <button id="startScanBtn" class="btn btn-primary btn-sm flex-grow-1 py-2">
+                                    <i class="fa-solid fa-play me-1"></i> Mở Camera Quét
                                 </button>
+                                <button id="switchCameraBtn" class="btn btn-secondary btn-sm px-3 py-2 d-none">
+                                    <i class="fa-solid fa-camera-rotate me-1"></i> Đổi Cam
+                                </button>
+                                <button id="stopScanBtn" class="btn btn-secondary btn-sm flex-grow-1 py-2" disabled>
+                                    <i class="fa-solid fa-stop me-1"></i> Tắt Camera
+                                </button>
+                            </div>
+
+                            <!-- Alternative Scan Method: Image Upload & File Scan -->
+                            <div class="p-3 rounded-3 mb-3" style="background: var(--surface-secondary); border: 1px dashed var(--border-regular);">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small fw-semibold" style="color: var(--text-primary);"><i class="fa-solid fa-image text-warning me-1"></i> Tải hoặc kéo thả ảnh QR vé:</span>
+                                    <small style="color: var(--text-tertiary);">SVG, PNG, JPG, WebP</small>
+                                </div>
+                                <div class="input-group input-group-sm">
+                                    <input type="file" id="qrImageInput" class="form-control" accept="image/*" style="height: 38px;">
+                                    <button id="scanImageBtn" class="btn btn-secondary" type="button">
+                                        <i class="fa-solid fa-magnifying-glass me-1"></i> Quét Ảnh
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
                         <!-- Manual Ticket Input -->
-                        <div class="pt-3 border-top border-secondary border-opacity-25 mt-auto">
-                            <label class="form-label text-muted small fw-bold"><i class="fa-solid fa-keyboard text-info me-1"></i> Hoặc nhập mã vé / dán liên kết vé:</label>
+                        <div class="pt-3 border-top mt-auto" style="border-color: var(--border-hairline) !important;">
+                            <label class="form-label small fw-semibold"><i class="fa-solid fa-keyboard text-primary me-1"></i> Hoặc nhập mã vé kiểm tra thủ công:</label>
                             <form id="manualCheckinForm" class="d-flex gap-2">
-                                <input type="text" id="manualTicketInput" class="form-control bg-dark border-secondary text-light text-uppercase font-monospace" placeholder="TCK-001-0001-XXXX" required>
-                                <button type="submit" class="btn btn-info text-dark fw-bold px-3">Xác Thực</button>
+                                <input type="text" id="manualTicketInput" class="form-control font-monospace text-uppercase" placeholder="TCK-001-0001-XXXX" required style="height: 42px;">
+                                <button type="submit" class="btn btn-primary px-3 text-nowrap" style="height: 42px;">Xác Thực</button>
                             </form>
                         </div>
                     </div>
                 </div>
 
                 <!-- Check-in Verification Result -->
-                <div class="col-lg-6 mb-4">
-                    <div class="glass-panel p-4 h-100 d-flex flex-column">
-                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-id-card-clip text-warning me-2"></i>Kết Quả Xác Thực Thời Gian Thực</h5>
+                <div class="col-lg-6">
+                    <div class="apple-card p-4 p-md-5 h-100 d-flex flex-column">
+                        <h5 class="mb-3 d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-id-card-clip text-primary"></i>
+                            <span>Kết Quả Xác Thực Thời Gian Thực</span>
+                        </h5>
 
-                        <div id="checkinResultContainer" class="flex-grow-1 d-flex align-items-center justify-content-center text-center p-4 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255, 255, 255, 0.1);">
+                        <div id="checkinResultContainer" class="flex-grow-1 d-flex align-items-center justify-content-center text-center p-4 rounded-4" style="background: var(--surface-secondary); border: 2px dashed var(--border-regular);">
                             <div>
-                                <i class="fa-solid fa-qrcode text-muted fs-1 mb-2 opacity-50"></i>
-                                <p class="text-muted small mb-0">Hướng camera vào mã QR của vé, tải ảnh vé hoặc nhập mã để kiểm tra.</p>
+                                <i class="fa-solid fa-qrcode fs-1 mb-3" style="color: var(--text-tertiary);"></i>
+                                <p class="small mb-0" style="color: var(--text-secondary);">Hướng camera vào mã QR của vé, tải ảnh vé hoặc nhập mã để kiểm tra.</p>
                             </div>
                         </div>
                     </div>
@@ -155,15 +160,18 @@
             </div>
 
             <!-- Recent Check-ins Table -->
-            <div class="glass-panel p-4 mt-2">
+            <div class="apple-card p-4 p-md-5 mt-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Danh Sách Vừa Check-in</h5>
-                    <span class="badge bg-dark border border-secondary text-muted">Tự động cập nhật tức thì</span>
+                    <h5 class="mb-0 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-success"></i>
+                        <span>Danh Sách Vừa Check-in</span>
+                    </h5>
+                    <span class="badge bg-secondary">Tự động cập nhật tức thì</span>
                 </div>
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                    <table class="table align-middle mb-0">
                         <thead>
-                            <tr class="text-muted small">
+                            <tr>
                                 <th>MÃ VÉ</th>
                                 <th>HỌ TÊN KHÁCH HÀNG</th>
                                 <th>SỰ KIỆN</th>
@@ -175,12 +183,12 @@
                         <tbody id="recentCheckinsBody">
                             {% for r in recent_checkins %}
                             <tr>
-                                <td><code class="text-info">{{ r.ticket_number }}</code></td>
-                                <td><strong class="text-light">{{ r.attendee.full_name }}</strong></td>
-                                <td class="text-muted">{{ r.event.title }}</td>
+                                <td><code class="text-primary fw-bold">{{ r.ticket_number }}</code></td>
+                                <td><strong style="color: var(--text-primary);">{{ r.attendee.full_name }}</strong></td>
+                                <td style="color: var(--text-secondary);">{{ r.event.title }}</td>
                                 <td><span class="badge {% if r.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase">{{ r.ticket.name }}</span></td>
                                 <td class="text-success small">{{ r.checked_in_at.strftime('%H:%M:%S • %d/%m/%Y') if r.checked_in_at else '-' }}</td>
-                                <td><small class="text-muted">{{ r.checked_in_by or 'Hệ thống' }}</small></td>
+                                <td><small style="color: var(--text-tertiary);">{{ r.checked_in_by or 'Hệ thống' }}</small></td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -189,22 +197,20 @@
             </div>
         </div>
 
-        <!-- ========================================== -->
         <!-- TAB 2: LIVE ATTENDEE ROSTER & EVENT STATS -->
-        <!-- ========================================== -->
         <div class="tab-pane fade" id="rosterPane" role="tabpanel" aria-labelledby="roster-tab">
-            <div class="glass-panel p-4 mb-4">
+            <div class="apple-card p-4 p-md-5 mb-4">
                 <div class="row align-items-center g-3 mb-4">
                     <div class="col-md-6 col-lg-5">
-                        <label class="form-label text-light small fw-bold"><i class="fa-solid fa-calendar-check text-info me-1"></i> Chọn Sự Kiện Để Quản Lý Soát Vé:</label>
-                        <select id="eventSelector" class="form-select bg-dark border-secondary text-light">
+                        <label class="form-label small fw-semibold"><i class="fa-solid fa-calendar-check text-primary me-1"></i> Chọn Sự Kiện Để Quản Lý Soát Vé:</label>
+                        <select id="eventSelector" class="form-select">
                             {% for e in events %}
                             <option value="{{ e.id }}">{{ e.title }} ({{ e.start_date.strftime('%d/%m/%Y') }})</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="col-md-6 col-lg-7 text-md-end">
-                        <button id="refreshRosterBtn" class="btn btn-outline-info btn-sm">
+                        <button id="refreshRosterBtn" class="btn btn-secondary btn-sm">
                             <i class="fa-solid fa-arrows-rotate me-1"></i> Làm Mới Dữ Liệu
                         </button>
                     </div>
@@ -213,27 +219,27 @@
                 <!-- Event Statistics Cards -->
                 <div class="row g-3 mb-4" id="eventStatsCards">
                     <div class="col-6 col-md-3">
-                        <div class="checkout-spec-box p-3 rounded-3 border border-secondary border-opacity-50 text-center">
-                            <small class="text-muted d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Tổng Vé Đăng Ký</small>
-                            <h3 class="fw-extrabold text-light mb-0" id="statTotalRegs">0</h3>
+                        <div class="p-3 rounded-3 text-center" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            <small class="d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem; color: var(--text-secondary);">Tổng Vé Đăng Ký</small>
+                            <h3 class="fw-bold mb-0" id="statTotalRegs" style="color: var(--text-primary);">0</h3>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="checkout-spec-box p-3 rounded-3 border border-success border-opacity-50 text-center">
+                        <div class="p-3 rounded-3 text-center" style="background: var(--accent-green-subtle); border: 1px solid rgba(52, 199, 89, 0.25);">
                             <small class="text-success d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Đã Check-in</small>
-                            <h3 class="fw-extrabold text-success mb-0" id="statTotalChecked">0</h3>
+                            <h3 class="fw-bold text-success mb-0" id="statTotalChecked">0</h3>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="checkout-spec-box p-3 rounded-3 border border-warning border-opacity-50 text-center">
+                        <div class="p-3 rounded-3 text-center" style="background: var(--accent-orange-subtle); border: 1px solid rgba(255, 149, 0, 0.25);">
                             <small class="text-warning d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Chưa Đến</small>
-                            <h3 class="fw-extrabold text-warning mb-0" id="statTotalRemaining">0</h3>
+                            <h3 class="fw-bold text-warning mb-0" id="statTotalRemaining">0</h3>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="checkout-spec-box p-3 rounded-3 border border-info border-opacity-50 text-center">
-                            <small class="text-info d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Tỷ Lệ Có Mặt</small>
-                            <h3 class="fw-extrabold text-info mb-0" id="statCheckinRate">0%</h3>
+                        <div class="p-3 rounded-3 text-center" style="background: var(--accent-primary-subtle); border: 1px solid rgba(0, 113, 227, 0.25);">
+                            <small class="text-primary d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.75rem;">Tỷ Lệ Có Mặt</small>
+                            <h3 class="fw-bold text-primary mb-0" id="statCheckinRate">0%</h3>
                         </div>
                     </div>
                 </div>
@@ -241,11 +247,11 @@
                 <!-- Search & Filters -->
                 <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
                     <div class="input-group" style="max-width: 380px;">
-                        <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" id="rosterSearchInput" class="form-control bg-dark border-secondary text-light" placeholder="Tìm tên, email, SĐT, mã vé...">
+                        <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="rosterSearchInput" class="form-control" placeholder="Tìm tên, email, SĐT, mã vé...">
                     </div>
                     <div class="d-flex gap-2">
-                        <select id="statusFilter" class="form-select form-select-sm bg-dark border-secondary text-light" style="width: auto;">
+                        <select id="statusFilter" class="form-select form-select-sm" style="width: auto;">
                             <option value="all">Tất cả trạng thái</option>
                             <option value="checked">Đã check-in</option>
                             <option value="unchecked">Chưa check-in</option>
@@ -256,9 +262,9 @@
 
                 <!-- Attendee Table -->
                 <div class="table-responsive">
-                    <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                    <table class="table align-middle mb-0">
                         <thead>
-                            <tr class="text-muted small">
+                            <tr>
                                 <th>MÃ VÉ & QR</th>
                                 <th>KHÁCH HÀNG</th>
                                 <th>LIÊN HỆ & ĐƠN VỊ</th>
@@ -270,8 +276,8 @@
                         </thead>
                         <tbody id="attendeeRosterBody">
                             <tr>
-                                <td colspan="7" class="text-center py-4 text-muted">
-                                    <div class="spinner-border spinner-border-sm text-info me-2" role="status"></div>
+                                <td colspan="7" class="text-center py-4" style="color: var(--text-secondary);">
+                                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
                                     Đang tải danh sách người tham dự...
                                 </td>
                             </tr>
@@ -284,44 +290,42 @@
     </div>
 </div>
 
-<!-- ========================================== -->
 <!-- MODAL: XEM VÀ THỬ QUÉT MÃ QR CỦA KHÁCH -->
-<!-- ========================================== -->
 <div class="modal fade" id="attendeeQrModal" tabindex="-1" aria-labelledby="attendeeQrModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content glass-panel border-info border-opacity-50 text-light" style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(25px);">
-            <div class="modal-header border-secondary border-opacity-25">
-                <h5 class="modal-title fw-bold text-light" id="attendeeQrModalLabel">
-                    <i class="fa-solid fa-qrcode text-info me-2"></i>Thẻ QR Vé Tham Dự
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold" id="attendeeQrModalLabel">
+                    <i class="fa-solid fa-qrcode text-primary me-2"></i>Thẻ QR Vé Tham Dự
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body py-4 text-center">
                 <!-- QR Frame Container -->
-                <div class="ticket-qr-frame mb-3 d-inline-block p-3 rounded-3 bg-white shadow">
+                <div class="ticket-qr-frame mb-3 d-inline-block">
                     <img id="modalQrImage" src="" alt="Mã QR Vé" width="200" height="200" style="display: block;">
                 </div>
                 
-                <h5 class="fw-bold text-light mb-1" id="modalAttendeeName">Nguyễn Văn A</h5>
-                <p class="text-info small mb-2" id="modalOrganization">Đơn vị</p>
+                <h5 class="fw-semibold mb-1" id="modalAttendeeName" style="color: var(--text-primary);">Nguyễn Văn A</h5>
+                <p class="small mb-2 text-primary" id="modalOrganization">Đơn vị</p>
                 
                 <div class="d-flex justify-content-center gap-2 mb-3">
                     <span class="badge bg-primary text-uppercase" id="modalTicketType">STANDARD</span>
-                    <span class="badge bg-dark border border-secondary text-info font-monospace" id="modalTicketCode">TCK-001-0001-XXXX</span>
+                    <span class="badge bg-secondary font-monospace" id="modalTicketCode">TCK-001-0001-XXXX</span>
                 </div>
 
-                <div class="p-3 rounded-2 text-start small mb-3" style="background: rgba(255,255,255,0.05);">
-                    <div class="mb-1"><strong>Sự kiện:</strong> <span class="text-light" id="modalEventTitle">-</span></div>
-                    <div class="mb-1"><strong>Email:</strong> <span class="text-muted" id="modalEmail">-</span></div>
-                    <div class="mb-1"><strong>SĐT:</strong> <span class="text-muted" id="modalPhone">-</span></div>
-                    <div><strong>Trạng thái vé:</strong> <span id="modalCheckinStatus" class="badge bg-success">Hợp lệ</span></div>
+                <div class="p-3 rounded-3 text-start small mb-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                    <div class="mb-1"><strong>Sự kiện:</strong> <span id="modalEventTitle" style="color: var(--text-primary);">-</span></div>
+                    <div class="mb-1"><strong style="color: var(--text-secondary);">Email:</strong> <span id="modalEmail" style="color: var(--text-secondary);">-</span></div>
+                    <div class="mb-1"><strong style="color: var(--text-secondary);">SĐT:</strong> <span id="modalPhone" style="color: var(--text-secondary);">-</span></div>
+                    <div><strong style="color: var(--text-secondary);">Trạng thái:</strong> <span id="modalCheckinStatus" class="badge bg-success">Hợp lệ</span></div>
                 </div>
 
                 <div class="d-flex justify-content-center gap-2">
-                    <a id="modalDownloadQrBtn" href="#" class="btn btn-outline-light btn-sm" download>
+                    <a id="modalDownloadQrBtn" href="#" class="btn btn-secondary btn-sm" download>
                         <i class="fa-solid fa-download me-1"></i> Tải Ảnh QR
                     </a>
-                    <button id="modalTestScanBtn" type="button" class="btn btn-primary-gradient btn-sm fw-bold">
+                    <button id="modalTestScanBtn" type="button" class="btn btn-primary btn-sm">
                         <i class="fa-solid fa-bolt me-1"></i> Quét & Check-in Mã Này
                     </button>
                 </div>
@@ -540,11 +544,11 @@ function handleCameraError(err) {
         <div class="text-center p-3 text-danger">
             <i class="fa-solid fa-camera-slash fs-1 mb-3"></i>
             <h5 class="fw-bold text-danger mb-2">${errorTitle}</h5>
-            <p class="text-light small mb-3 text-opacity-75">${errorDetail}</p>
-            <div class="p-2 rounded bg-dark border border-secondary border-opacity-50 small text-warning mb-3">
+            <p class="small mb-3" style="color: var(--text-secondary);">${errorDetail}</p>
+            <div class="p-3 rounded small mb-3 text-warning" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                 <strong><i class="fa-solid fa-lightbulb me-1"></i> Khắc phục:</strong> ${solution}
             </div>
-            <button class="btn btn-outline-light btn-sm" onclick="startBtn.click()">
+            <button class="btn btn-secondary btn-sm" onclick="startBtn.click()">
                 <i class="fa-solid fa-arrow-rotate-right me-1"></i> Thử lại
             </button>
         </div>
