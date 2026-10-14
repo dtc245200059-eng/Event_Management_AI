@@ -1,7 +1,8 @@
 # AI Chatbot Data Flow Diagram (DFD) Specification
 **Hệ Thống**: Phân Hệ Trợ Lý Ảo RAG Sự Kiện (Event AI Assistant Subsystem)  
-**Tài Liệu Tham Chiếu**: `docs/chatbot-architecture.md`, `docs/architecture.md`  
-**Giai Đoạn**: Architecture Design
+**Trạng Thái Triển Khai**: `[IMPLEMENTED]` (Toàn bộ luồng dữ liệu 4 tiến trình DFD Level 0, 1, 2 đang vận hành thực tế tại `app/services/rag_service.py`)  
+**Tài Liệu Tham Chiếu**: `docs/chatbot-architecture.md`, `docs/architecture.md`, `docs/api.md`  
+**Kỹ Năng Quản Trị**: [`event-retrieval`](file:///d:/Event_Management_AI/.agents/skills/event-retrieval/SKILL.md), [`context-builder`](file:///d:/Event_Management_AI/.agents/skills/context-builder/SKILL.md), [`question-analysis`](file:///d:/Event_Management_AI/.agents/skills/question-analysis/SKILL.md)
 
 ---
 

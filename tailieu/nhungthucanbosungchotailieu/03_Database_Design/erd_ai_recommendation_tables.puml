@@ -1,0 +1,293 @@
+@startuml ERD_AI_Recommendation_Tables
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+
+skinparam class {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+    HeaderBackgroundColor #1565C0
+    HeaderFontColor #FFFFFF
+    AttributeFontSize 11
+}
+
+skinparam class {
+    BackgroundColor<<ai_table>> #F3E5F5
+    BorderColor<<ai_table>> #7B1FA2
+    HeaderBackgroundColor<<ai_table>> #7B1FA2
+}
+
+skinparam class {
+    BackgroundColor<<core_table>> #E8F5E9
+    BorderColor<<core_table>> #2E7D32
+    HeaderBackgroundColor<<core_table>> #2E7D32
+}
+
+title **ERD Bổ sung — Bảng hỗ trợ AI Recommendation Engine**\n\
+Mở rộng từ ERD 9 bảng cốt lõi (Chương III §3.1.5)\n\
+<i>Các bảng mới được đánh dấu màu tím</i>
+
+' ============================
+' CORE TABLES (Existing - 9 tables)
+' ============================
+class users <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    username : VARCHAR(80) <<UNIQUE>>
+    email : VARCHAR(150) <<UNIQUE>>
+    password_hash : VARCHAR(255)
+    full_name : VARCHAR(150)
+    role : VARCHAR(20)
+    phone : VARCHAR(20)
+    is_active : BOOLEAN
+    created_at : DATETIME
+}
+
+class events <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    event_code : VARCHAR(40) <<UNIQUE, INDEX>>
+    title : VARCHAR(255)
+    description : TEXT
+    category : VARCHAR(100)
+    tags : VARCHAR(255)
+    start_date : DATETIME
+    end_date : DATETIME
+    status : VARCHAR(20)
+    max_attendees : INTEGER
+    **created_by** : INTEGER <<FK→users>>
+    created_at : DATETIME
+}
+
+class attendees <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    attendee_code : VARCHAR(40) <<UNIQUE>>
+    **user_id** : INTEGER <<FK→users, UNIQUE>>
+    full_name : VARCHAR(150)
+    email : VARCHAR(150) <<UNIQUE>>
+    phone : VARCHAR(20)
+    organization : VARCHAR(200)
+    job_title : VARCHAR(100)
+    interests : TEXT
+    created_at : DATETIME
+}
+
+class registrations <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    registration_code : VARCHAR(50) <<UNIQUE>>
+    **event_id** : INTEGER <<FK→events>>
+    **attendee_id** : INTEGER <<FK→attendees>>
+    **ticket_id** : INTEGER <<FK→tickets>>
+    registration_status : VARCHAR(20)
+    payment_status : VARCHAR(20)
+    checked_in : BOOLEAN
+    checked_in_at : DATETIME
+    feedback_rating : INTEGER
+    feedback_text : TEXT
+    sentiment : VARCHAR(20)
+    sentiment_score : FLOAT
+    created_at : DATETIME
+}
+
+class tickets <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **event_id** : INTEGER <<FK→events, INDEX>>
+    ticket_code : VARCHAR(40) <<UNIQUE>>
+    ticket_type : VARCHAR(30)
+    price : FLOAT
+    quota : INTEGER
+    sold_count : INTEGER
+    status : VARCHAR(20)
+    created_at : DATETIME
+}
+
+class speakers <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    name : VARCHAR(150)
+    title : VARCHAR(150)
+    bio : TEXT
+    organization : VARCHAR(200)
+    email : VARCHAR(150)
+    created_at : DATETIME
+}
+
+class schedules <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **event_id** : INTEGER <<FK→events, INDEX>>
+    **speaker_id** : INTEGER <<FK→speakers>>
+    **venue_id** : INTEGER <<FK→venues>>
+    title : VARCHAR(200)
+    start_at : DATETIME
+    end_at : DATETIME
+    created_at : DATETIME
+}
+
+class venues <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    venue_code : VARCHAR(30) <<UNIQUE>>
+    name : VARCHAR(200)
+    address : TEXT
+    capacity : INTEGER
+    status : VARCHAR(20)
+    created_at : DATETIME
+}
+
+class ai_chat_history <<core_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **user_id** : INTEGER <<FK→users>>
+    **event_id** : INTEGER <<FK→events>>
+    chat_type : VARCHAR(30)
+    user_message : TEXT
+    ai_response : TEXT
+    model_name : VARCHAR(80)
+    response_mode : VARCHAR(20)
+    latency_ms : INTEGER
+    created_at : DATETIME
+}
+
+' ============================
+' NEW AI RECOMMENDATION TABLES
+' ============================
+class user_event_interactions <<ai_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **user_id** : INTEGER <<FK→users, INDEX>>
+    **event_id** : INTEGER <<FK→events, INDEX>>
+    interaction_type : VARCHAR(30)
+    ..
+    <i>Các giá trị interaction_type:</i>
+    <i>• view — Xem chi tiết sự kiện</i>
+    <i>• click — Click vào sự kiện</i>
+    <i>• bookmark — Đánh dấu yêu thích</i>
+    <i>• share — Chia sẻ sự kiện</i>
+    <i>• register — Đăng ký tham gia</i>
+    <i>• attend — Đã tham dự (check-in)</i>
+    <i>• feedback — Đã gửi phản hồi</i>
+    ..
+    interaction_value : FLOAT
+    session_id : VARCHAR(100)
+    created_at : DATETIME <<INDEX>>
+}
+
+note right of user_event_interactions
+    **Mục đích:**
+    Ghi lại hành vi người dùng
+    để phục vụ Collaborative Filtering
+    và cải thiện Recommendation accuracy.
+
+    **Trọng số (interaction_value):**
+    • view = 1.0
+    • click = 2.0
+    • bookmark = 3.0
+    • share = 3.5
+    • register = 5.0
+    • attend = 7.0
+    • feedback = 8.0
+
+    **Index:** (user_id, event_id, interaction_type)
+    để tránh trùng lặp và truy vấn nhanh.
+end note
+
+class recommendation_cache <<ai_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **user_id** : INTEGER <<FK→users, INDEX>>
+    recommended_event_ids : TEXT
+    algorithm_used : VARCHAR(50)
+    scores : TEXT
+    ..
+    <i>Lưu JSON:</i>
+    <i>[{"event_id":12,"score":0.92},</i>
+    <i> {"event_id":18,"score":0.85}]</i>
+    ..
+    generated_at : DATETIME
+    expires_at : DATETIME <<INDEX>>
+    is_valid : BOOLEAN
+}
+
+note right of recommendation_cache
+    **Mục đích:**
+    Cache kết quả recommendation
+    để giảm tính toán lặp lại.
+
+    **TTL:** 1 giờ (3600s)
+    **Invalidation:** Khi user có
+    interaction mới hoặc event mới
+    được publish.
+end note
+
+class user_preferences <<ai_table>> {
+    **id** : INTEGER <<PK>>
+    --
+    **user_id** : INTEGER <<FK→users, UNIQUE>>
+    preferred_categories : TEXT
+    preferred_days : VARCHAR(50)
+    preferred_time_slots : VARCHAR(50)
+    preferred_price_range : VARCHAR(30)
+    preferred_location_type : VARCHAR(20)
+    ..
+    <i>JSON stored preferences:</i>
+    <i>categories: ["technology","business"]</i>
+    <i>days: ["saturday","sunday"]</i>
+    <i>time_slots: ["morning","afternoon"]</i>
+    <i>price_range: "free|under_100k|any"</i>
+    <i>location_type: "offline|online|any"</i>
+    ..
+    auto_generated : BOOLEAN
+    last_updated : DATETIME
+}
+
+note right of user_preferences
+    **Mục đích:**
+    Lưu sở thích tường minh
+    của người dùng (explicit feedback).
+
+    **auto_generated:**
+    • TRUE = Hệ thống tự suy từ history
+    • FALSE = Người dùng tự chọn
+end note
+
+' ============================
+' RELATIONSHIPS
+' ============================
+' Core relationships
+users "1" --> "0..*" events : "created_by"
+users "1" --> "0..1" attendees : "user_id"
+events "1" --> "0..*" schedules : "event_id"
+events "1" --> "0..*" tickets : "event_id"
+events "1" --> "0..*" registrations : "event_id"
+attendees "1" --> "0..*" registrations : "attendee_id"
+tickets "1" --> "0..*" registrations : "ticket_id"
+speakers "1" --> "0..*" schedules : "speaker_id"
+venues "1" --> "0..*" schedules : "venue_id"
+users "1" --> "0..*" ai_chat_history : "user_id"
+events "1" --> "0..*" ai_chat_history : "event_id"
+
+' AI Recommendation relationships
+users "1" --> "0..*" user_event_interactions : "user_id"
+events "1" --> "0..*" user_event_interactions : "event_id"
+users "1" --> "0..*" recommendation_cache : "user_id"
+users "1" --> "0..1" user_preferences : "user_id"
+
+' ============================
+' LEGEND
+' ============================
+legend bottom
+    |= Màu |= Ý nghĩa |
+    | <#E8F5E9> | Bảng cốt lõi (9 bảng hiện tại) |
+    | <#F3E5F5> | Bảng mới bổ sung cho AI Recommendation |
+    | <<PK>> | Primary Key |
+    | <<FK>> | Foreign Key |
+    | <<INDEX>> | Indexed Column |
+    | <<UNIQUE>> | Unique Constraint |
+endlegend
+
+@enduml

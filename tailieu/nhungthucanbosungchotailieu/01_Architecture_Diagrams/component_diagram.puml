@@ -1,0 +1,208 @@
+@startuml Component_Diagram_Event_Management_AI
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+skinparam componentStyle uml2
+
+skinparam component {
+    BackgroundColor<<presentation>> #4FC3F7
+    BorderColor<<presentation>> #0277BD
+    FontColor<<presentation>> #01579B
+
+    BackgroundColor<<business>> #81C784
+    BorderColor<<business>> #2E7D32
+    FontColor<<business>> #1B5E20
+
+    BackgroundColor<<data>> #FFB74D
+    BorderColor<<data>> #E65100
+    FontColor<<data>> #BF360C
+
+    BackgroundColor<<ai>> #CE93D8
+    BorderColor<<ai>> #6A1B9A
+    FontColor<<ai>> #4A148C
+
+    BackgroundColor<<external>> #EF9A9A
+    BorderColor<<external>> #C62828
+    FontColor<<external>> #B71C1C
+}
+
+skinparam package {
+    BackgroundColor #F5F5F5
+    BorderColor #9E9E9E
+    FontStyle bold
+}
+
+skinparam note {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+}
+
+title **Sơ đồ Component — Hệ thống Quản lý Sự kiện tích hợp AI**\n\
+Kiến trúc Flask 3-Tier + AI Service Layer\n\
+<i>Chương III §3.1.6 & Chương IV §4.9</i>
+
+' ============================
+' LAYER 1: PRESENTATION TIER
+' ============================
+package "Presentation Tier (Jinja2 Templates + Static Assets)" as PresentationTier {
+    component [Trang chủ\n& Khám phá Sự kiện] <<presentation>> as HomePage
+    component [Dashboard Admin\n(KPI Cards + Chart.js)] <<presentation>> as AdminDashboard
+    component [Form CRUD\nSự kiện/Diễn giả/Địa điểm] <<presentation>> as CRUDForms
+    component [Giao diện Đăng ký\n& Thanh toán Vé] <<presentation>> as TicketUI
+    component [Giao diện Check-in\nQR Scanner] <<presentation>> as CheckinUI
+    component [AI Chatbot UI\n(Chat Widget)] <<presentation>> as ChatbotUI
+    component [AI Recommendation\nPanel] <<presentation>> as RecommendUI
+    component [Predictive Analytics\nDashboard] <<presentation>> as PredictiveUI
+    component [Khảo sát & Sentiment\nReport] <<presentation>> as SentimentUI
+}
+
+' ============================
+' LAYER 2: BUSINESS TIER
+' ============================
+package "Business Tier (Flask Blueprints + Services)" as BusinessTier {
+
+    package "Flask Blueprints (Route Controllers)" as Blueprints {
+        component [auth_bp\n/auth/*] <<business>> as AuthBP
+        component [events_bp\n/events/*] <<business>> as EventsBP
+        component [speakers_bp\n/speakers/*] <<business>> as SpeakersBP
+        component [venues_bp\n/venues/*] <<business>> as VenuesBP
+        component [schedules_bp\n/schedules/*] <<business>> as SchedulesBP
+        component [attendees_bp\n/attendees/*] <<business>> as AttendeesBP
+        component [tickets_bp\n/tickets/*] <<business>> as TicketsBP
+        component [registrations_bp\n/registrations/*] <<business>> as RegBP
+        component [checkin_bp\n/checkin/*] <<business>> as CheckinBP
+        component [notifications_bp\n/notifications/*] <<business>> as NotifBP
+        component [surveys_bp\n/surveys/*] <<business>> as SurveysBP
+        component [reports_bp\n/reports/*] <<business>> as ReportsBP
+        component [ai_bp\n/ai/*] <<business>> as AIBP
+    }
+
+    package "Business Services (Logic Layer)" as Services {
+        component [AuthService\n(PBKDF2 + RBAC)] <<business>> as AuthSvc
+        component [EventService\n(Lifecycle Management)] <<business>> as EventSvc
+        component [TicketService\n(Quota + Transaction)] <<business>> as TicketSvc
+        component [RegistrationService\n(Registration + Payment)] <<business>> as RegSvc
+        component [CheckinService\n(QR Validation)] <<business>> as CheckinSvc
+        component [NotificationService\n(Realtime Push)] <<business>> as NotifSvc
+    }
+
+    package "AI Orchestration Layer" as AIOrch {
+        component [AIOrchestrator\n(Context Builder\n+ Rate Limiter\n+ PII Filter)] <<ai>> as Orchestrator
+    }
+}
+
+' ============================
+' LAYER 3: AI SERVICE TIER
+' ============================
+package "AI Service Tier (Python ML/NLP)" as AITier {
+    component [GeminiService\n(LLM Gateway\n+ Fallback Mock)] <<ai>> as GeminiSvc
+    component [RAGService\n(Retrieval-Augmented\nGeneration)] <<ai>> as RAGSvc
+    component [RecommendationService\n(Content-Based +\nCollaborative Filtering)] <<ai>> as RecSvc
+    component [PredictiveService\n(Attendance Forecasting\n+ Resource Planning)] <<ai>> as PredSvc
+    component [SentimentService\n(NLP Sentiment +\nTopic Extraction)] <<ai>> as SentSvc
+}
+
+' ============================
+' LAYER 4: DATA TIER
+' ============================
+package "Data Tier (SQLAlchemy ORM + SQLite)" as DataTier {
+    database "SQLite Database" as DB {
+        component [users] <<data>> as TblUsers
+        component [events] <<data>> as TblEvents
+        component [speakers] <<data>> as TblSpeakers
+        component [venues] <<data>> as TblVenues
+        component [schedules] <<data>> as TblSchedules
+        component [attendees] <<data>> as TblAttendees
+        component [tickets] <<data>> as TblTickets
+        component [registrations] <<data>> as TblReg
+        component [ai_chat_history] <<data>> as TblAI
+    }
+}
+
+' ============================
+' EXTERNAL SERVICES
+' ============================
+package "External Services" as External {
+    component [Google Gemini 2.0 Flash\nAPI] <<external>> as GeminiAPI
+    component [Payment Gateway\n(VNPay/MoMo/Stripe)] <<external>> as PaymentGW
+    component [SMTP Email\nService] <<external>> as SMTP
+}
+
+' ============================
+' CONNECTIONS
+' ============================
+' Presentation -> Blueprints
+HomePage --> EventsBP
+AdminDashboard --> ReportsBP
+CRUDForms --> EventsBP
+CRUDForms --> SpeakersBP
+CRUDForms --> VenuesBP
+TicketUI --> TicketsBP
+TicketUI --> RegBP
+CheckinUI --> CheckinBP
+ChatbotUI --> AIBP
+RecommendUI --> AIBP
+PredictiveUI --> AIBP
+SentimentUI --> AIBP
+
+' Blueprints -> Services
+AuthBP --> AuthSvc
+EventsBP --> EventSvc
+TicketsBP --> TicketSvc
+RegBP --> RegSvc
+CheckinBP --> CheckinSvc
+NotifBP --> NotifSvc
+AIBP --> Orchestrator
+
+' AI Orchestration -> AI Services
+Orchestrator --> GeminiSvc
+Orchestrator --> RAGSvc
+Orchestrator --> RecSvc
+Orchestrator --> PredSvc
+Orchestrator --> SentSvc
+
+' Services -> Database
+AuthSvc --> DB
+EventSvc --> DB
+TicketSvc --> DB
+RegSvc --> DB
+CheckinSvc --> DB
+
+' AI Services -> Database (read-only via Orchestrator)
+RAGSvc ..> DB : "Context\nRetrieval"
+RecSvc ..> DB : "User History\n+ Event Features"
+PredSvc ..> DB : "Registration\n+ Historical Data"
+SentSvc ..> DB : "Feedback\nText"
+
+' AI -> External
+GeminiSvc --> GeminiAPI : "HTTPS/REST\nAPI Key Auth"
+
+' Business -> External
+RegSvc --> PaymentGW : "Payment\nRequest/Callback"
+NotifSvc --> SMTP : "Email\nNotifications"
+
+' Notes
+note right of Orchestrator
+  **Trách nhiệm:**
+  1. Rate Limiter (5 req/min/user)
+  2. PII Filtering (loại bỏ email, phone)
+  3. Context Builder (truy xuất DB → tạo Context)
+  4. Fallback routing khi Gemini timeout
+  5. Logging vào ai_chat_history
+end note
+
+note bottom of DB
+  **Chuẩn hóa 3NF**
+  9 bảng với PK-FK đầy đủ
+  Index trên event_code, ticket_code,
+  attendee_code, registration_code
+end note
+
+note right of GeminiAPI
+  **Fallback Strategy:**
+  Gemini API → Timeout (3s)
+  → Mock Engine (câu trả lời
+  dựa trên dữ liệu nội bộ)
+end note
+
+@enduml

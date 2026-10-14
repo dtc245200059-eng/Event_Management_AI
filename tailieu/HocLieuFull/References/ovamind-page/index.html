@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Page - NovaMind</title>
+    
+    <style>
+        /*! Bootstrap v5.3.2 Grid & Core custom subset */
+        *,::after,::before{box-sizing:border-box}
+        body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background-color:#ffffff;color:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center}
+        .container{width:100%;padding-right:var(--bs-gutter-x,.75rem);padding-left:var(--bs-gutter-x,.75rem);margin-right:auto;margin-left:auto}
+        @media (min-width:576px){.container{max-width:540px}}
+        @media (min-width:768px){.container{max-width:720px}}
+        @media (min-width:992px){.container{max-width:960px}}
+        @media (min-width:1200px){.container{max-width:1140px}}
+        .row{--bs-gutter-x:1.5rem;--bs-gutter-y:0;display:flex;flex-wrap:wrap;margin-top:calc(-1 * var(--bs-gutter-y));margin-right:calc(-.5 * var(--bs-gutter-x));margin-left:calc(-.5 * var(--bs-gutter-x))}
+        .row>*{flex-shrink:0;width:100%;max-width:100%;padding-right:calc(var(--bs-gutter-x) * .5);padding-left:calc(var(--bs-gutter-x) * .5);margin-top:var(--bs-gutter-y)}
+        @media (min-width:992px){.col-lg-6{flex:0 0 50%;width:50%}}
+        .d-flex{display:flex!important}.align-items-center{align-items:center!important}.justify-content-center{justify-content:center!important}.align-items-start{align-items:start!important}
+        .w-100{width:100%!important}.mb-3{margin-bottom:1rem!important}.mb-4{margin-bottom:1.5rem!important}.mb-5{margin-bottom:3rem!important}.me-2{margin-margin-right:.5rem!important}.me-3{margin-right:1rem!important}
+        .fw-bold{font-weight:700!important}.fw-semibold{font-weight:600!important}.fs-5{font-size:1.25rem!important}.shadow-sm{box-shadow:0 .125rem .25rem rgba(0,0,0,.075)!important}
+        .list-unstyled{padding-left:0;list-style:none}
+        .flex-grow-1{flex-grow:1!important}.gap-3{gap:1rem!important}
+
+        /* GIAO DIỆN TÙY CHỈNH THEO UIZARD */
+        :root {
+            --dark-blue: #0f172a;
+            --primary-blue: #1d63ed;
+            --primary-blue-hover: #154ec4;
+            --text-muted: #64748b;
+            --card-bg: #f4f6fa;
+            --border-color: #cbd5e1;
+        }
+
+        .welcome-container {
+            padding-top: 3rem;
+            padding-bottom: 3rem;
+        }
+
+        .text-dark-blue { color: var(--dark-blue); }
+        .text-muted { color: var(--text-muted) !important; }
+        .text-primary-blue { color: var(--primary-blue); }
+        .lead-text { line-height: 1.6; }
+
+        /* Kiểu dáng danh sách tính năng bên trái */
+        .feature-list li {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: #334155;
+        }
+        
+        /* Thay thế icon SVG dấu tích xanh (không lo mất mạng không hiện icon) */
+        .custom-check-icon {
+            width: 22px;
+            height: 22px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%231d63ed' viewBox='0 0 16 16'%3E%3Cpath d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        /* Kiểu dáng khối Card bên phải */
+        .app-card {
+            background-color: var(--card-bg);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 460px;
+            padding: 3rem;
+            border: 1px solid rgba(0, 0, 0, 0.01);
+        }
+
+        /* Thay thế icon SVG Robot cho Logo */
+        .custom-robot-icon {
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary-blue);
+            border-radius: 8px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M6 12.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5ZM3 8.062C3 6.76 4.235 5.74 5.53 5.884a41.439 41.439 0 0 1 4.94 0C11.765 5.74 13 6.76 13 8.062v1.157a.5.5 0 0 1-.152.351l-1.325 1.325a.5.5 0 0 1-.212.125l-2 .5a.5.5 0 0 1-.242 0l-2-.5a.5.5 0 0 1-.212-.125L5.152 9.57A.5.5 0 0 1 5 9.22V8.062ZM8 1c2.996 0 5.326 2.449 5.326 5.5A.5.5 0 0 1 13 7h-1v1.062a2 2 0 0 1-.607 1.436l-1.205 1.204.93 2.79a.5.5 0 0 1-.745.561l-2-1.333a.5.5 0 0 1-.554 0l-2 1.333a.5.5 0 0 1-.745-.561l.93-2.79-1.205-1.204A2 2 0 0 1 4 8.062V7H3a.5.5 0 0 1-.326-.88C2.674 3.449 5.004 1 8 1Z'/%3E%3C/svg%3E");
+            background-size: 65%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Thay thế icon SVG nhóm người cho Người dùng active */
+        .custom-people-icon {
+            width: 18px;
+            height: 18px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7Zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216ZM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
+            display: inline-block;
+        }
+
+        .card-title { font-size: 2rem; letter-spacing: -0.5px; margin-top: 0; }
+        .card-subtitle { font-size: 1.05rem; line-height: 1.5; }
+
+        /* Các nút bấm */
+        .btn-custom {
+            display: inline-block;
+            text-align: center;
+            text-decoration: none;
+            vertical-align: middle;
+            cursor: pointer;
+            user-select: none;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .btn-primary-custom {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            border: none;
+        }
+
+        .btn-outline-custom {
+            background-color: transparent;
+            color: #475569;
+            border: 1.5px solid var(--border-color);
+        }
+
+        .btn-group-custom {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Responsive linh hoạt */
+        @media (max-width: 991px) {
+            body { align-items: flex-start; }
+            .welcome-container { padding-top: 2rem; }
+            .col-lg-6 { margin-bottom: 3rem; }
+            .app-card { max-width: 100%; }
+        }
+        @media (max-width: 576px) {
+            .btn-group-custom { flex-direction: column; }
+            .card-title { font-size: 1.7rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container welcome-container">
+        <div class="row align-items-center">
+            
+            <div class="col-lg-6" style="padding-right: 2rem;">
+                <h1 class="fw-bold text-dark-blue mb-3" style="font-size: 3rem; margin-top:0;">Welcome Page</h1>
+                <p class="text-muted fs-5 mb-5 lead-text">
+                    The entry point establishes trust and guides users toward their first interaction with the assistant.
+                </p>
+                
+                <ul class="list-unstyled feature-list">
+                    <li class="d-flex align-items-center">
+                        <span class="custom-check-icon me-3"></span>
+                        <span>Hero section with clear value proposition</span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <span class="custom-check-icon me-3"></span>
+                        <span>Feature highlights with iconography</span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <span class="custom-check-icon me-3"></span>
+                        <span>CTA buttons: "Get Started" and "Sign In"</span>
+                    </li>
+                    <li class="d-flex align-items-center">
+                        <span class="custom-check-icon me-3"></span>
+                        <span>Social proof: user count and testimonials</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="col-lg-6 d-flex justify-content-center">
+                <div class="app-card shadow-sm">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="custom-robot-icon me-2"></div>
+                        <span class="fw-bold text-dark-blue fs-5">NovaMind</span>
+                    </div>
+
+                    <h2 class="fw-bold text-dark-blue mb-3 card-title">Think smarter, work faster.</h2>
+                    <p class="text-muted mb-4 card-subtitle">
+                        Your AI assistant for conversations and document intelligence.
+                    </p>
+
+                    <div class="btn-group-custom mb-4">
+                        <button class="btn-custom btn-primary-custom" onclick="alert('Bắt đầu thành công!')">Get Started</button>
+                        <button class="btn-custom btn-outline-custom" onclick="alert('Đăng nhập thành công!')">Sign In</button>
+                    </div>
+
+                    <div class="d-flex align-items-center text-muted" style="font-size: 0.9rem;">
+                        <span class="custom-people-icon me-2"></span>
+                        <span>12,400+ active users</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

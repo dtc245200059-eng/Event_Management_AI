@@ -1,0 +1,186 @@
+@startuml Deployment_Diagram_Event_Management_AI
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+
+skinparam node {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+}
+
+skinparam artifact {
+    BackgroundColor #FFF3E0
+    BorderColor #E65100
+}
+
+skinparam database {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+}
+
+skinparam cloud {
+    BackgroundColor #F3E5F5
+    BorderColor #7B1FA2
+}
+
+skinparam rectangle {
+    BackgroundColor #E8F5E9
+    BorderColor #2E7D32
+}
+
+title **Sơ đồ Deployment — Hệ thống Quản lý Sự kiện tích hợp AI**\n\
+Kiến trúc triển khai Docker-based\n\
+<i>Chương IV §4.10</i>
+
+' ============================
+' CLIENT TIER
+' ============================
+node "Client Device" as ClientNode {
+    rectangle "Web Browser\n(Chrome/Firefox/Edge)" as Browser {
+        artifact "HTML5 + CSS3\n+ Bootstrap 5" as Frontend
+        artifact "JavaScript\n(Vanilla + Chart.js)" as JS
+        artifact "QR Scanner\n(html5-qrcode)" as QRScanner
+    }
+}
+
+' ============================
+' APPLICATION SERVER
+' ============================
+node "Application Server\n(Docker Host)" as AppServer {
+
+    node "Docker Container: flask-app\nPort 5000" as FlaskContainer {
+        rectangle "Flask Application\n(Python 3.11+)" as FlaskApp {
+            artifact "Gunicorn WSGI\n(4 workers)" as Gunicorn
+            artifact "Flask App Factory\n(__init__.py)" as AppFactory
+            artifact "Blueprint Registry\n(13 Blueprints)" as Blueprints
+            artifact "Jinja2 Template Engine\n(SSR Rendering)" as Jinja2
+            artifact "SQLAlchemy ORM\n(Session Management)" as ORM
+        }
+
+        rectangle "AI Service Module\n(Embedded Python)" as AIModule {
+            artifact "GeminiService\n(google-generativeai)" as GemSvc
+            artifact "RAGService\n(Context Retrieval)" as RAGSvc
+            artifact "RecommendationService\n(scikit-learn)" as RecSvc
+            artifact "PredictiveService\n(scikit-learn/statsmodels)" as PredSvc
+            artifact "SentimentService\n(Gemini NLP)" as SentSvc
+            artifact "Rate Limiter\n(In-Memory Counter)" as RateLimiter
+        }
+    }
+
+    database "SQLite Database\n(instance/app.db)" as SQLiteDB {
+        artifact "users" as T1
+        artifact "events" as T2
+        artifact "speakers" as T3
+        artifact "venues" as T4
+        artifact "schedules" as T5
+        artifact "attendees" as T6
+        artifact "tickets" as T7
+        artifact "registrations" as T8
+        artifact "ai_chat_history" as T9
+    }
+
+    rectangle "Static Assets\n(app/static/)" as Static {
+        artifact "CSS / JS\nBundles" as StaticCSS
+        artifact "QR Code Images\n(Generated)" as QRImages
+        artifact "Upload Files\n(Banners)" as Uploads
+    }
+
+    rectangle "Configuration" as Config {
+        artifact ".env\n(API Keys, SECRET_KEY\nDB_URI)" as EnvFile
+        artifact "config.py\n(Flask Config Class)" as ConfigPy
+    }
+}
+
+' ============================
+' EXTERNAL SERVICES
+' ============================
+cloud "Google Cloud Platform" as GCP {
+    rectangle "Gemini 2.0 Flash API\n(generativelanguage.googleapis.com)" as GeminiAPI {
+        artifact "REST Endpoint\nPOST /v1beta/models/\ngemini-2.0-flash:generateContent" as GeminiEndpoint
+    }
+}
+
+cloud "Payment Provider" as PaymentCloud {
+    rectangle "Payment Gateway API\n(VNPay / MoMo / Stripe)" as PaymentAPI {
+        artifact "Create Payment\nURL" as PayCreate
+        artifact "IPN/Webhook\nCallback" as PayCallback
+    }
+}
+
+cloud "Email Service" as EmailCloud {
+    rectangle "SMTP Server\n(Gmail/SendGrid)" as SMTPServer {
+        artifact "Send Notification\nEmails" as EmailSend
+    }
+}
+
+' ============================
+' OPTIONAL: PRODUCTION SCALING
+' ============================
+node "Production Scaling (Future)" as FutureNode #F5F5F5 {
+    rectangle "Nginx Reverse Proxy\nPort 80/443 (SSL)" as Nginx
+    rectangle "PostgreSQL / SQL Server\n(Migration từ SQLite)" as ProdDB
+    rectangle "Redis Cache\n(Session + Rate Limit)" as Redis
+    rectangle "Docker Compose\n/ Kubernetes" as K8s
+}
+
+' ============================
+' CONNECTIONS
+' ============================
+Browser -down-> FlaskContainer : "HTTP/HTTPS\nPort 5000"
+Gunicorn --> AppFactory : "WSGI"
+AppFactory --> Blueprints
+Blueprints --> Jinja2
+Blueprints --> ORM
+ORM --> SQLiteDB : "SQLAlchemy\nConnection"
+
+Blueprints --> AIModule : "Internal\nFunction Call"
+GemSvc -right-> GeminiAPI : "HTTPS REST\nAPI Key Header\nTimeout: 3s"
+FlaskApp --> Static : "serve_static"
+FlaskApp --> Config : "load_dotenv()"
+
+FlaskContainer -right-> PaymentAPI : "HTTPS REST\nPayment Request"
+PaymentAPI -left-> FlaskContainer : "IPN Callback\nPOST /payments/callback"
+
+FlaskContainer --> SMTPServer : "SMTP/TLS\nPort 587"
+
+' Future connections
+Nginx ..> FlaskContainer : "Reverse\nProxy (Future)"
+FlaskContainer ..> ProdDB : "Migration\nPath (Future)"
+FlaskContainer ..> Redis : "Cache\n(Future)"
+
+' ============================
+' NOTES
+' ============================
+note right of FlaskContainer
+  **Cấu hình Docker:**
+  FROM python:3.11-slim
+  EXPOSE 5000
+  CMD ["gunicorn", "-w", "4",
+       "-b", "0.0.0.0:5000",
+       "run:app"]
+end note
+
+note bottom of SQLiteDB
+  **Hạn chế SQLite:**
+  - Không hỗ trợ concurrent writes tốt
+  - Phù hợp cho Demo/đồ án
+  - Kế hoạch migration sang
+    PostgreSQL/SQL Server khi scale
+end note
+
+note right of GeminiAPI
+  **Fallback Flow:**
+  1. Gọi Gemini API (timeout 3s)
+  2. Nếu thất bại → Mock Engine
+  3. Log response_mode = "mock"
+  4. Trả kết quả nội bộ
+end note
+
+note top of FutureNode
+  **Kiến trúc mở rộng (Out-of-Scope v1):**
+  Khi production, chuyển sang Nginx +
+  PostgreSQL + Redis + Docker Compose
+end note
+
+@enduml

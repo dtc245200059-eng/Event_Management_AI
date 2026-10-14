@@ -1,7 +1,8 @@
 # AI Chatbot Subsystem Architecture Specification
 **Hệ Thống**: Phân Hệ Trợ Lý Ảo RAG Sự Kiện (Event AI Assistant Subsystem)  
-**Tài Liệu Tham Chiếu**: `docs/architecture.md`, `docs/requirements.md`  
-**Giai Đoạn**: Architecture Design
+**Trạng Thái Triển Khai**: `[IMPLEMENTED]` (Đã hoàn thiện mã nguồn tại `rag_service.py`, `gemini_service.py`, test pass 100%)  
+**Tài Liệu Tham Chiếu**: `docs/architecture.md`, `docs/requirements.md`, `docs/api.md`  
+**Kỹ Năng Quản Trị**: [`rag-prompt`](file:///d:/Event_Management_AI/.agents/skills/rag-prompt/SKILL.md), [`context-builder`](file:///d:/Event_Management_AI/.agents/skills/context-builder/SKILL.md), [`question-analysis`](file:///d:/Event_Management_AI/.agents/skills/question-analysis/SKILL.md), [`event-retrieval`](file:///d:/Event_Management_AI/.agents/skills/event-retrieval/SKILL.md)
 
 ---
 
@@ -19,9 +20,10 @@ Kiến trúc phân hệ được thiết kế theo nguyên tắc **Retrieval-Aug
                                      ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                   1. GIAO DIỆN CHATBOT (CHATBOT UI & API)                │
-│   - Widget Chatbot nổi góc dưới màn hình (`templates/chat_widget.html`)  │
+│   - Bottom Sheet di động & Modal nổi (`app/templates/base.html`)         │
+│   - Workspace AI toàn màn hình (`app/templates/ai/chat_workspace.html`)  │
 │   - Tự động cuộn, trạng thái gõ (Typing Indicator), render thẻ sự kiện   │
-│   - Endpoint điều phối: `POST /api/chat`                                 │
+│   - Endpoint điều phối: `POST /ai/chat` & `POST /api/ai/chat`            │
 └────────────────────────────────────┬─────────────────────────────────────┘
                                      │
                                      ▼

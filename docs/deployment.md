@@ -1,15 +1,19 @@
 # Deployment & Operations Guide
-**Hệ Thống**: Quản Lý Sự Kiện Tích Hợp Trí Tuệ Nhân Tạo (Event Management AI System)  
-**Phiên Bản**: 2.0 (AI-Augmented SDLC Standard)  
-**Môi Trường Hỗ Trợ**: Môi trường Cục Bộ (Local Virtualenv), Đóng Gói Docker Container, Docker Compose
+
+> **Hệ Thống:** Quản Lý Sự Kiện Tích Hợp Trí Tuệ Nhân Tạo (Event Management AI System)  
+> **Phiên Bản:** 3.1 (Đã Xác Minh Với Mã Nguồn & Cấu Hình Thực Tế)  
+> **Trạng thái triển khai:** `[IMPLEMENTED]` (Hỗ trợ Local venv, Dockerfile, docker-compose.yml, Procfile Gunicorn)  
+> **Tài Liệu Tham Chiếu:** [architecture.md](file:///d:/Event_Management_AI/docs/architecture.md), [api.md](file:///d:/Event_Management_AI/docs/api.md), [security-review.md](file:///d:/Event_Management_AI/docs/security-review.md)  
+> **Kỹ năng liên quan:** [deployment](file:///d:/Event_Management_AI/.agents/skills/deployment/SKILL.md)  
+> **Môi Trường Hỗ Trợ:** Môi trường Cục Bộ (Local Virtualenv), Đóng Gói Docker Container, Docker Compose, Gunicorn Procfile
 
 ---
 
 ## 1. Yêu Cầu Hệ Thống Tiên Quyết (Prerequisites)
-- **Python**: Phiên bản 3.10 trở lên (khuyến nghị Python 3.10 - 3.12).
+- **Python**: Phiên bản 3.10 - 3.14 (khuyến nghị Python 3.14).
 - **Docker & Docker Compose**: Nếu triển khai bằng Containerization.
 - **Git**: Quản lý phiên bản mã nguồn.
-- **Google Gemini API Key**: Đăng ký miễn phí tại [Google AI Studio](https://aistudio.google.com/) để kích hoạt chế độ Live Chatbot.
+- **Google Gemini API Key**: Đăng ký tại [Google AI Studio](https://aistudio.google.com/) để kích hoạt chế độ Live Chatbot. Nếu không có key, hệ thống tự động chạy chế độ Offline Fallback Mock Engine.
 
 ---
 
@@ -95,19 +99,30 @@ docker-compose down
 
 ---
 
-## 4. Danh Sách Tài Khoản Mẫu Đăng Nhập Mặc Định
+## 4. Phương Án 3: Triển Khai Cloud PaaS Với Gunicorn & Procfile
 
-| Tên Đăng Nhập (Username) | Mật Khẩu Mặc Định | Vai Trò (Role) | Chức Năng Khả Dụng |
-| :--- | :--- | :--- | :--- |
-| `admin` | `Admin@123` | **Quản Trị Viên (Admin)** | Toàn quyền quản lý sự kiện, vé, diễn giả, thống kê và AI Generator. |
-| `staff` | `Staff@123` | **Nhân Viên (Staff)** | Truy cập giao diện quét mã QR Soát Vé tại `/checkin/scanner`. |
-| `user1` | `User@123` | **Người Tham Dự (Attendee)** | Tìm kiếm sự kiện, đặt vé, xem vé điện tử và trò chuyện với AI. |
+Dự án cung cấp tệp `Procfile` chuẩn:
+```text
+web: gunicorn run:app --workers 4 --bind 0.0.0.0:$PORT
+```
+Thích hợp triển khai trực tiếp lên Heroku, Render, hoặc Railway.
 
 ---
 
-## 5. Chạy Kiểm Thử Tự Động (Automated Testing)
-Để thực thi bộ 11 bài kiểm thử tự động với Pytest:
+## 5. Danh Sách Tài Khoản Mẫu Đăng Nhập Mặc Định
+
+| Tên Đăng Nhập (Username) | Mật Khẩu Mặc Định | Vai Trò (Role) | Chức Năng Khả Dụng |
+| :--- | :--- | :--- | :--- |
+| `admin` | `Admin@123` | **Quản Trị Viên (Admin)** | Toàn quyền quản trị hệ thống, duyệt sự kiện, quản trị user, xem AI Analytics. |
+| `organizer` | `Organizer@123` | **Ban Tổ Chức (Organizer)** | Tạo & quản lý sự kiện, vé, diễn giả, lịch trình, gửi thông báo và AI draft/summary. |
+| `staff` | `Staff@123` | **Nhân Viên (Staff)** | Truy cập giao diện quét mã QR Soát Vé tại `/checkin/scanner`. |
+| `user1` | `User@123` | **Khách Tham Dự (Attendee)** | Tìm kiếm sự kiện, đặt vé, xem vé điện tử, hòm thư và tư vấn Multi-Agent AI. |
+
+---
+
+## 6. Chạy Kiểm Thử Tự Động (Automated Testing)
+Để thực thi bộ 36 bài kiểm thử tự động với Pytest:
 ```bash
 python -m pytest -v
 ```
-Toàn bộ kết quả sẽ được hiển thị trên Terminal với tỷ lệ Pass 100%.
+Toàn bộ 36 test cases trên 5 test suites sẽ được thực thi với kết quả Pass 100%.
