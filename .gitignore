@@ -35,3 +35,8 @@ Thumbs.db
 *.log
 scratch/
 .system_generated/
+
+# Runtime Generated QR Codes & Uploads
+app/static/qr_codes/
+app/static/qrcodes/
+app/static/uploads/
