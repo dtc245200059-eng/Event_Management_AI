@@ -1,0 +1,140 @@
+@startuml DFD_Level0_Event_Management_AI
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+
+skinparam rectangle {
+    RoundCorner 25
+}
+
+skinparam storage {
+    BackgroundColor #FFF9C4
+    BorderColor #F9A825
+}
+
+title **Sơ đồ Luồng Dữ liệu (DFD) — Level 0**\n\
+Hệ thống Quản lý Sự kiện tích hợp AI\n\
+<i>Chương III §3.1.6 — Hình 3.3b</i>
+
+' ============================
+' EXTERNAL ENTITIES (Actors)
+' ============================
+actor "Admin\n(Quản trị viên)" as Admin #E3F2FD
+actor "Manager\n(Ban tổ chức)" as Manager #E8F5E9
+actor "Staff\n(Nhân viên\nvận hành)" as Staff #FFF3E0
+actor "Attendee\n(Khách\ntham dự)" as Attendee #F3E5F5
+rectangle "Gemini API\n(AI External)" as GeminiExt #EF9A9A
+rectangle "Payment Gateway\n(Cổng thanh toán)" as PayGW #EF9A9A
+
+' ============================
+' PROCESSES
+' ============================
+rectangle "**P1**\nQuản lý\nNgười dùng\n& Xác thực" as P1 #BBDEFB
+rectangle "**P2**\nQuản lý\nSự kiện &\nTài nguyên" as P2 #C8E6C9
+rectangle "**P3**\nQuản lý\nLịch trình &\nDiễn giả" as P3 #C8E6C9
+rectangle "**P4**\nĐăng ký Vé\n& Phát hành\nTicket" as P4 #DCEDC8
+rectangle "**P5**\nXử lý\nThanh toán" as P5 #FFE0B2
+rectangle "**P6**\nCheck-in\n& Vận hành" as P6 #FFE0B2
+rectangle "**P7**\nThông báo\n& Khảo sát" as P7 #D1C4E9
+rectangle "**P8**\nAI Chatbot\n(RAG/LLM)" as P8 #CE93D8
+rectangle "**P9**\nAI Recommend-\nation Engine" as P9 #CE93D8
+rectangle "**P10**\nAI Predictive\nAnalytics" as P10 #CE93D8
+rectangle "**P11**\nAI Sentiment\nAnalysis" as P11 #CE93D8
+rectangle "**P12**\nDashboard\n& Báo cáo" as P12 #B2DFDB
+
+' ============================
+' DATA STORES
+' ============================
+storage "**D1** users" as DS1
+storage "**D2** events" as DS2
+storage "**D3** speakers" as DS3
+storage "**D4** venues" as DS4
+storage "**D5** schedules" as DS5
+storage "**D6** attendees" as DS6
+storage "**D7** tickets" as DS7
+storage "**D8** registrations" as DS8
+storage "**D9** ai_chat_history" as DS9
+
+' ============================
+' DATA FLOWS
+' ============================
+
+' --- Actor → Process ---
+Admin -right-> P1 : "Tạo/Khóa\ntài khoản"
+Admin --> P2 : "CRUD\nSự kiện"
+Manager --> P2 : "Cập nhật\nSự kiện"
+Manager --> P3 : "Quản lý\nLịch trình"
+Manager --> P12 : "Xem\nBáo cáo"
+Staff --> P6 : "Quét QR\nCheck-in"
+Attendee --> P4 : "Đăng ký\n& Chọn vé"
+Attendee --> P8 : "Hỏi đáp\nChatbot"
+Attendee --> P7 : "Gửi\nPhản hồi"
+
+' --- Process → Actor ---
+P1 --> Admin : "Danh sách\nngười dùng"
+P4 --> Attendee : "Mã QR Ticket\n& Xác nhận"
+P6 --> Staff : "Kết quả\nCheck-in"
+P8 --> Attendee : "Câu trả lời\nAI"
+P9 --> Attendee : "Danh sách\nSự kiện\nĐề xuất"
+P12 --> Manager : "KPI Dashboard\n& Biểu đồ"
+
+' --- Process → Data Store ---
+P1 --> DS1 : "Lưu/Cập nhật\nUser"
+P2 --> DS2 : "Lưu/Cập nhật\nEvent"
+P2 --> DS4 : "Lưu\nVenue"
+P3 --> DS5 : "Lưu\nSchedule"
+P3 --> DS3 : "Lưu\nSpeaker"
+P4 --> DS6 : "Tạo\nAttendee"
+P4 --> DS7 : "Cập nhật\nQuota vé"
+P4 --> DS8 : "Tạo\nRegistration"
+P5 --> DS8 : "Cập nhật\nPayment Status"
+P6 --> DS8 : "Cập nhật\nchecked_in"
+P7 --> DS8 : "Lưu Feedback\n& Rating"
+P8 --> DS9 : "Lưu lịch sử\nChat AI"
+
+' --- Data Store → Process ---
+DS1 --> P1 : "Thông tin\nxác thực"
+DS2 --> P8 : "Event Context\n(RAG)"
+DS5 --> P8 : "Schedule\nContext"
+DS3 --> P8 : "Speaker\nContext"
+DS7 --> P8 : "Ticket\nContext"
+DS6 --> P9 : "User Profile\n& Interests"
+DS8 --> P9 : "Lịch sử\ntham gia"
+DS2 --> P9 : "Event\nFeatures"
+DS8 --> P10 : "Registration\n+ Check-in Data"
+DS2 --> P10 : "Event\nHistorical Data"
+DS8 --> P11 : "Feedback Text\n& Rating"
+DS8 --> P12 : "Thống kê\nĐăng ký/Check-in"
+DS7 --> P12 : "Thống kê\nVé"
+DS7 --> P4 : "Kiểm tra\nQuota"
+DS8 --> P5 : "Thông tin\nRegistration"
+
+' --- Process → External ---
+P8 --> GeminiExt : "Prompt +\nContext"
+GeminiExt --> P8 : "AI Response"
+P11 --> GeminiExt : "Feedback text\n→ Sentiment"
+GeminiExt --> P11 : "Sentiment\nResult"
+P5 --> PayGW : "Payment\nRequest"
+PayGW --> P5 : "Payment\nResult/Callback"
+
+' --- Process → Process ---
+P4 --> P5 : "Registration\nPaid/VIP →\nPayment Flow"
+P5 --> P4 : "Payment\nConfirmed →\nActivate Ticket"
+P11 --> P12 : "Sentiment\nScore →\nDashboard"
+P10 --> P12 : "Predicted\nAttendance →\nDashboard"
+P9 --> P2 : "Recommended\nEvents →\nDisplay"
+
+' ============================
+' LEGEND
+' ============================
+legend right
+  |= Ký hiệu |= Ý nghĩa |
+  | <#BBDEFB> Rectangle | Process (Tiến trình xử lý) |
+  | <#CE93D8> Rectangle | AI Process (Tiến trình AI) |
+  | <#FFF9C4> Storage | Data Store (Kho dữ liệu) |
+  | Actor | External Entity (Thực thể ngoài) |
+  | <#EF9A9A> Rectangle | External Service (Dịch vụ ngoài) |
+  | Arrow | Data Flow (Luồng dữ liệu) |
+endlegend
+
+@enduml

@@ -1,0 +1,173 @@
+@startuml Sequence_Checkin_QR
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+skinparam participant {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+}
+
+skinparam participant {
+    BackgroundColor<<data>> #FFF9C4
+    BorderColor<<data>> #F9A825
+}
+
+title **Sequence Diagram — Check-in bằng QR Code**\n\
+Chương III §UC06 — Check-in & Vận hành Sự kiện\n\
+Bao gồm: Thành công, Vé trùng, Vé không hợp lệ, Sự kiện sai
+
+actor "Staff\n(Nhân viên\nvận hành)" as Staff
+participant "Browser\n(QR Scanner)" as Browser
+participant "Flask Route\n(checkin_bp)" as Route
+participant "Checkin\nService" as CheckinSvc
+database "SQLite DB" as DB <<data>>
+participant "Notification\nService" as NotifSvc
+
+== Luồng 1: Check-in thành công ==
+
+Staff -> Browser : Mở giao diện Check-in\n(/checkin/scan?event_id=12)
+activate Browser
+
+Browser -> Browser : Khởi tạo Camera\n(html5-qrcode library)
+
+Staff -> Browser : Quét mã QR trên vé\n→ "TKT-2026-00456"
+
+Browser -> Route : POST /checkin/verify\n{ticket_number: "TKT-2026-00456",\nevent_id: 12}
+activate Route
+
+Route -> CheckinSvc : verify_and_checkin(ticket_number, event_id)
+activate CheckinSvc
+
+' Step 1: Find ticket
+CheckinSvc -> DB : SELECT r.*, t.*, e.title\nFROM registrations r\nJOIN tickets t ON r.ticket_id = t.id\nJOIN events e ON r.event_id = e.id\nWHERE r.ticket_number = 'TKT-2026-00456'
+activate DB
+DB --> CheckinSvc : Registration found\n{id: 123, event_id: 12,\nchecked_in: false,\nregistration_status: 'confirmed',\npayment_status: 'paid'}
+deactivate DB
+
+' Step 2: Validate event
+CheckinSvc -> CheckinSvc : ✅ event_id == 12\n(Vé thuộc đúng sự kiện)
+
+' Step 3: Validate ticket status
+CheckinSvc -> CheckinSvc : ✅ registration_status\n== 'confirmed'\n(Đăng ký hợp lệ)
+
+' Step 4: Validate payment
+CheckinSvc -> CheckinSvc : ✅ payment_status\n== 'paid'\n(Đã thanh toán)
+
+' Step 5: Check duplicate
+CheckinSvc -> CheckinSvc : ✅ checked_in == false\n(Chưa check-in trước đó)
+
+' Step 6: Perform check-in
+CheckinSvc -> DB : BEGIN TRANSACTION
+activate DB
+CheckinSvc -> DB : UPDATE registrations\nSET checked_in = true,\nchecked_in_at = NOW(),\nchecked_in_by = 'staff_username'\nWHERE id = 123\nAND checked_in = false
+note right of DB
+    **Atomic Update:**
+    Điều kiện checked_in = false
+    trong WHERE đảm bảo không
+    check-in trùng khi concurrent
+end note
+DB --> CheckinSvc : Rows affected: 1
+CheckinSvc -> DB : COMMIT
+DB --> CheckinSvc : OK
+deactivate DB
+
+CheckinSvc --> Route : CHECK_IN_SUCCESS\n{attendee_name: "Nguyễn Văn A",\nticket_type: "VIP",\nchecked_in_at: "09:15:23"}
+deactivate CheckinSvc
+
+Route --> Browser : HTTP 200\n{status: 'success',\nattendee: "Nguyễn Văn A",\nticket_type: "VIP"}
+deactivate Route
+
+Browser -> Browser : 🟢 Hiển thị: Thành công!\nTên: Nguyễn Văn A\nLoại vé: VIP\n✅ Check-in lúc 09:15
+Browser --> Staff : Màn hình xanh +\nthông tin khách
+Browser -> Browser : Beep sound ✔️
+
+deactivate Browser
+
+== Luồng 2: Vé đã check-in trước đó (TRÙNG) ==
+
+Staff -> Browser : Quét lại QR\n"TKT-2026-00456"
+activate Browser
+
+Browser -> Route : POST /checkin/verify\n{ticket_number: "TKT-2026-00456"}
+activate Route
+
+Route -> CheckinSvc : verify_and_checkin()
+activate CheckinSvc
+
+CheckinSvc -> DB : SELECT ... WHERE\nticket_number = 'TKT-2026-00456'
+activate DB
+DB --> CheckinSvc : {checked_in: **true**,\nchecked_in_at: "09:15:23",\nchecked_in_by: "staff_01"}
+deactivate DB
+
+CheckinSvc -> CheckinSvc : ❌ checked_in == true\n**DUPLICATE CHECK-IN!**
+
+CheckinSvc --> Route : ALREADY_CHECKED_IN\n{checked_in_at: "09:15:23",\nchecked_in_by: "staff_01"}
+deactivate CheckinSvc
+
+Route --> Browser : HTTP 409 Conflict\n{error: "ALREADY_CHECKED_IN",\nmessage: "Vé đã check-in\nlúc 09:15:23"}
+deactivate Route
+
+Browser -> Browser : 🔴 Hiển thị: LỖI!\nVé đã được sử dụng!\nCheck-in lúc: 09:15:23\nBởi: staff_01
+Browser --> Staff : Màn hình đỏ +\ncảnh báo
+Browser -> Browser : Alert sound ⚠️
+
+deactivate Browser
+
+== Luồng 3: QR không hợp lệ hoặc vé sự kiện khác ==
+
+Staff -> Browser : Quét QR\n"TKT-INVALID-999"
+activate Browser
+
+Browser -> Route : POST /checkin/verify\n{ticket_number: "TKT-INVALID-999",\nevent_id: 12}
+activate Route
+
+Route -> CheckinSvc : verify_and_checkin()
+activate CheckinSvc
+
+CheckinSvc -> DB : SELECT ... WHERE\nticket_number = 'TKT-INVALID-999'
+activate DB
+DB --> CheckinSvc : NOT FOUND (0 rows)
+deactivate DB
+
+CheckinSvc --> Route : TICKET_NOT_FOUND
+deactivate CheckinSvc
+
+Route --> Browser : HTTP 404\n{error: "TICKET_NOT_FOUND",\nmessage: "Mã vé không tồn tại"}
+deactivate Route
+
+Browser -> Browser : 🟡 Hiển thị: CẢNH BÁO!\nMã vé không tồn tại\ntrong hệ thống
+Browser --> Staff : Màn hình vàng +\ncảnh báo
+deactivate Browser
+
+== Luồng 4: Vé chưa thanh toán ==
+
+Staff -> Browser : Quét QR\n"TKT-2026-00789"
+activate Browser
+
+Browser -> Route : POST /checkin/verify\n{ticket_number: "TKT-2026-00789"}
+activate Route
+
+Route -> CheckinSvc : verify_and_checkin()
+activate CheckinSvc
+
+CheckinSvc -> DB : SELECT ...
+activate DB
+DB --> CheckinSvc : {payment_status: "unpaid",\nregistration_status: "pending"}
+deactivate DB
+
+CheckinSvc -> CheckinSvc : ❌ payment_status\n== 'unpaid'\n**UNPAID TICKET!**
+
+CheckinSvc --> Route : PAYMENT_REQUIRED\n{amount: 200000,\nticket_type: "VIP"}
+deactivate CheckinSvc
+
+Route --> Browser : HTTP 402\n{error: "PAYMENT_REQUIRED",\nmessage: "Vé chưa thanh toán.\nSố tiền: 200.000₫"}
+deactivate Route
+
+Browser -> Browser : 🟠 Hiển thị: CHỜ!\nVé chưa thanh toán\nSố tiền cần thanh toán:\n200.000₫
+Browser --> Staff : Hướng dẫn khách\nthanh toán tại quầy
+deactivate Browser
+
+@enduml

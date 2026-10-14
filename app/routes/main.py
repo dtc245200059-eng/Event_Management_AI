@@ -3,6 +3,7 @@ Main Blueprint (Home, Event listing, Search, Filter, Event Details).
 """
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import current_user
+from app.extensions import db
 from app.models import Event, Speaker, Venue, Ticket, Schedule
 
 main_bp = Blueprint('main', __name__)
@@ -11,7 +12,10 @@ main_bp = Blueprint('main', __name__)
 def index():
     # All upcoming published events
     all_events = Event.query.filter_by(status='published').order_by(Event.start_date.asc()).all()
-    categories = ['Tất cả', 'Trí tuệ nhân tạo', 'Cloud & DevOps', 'Khoa học dữ liệu', 'Startup & Đầu tư', 'Workshop', 'Kỹ thuật phần mềm', 'Âm nhạc & Nghệ thuật']
+    
+    # Dynamic distinct categories
+    db_cats = [c[0] for c in Event.query.with_entities(Event.category).distinct().all() if c[0]]
+    categories = ['Tất cả'] + sorted(list(set(db_cats)))
     
     # Stats
     total_events = len(all_events)
@@ -66,7 +70,9 @@ def event_list():
     end_idx = start_idx + per_page
     paginated_events = all_matched[start_idx:end_idx]
 
-    categories = ['Tất cả', 'Trí tuệ nhân tạo', 'Cloud & DevOps', 'Khoa học dữ liệu', 'Startup & Đầu tư', 'Workshop', 'Kỹ thuật phần mềm', 'Âm nhạc & Nghệ thuật']
+    # Dynamic distinct categories
+    db_cats = [c[0] for c in Event.query.with_entities(Event.category).distinct().all() if c[0]]
+    categories = ['Tất cả'] + sorted(list(set(db_cats)))
 
     return render_template(
         'main/events.html',
@@ -82,7 +88,7 @@ def event_list():
 
 @main_bp.route('/events/<int:event_id>')
 def event_detail(event_id):
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
     schedules = event.schedules.order_by(Schedule.start_at.asc()).all()
     tickets = event.tickets.filter_by(status='active').all()
     
@@ -105,3 +111,26 @@ def event_detail(event_id):
         is_registered=is_registered,
         user_registration=user_registration
     )
+
+@main_bp.route('/health')
+def health_check():
+    """Endpoint kiểm tra sức khỏe hệ thống (Health Check Probe) cho Docker/K8s/PaaS."""
+    from datetime import datetime, timezone
+    from sqlalchemy import text
+    try:
+        db.session.execute(text('SELECT 1'))
+        db_status = 'connected'
+        http_code = 200
+        overall_status = 'healthy'
+    except Exception as e:
+        db_status = f'error: {str(e)}'
+        http_code = 503
+        overall_status = 'unhealthy'
+
+    return jsonify({
+        'status': overall_status,
+        'app': 'EventAI Pro',
+        'version': '1.0.0',
+        'database': db_status,
+        'timestamp': datetime.now(timezone.utc).isoformat()
+    }), http_code

@@ -4,7 +4,7 @@ User Model for authentication and role-based access control (RBAC).
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
@@ -18,8 +18,8 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(20), nullable=True)
     avatar_url = db.Column(db.String(255), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     attendee_profile = db.relationship('Attendee', backref='user', uselist=False, cascade='all, delete-orphan')
@@ -37,8 +37,12 @@ class User(UserMixin, db.Model):
         return self.role == 'admin'
 
     @property
+    def is_organizer(self):
+        return self.role in ('admin', 'organizer')
+
+    @property
     def is_staff(self):
-        return self.role in ('admin', 'staff')
+        return self.role in ('admin', 'organizer', 'staff', 'checkin_staff')
 
     @property
     def is_attendee(self):

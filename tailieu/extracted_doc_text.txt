@@ -1,0 +1,522 @@
+BÀI 6. KIẾN TRÚC ỨNG DỤNG AI
+THỰC HÀNH
+THIẾT KẾ VÀ TRIỂN KHAI HỆ THỐNG MULTI-AGENT TƯ VẤN SẢN PHẨM
+1. Mục tiêu: Thiết kế một hệ thống AI gồm nhiều Agent chuyên trách phối hợp để phân tích yêu cầu, truy xuất dữ liệu, suy luận, đưa ra khuyến nghị, kiểm chứng kết quả và sinh phản hồi cuối cùng.
+2. Yêu cầu bắt buộc:
+Xây dựng tối thiểu 6 Agent; 
+Có 1 Orchestrator Agent; 
+Có cơ chế trao đổi message có cấu trúc; 
+Có ít nhất 2 loại Tool: SQL Tool, Vector Search Tool 
+Có MySQL Database; 
+Có Knowledge Base/Vector Database; 
+Có Critic Agent; 
+Có cơ chế retry khi kết quả bị từ chối; 
+Có giao diện Web; 
+Có logging toàn bộ quá trình phối hợp; 
+Có tối thiểu 10 test cases; 
+So sánh hệ thống Multi-Agent với hệ thống Single-Agent về độ chính xác, thời gian đáp ứng và số lần gọi LLM.
+3. Sản phẩm
+Source code
+Database
+Kiến trúc hệ thống
+Agent specifications
+Message protocol
+Prompt của từng Agent
+Test cases
+Agent execution logs
+Báo cáo đánh giá
+Video/demo hệ thống
+4. Kiến trúc triển khai bài thực hành
+Agent 1 — Orchestrator Agent: 
+Nhiệm vụ
+Orchestrator chịu trách nhiệm:
+nhận yêu cầu; 
+tạo workflow; 
+phân công Agent; 
+truyền message; 
+theo dõi trạng thái; 
+xử lý lỗi; 
+retry; 
+quyết định khi nào hoàn thành.
+Agent 2 — Analyst Agent: Hiểu người dùng đang yêu cầu điều gì.
+Ví dụ:
+User: "Tìm laptop Dell dưới 20 triệu, RAM từ 16GB, bảo hành 24 tháng."
+Analyst Agent chuyển thành dữ liệu có cấu trúc:
+{
+  "intent": "product_search",
+  "category": "Laptop",
+  "brand": ["Dell"],
+  "max_price": 20000000,
+  "min_ram": 16,
+  "min_warranty": 24
+}
+Agent 3 — Database Agent
+Agent này chuyên làm việc với MySQL. Nó nhận: 
+{
+  "category": "Laptop",
+  "brand": ["Dell"],
+  "max_price": 20000000,
+  "min_ram": 16
+}
+Trả kết quả:
+{
+  "products": [
+    {
+      "name": "Dell Inspiron 15",
+      "price": 18900000,
+      "ram": "16GB",
+      "warranty": "24 months"
+    },
+    {
+      "name": "Dell Vostro 14",
+      "price": 19500000,
+      "ram": "16GB",
+      "warranty": "24 months"
+    }
+  ]
+}
+Agent 4 — RAG Agent: 
+Database chỉ chứa dữ liệu có cấu trúc. Nhưng nhiều thông tin không phù hợp để lưu dưới dạng bảng. Ví dụ: Laptop Dell phù hợp với sinh viên CNTT vì...
+Những thông tin này có thể đưa vào: Knowledge Base + Vector Database
+Ví dụ: RAG Agent thực hiện:
+Question →Embedding→Vector Search→Relevant Documents
+Agent 5 — Reasoning Agent
+Đây là Agent thực hiện suy luận/tổng hợp. Reasoning Agent có nhiệm vụ:
+Đối chiếu dữ liệu; 
+Loại bỏ sản phẩm không phù hợp; 
+So sánh; 
+Suy luận; 
+Đưa ra recommendation.
+Agent 6 — Critic Agent
+Đóng vai trò reviewer. Ví dụ Reasoning Agent đưa ra:
+Dell Inspiron 15:
+19 triệu
+RAM 16GB
+Bảo hành 24 tháng
+Critic kiểm tra:
+✓ Giá có đúng MySQL không?
+✓ RAM có đúng không?
+✓ Warranty có đúng không?
+✓ Có thông tin nào hallucination không?
+✓ Recommendation có phù hợp không?
+Kết quả:
+{
+  "status": "REJECT",
+  "score": 0.72,
+  "errors": [
+    "Warranty information is not supported by retrieved data"
+  ]
+}
+Agent 7 — Response Agent: Agent cuối cùng chuyển kết quả thành câu trả lời cho người dùng.
+Ví dụ dữ liệu:
+{
+  "recommendation": "Dell Inspiron 15",
+  "reason": [
+    "Price: 18.9M",
+    "RAM: 16GB",
+    "Warranty: 24 months"
+  ]
+}
+Response Agent chuyển thành:
+Dell Inspiron 15 là lựa chọn phù hợp nhất.
+Giá: 18,9 triệu 
+RAM: 16GB 
+Bảo hành: 24 tháng 
+Phù hợp với ngân sách và yêu cầu của bạn.
+Phần so sánh Single-Agent với Multi-Agent sẽ biến bài này từ một bài "làm chatbot" thành một bài thực hành có tính chất nghiên cứu và đánh giá kiến trúc Agentic AI. Đây cũng là hướng phù hợp để nối tiếp các nội dung trước về AI-Augmented SDLC, RAG, Tools, MCP và Skills.  Chúng ta có thể dùng chính các Agent để thực hiện từng giai đoạn của SDLC ở một bài thực hành tiếp theo.
+5. Các bước thực hiện (Sinh viên có thể sử dụng Agent để thực hiện hoặc làm thủ công theo từng bước)
+Multi-Agent Product Advisor – hệ thống gồm nhiều Agent phối hợp để phân tích nhu cầu khách hàng, truy vấn MySQL, sử dụng Knowledge Base/Vector DB, đưa ra khuyến nghị, kiểm tra bằng Critic Agent và retry nếu bị từ chối.
+PHẦN I — CHUẨN BỊ MÔI TRƯỜNG
+Bước 1. Tạo thư mục project:
+Mở Visual Studio Code. Tạo thư mục multi_agent_product_system
+Bước 2. Mở Terminal trong VS Code
+Terminal→ New Terminal
+python –version
+python -m pip –version
+Bước 3. Tạo và kích hoạt Virtual Environment
+python -m venv venv
+venv\Scripts\activate
+Bước 4. Cài các thư viện
+pip install flask
+pip install google-genai
+pip install mysql-connector-python
+pip install chromadb
+pip install sentence-transformers
+pip install python-dotenv
+pip install pydantic
+pip list
+Bước 5. Tạo cấu trúc thư mục
+multi_agent_product_system/
+│
+├── agents/
+│
+├── services/
+│
+├── models/
+│
+├── prompts/
+│
+├── database/
+│
+├── templates/
+│
+├── static/
+│
+└── tests/
+Sau đó tạo các file:
+multi_agent_product_system/
+│
+├── app.py
+├── .env
+├── requirements.txt
+│
+├── agents/
+│   ├── __init__.py
+│   ├── base_agent.py
+│   ├── orchestrator_agent.py
+│   ├── requirement_agent.py
+│   ├── retrieval_agent.py
+│   ├── knowledge_agent.py
+│   ├── recommendation_agent.py
+│   ├── critic_agent.py
+│   └── response_agent.py
+│
+├── services/
+│   ├── __init__.py
+│   ├── gemini_service.py
+│   ├── database_service.py
+│   ├── vector_service.py
+│   └── message_bus.py
+│
+├── models/
+│   ├── __init__.py
+│   └── agent_message.py
+│
+├── prompts/
+│   ├── requirement_prompt.txt
+│   ├── knowledge_prompt.txt
+│   ├── recommendation_prompt.txt
+│   └── critic_prompt.txt
+│
+├── database/
+│   └── schema.sql
+│
+├── templates/
+│   └── chatbot.html
+│
+├── static/
+│   ├── style.css
+│   └── chat.js
+│
+└── tests/
+    ├── test_requirement.py
+    ├── test_retrieval.py
+    └── test_multi_agent.py
+PHẦN II — CẤU HÌNH GEMINI
+Bước 6. Tạo Gemini API Key
+Trong project, mở .env
+Thêm: GEMINI_API_KEY=YOUR_API_KEY
+Không đưa API key lên GitHub. Tạo file: .gitignore và thêm
+venv/
+.env
+__pycache__/
+chroma_db/
+*.pyc
+PHẦN III — THIẾT KẾ DATABASE
+Bước 7. Tạo Database MySQL
+Mở MySQL Workbench hoặc MySQL terminal.
+Tạo database: 
+CREATE DATABASE multi_agent_shop
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+Chuyển sang database: USE multi_agent_shop;
+Bước 8. Tạo bảng categories
+Trong: database/schema.sql, nhập:
+CREATE TABLE categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL
+);
+Bước 9. Tạo bảng products
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    brand VARCHAR(100),
+    price DECIMAL(15,2),
+    ram INT,
+    cpu VARCHAR(255),
+    storage VARCHAR(100),
+    gpu VARCHAR(255),
+    weight DECIMAL(5,2),
+    warranty INT,
+    description TEXT
+);
+Bước 10. Thêm dữ liệu mẫu
+Trong MySQL chạy các câu lệnh
+INSERT INTO categories (name)
+VALUES
+('Laptop'),
+('Smartphone'),
+('Tablet'),
+('Monitor');
+INSERT INTO products
+(name, category, brand, price, ram, cpu, storage, gpu, weight, warranty, description)
+VALUES
+(
+    'Dell Inspiron 15',
+    'Laptop',
+    'Dell',
+    18500000,
+    16,
+    'Intel Core i7',
+    '512GB SSD',
+    'Intel Iris Xe',
+    1.65,
+    24,
+    'Laptop phù hợp học tập, văn phòng và lập trình'
+),
+(
+    'Asus Vivobook 15',
+    'Laptop',
+    'Asus',
+    16900000,
+    16,
+    'Intel Core i5',
+    '512GB SSD',
+    'Intel Iris Xe',
+    1.60,
+    24,
+    'Laptop mỏng nhẹ, phù hợp sinh viên và lập trình'
+),
+(
+    'Dell Vostro 16',
+    'Laptop',
+    'Dell',
+    21500000,
+    32,
+    'Intel Core i7',
+    '1TB SSD',
+    'RTX 4050',
+    1.70,
+    36,
+    'Laptop hiệu năng cao cho lập trình và AI'
+),
+(
+    'Asus TUF Gaming',
+    'Laptop',
+    'Asus',
+    19800000,
+    16,
+    'AMD Ryzen 7',
+    '512GB SSD',
+    'RTX 3050',
+    2.20,
+    24,
+    'Laptop hiệu năng cao, phù hợp gaming và AI cơ bản'
+);
+PHẦN IV — KẾT NỐI PYTHON VỚI MYSQL
+Bước 11. Tạo Database Service
+Mở: services/database_service.py
+import mysql.connector
+import os
+from dotenv import load_dotenv
+load_dotenv()
+def get_connection():
+    return mysql.connector.connect(
+        host=os.getenv("MYSQL_HOST", "localhost"),
+        port=int(os.getenv("MYSQL_PORT", "3306")),
+        user=os.getenv("MYSQL_USER", "root"),
+        password=os.getenv("MYSQL_PASSWORD", ""),
+        database=os.getenv("MYSQL_DATABASE", "multi_agent_shop")
+    )
+def get_all_products():
+    connection = get_connection()
+    cursor = connection.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM products")
+    products = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return products
+Bước 12. Cấu hình MySQL trong .env
+Sửa: .env thành:
+GEMINI_API_KEY=YOUR_API_KEY
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=YOUR_MYSQL_PASSWORD
+MYSQL_DATABASE=multi_agent_shop
+Nếu MySQL không có password: MYSQL_PASSWORD=
+Bước 13. Kiểm tra MySQL
+Tạo: test_database.py
+from services.database_service import get_all_products
+products = get_all_products()
+for product in products:
+    print(product)
+Chạy: python test_database.py
+Nếu thành công, Terminal sẽ hiện:
+{
+    'id': 1,
+    'name': 'Dell Inspiron 15',
+    ...
+}
+{
+    'id': 2,
+    'name': 'Asus Vivobook 15',
+    ...
+}
+PHẦN V — THIẾT KẾ AGENT MESSAGE
+Chúng ta không cho Agent truyền dữ liệu tùy tiện. Mỗi message phải có cấu trúc.
+Bước 14. Tạo agent_message.py
+Mở: models/agent_message.py
+from pydantic import BaseModel
+from typing import Any, Optional
+class AgentMessage(BaseModel):
+    task_id: str
+    from_agent: str
+    to_agent: str
+    message_type: str
+    payload: Any
+    status: str = "success"
+    error: Optional[str] = None
+Ví dụ một message:
+message = AgentMessage(
+    task_id="TASK-001",
+    from_agent="requirement_agent",
+    to_agent="retrieval_agent",
+    message_type="requirements",
+    payload={
+        "category": "Laptop",
+        "max_price": 20000000,
+        "min_ram": 16
+    }
+)
+Nó sẽ có dạng:
+TASK-001
+     │
+     ├── from_agent
+     │      requirement_agent
+     │
+     ├── to_agent
+     │      retrieval_agent
+     │
+     ├── message_type
+     │      requirements
+     │
+     └── payload
+            {...}
+Đây chính là Structured Message Protocol.
+PHẦN VI — TẠO BASE AGENT
+Bước 15. Tạo base_agent.py
+Mở: agents/base_agent.py
+from abc import ABC, abstractmethod
+class BaseAgent(ABC):
+    def __init__(self, name):
+        self.name = name
+    @abstractmethod
+    def process(self, message):
+        pass
+Mục đích của lớp này là buộc các Agent có cùng một giao diện:
+Agent
+  │
+  ├── process()
+  │
+  ├── name
+  │
+  └── message
+PHẦN VII — XÂY DỰNG AGENT ĐẦU TIÊN
+Bước 16. Tạo Gemini Service
+Mở: services/gemini_service.py
+import os
+from dotenv import load_dotenv
+from google import genai
+load_dotenv()
+client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+def generate_text(prompt):
+    response = client.models.generate_content(
+        model="gemini-3.1-flash-lite",
+        contents=prompt
+    )
+    return response.text
+Bước 17. Tạo Requirement Agent
+Mở: agents/requirement_agent.py
+import json
+from agents.base_agent import BaseAgent
+from services.gemini_service import generate_text
+class RequirementAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("requirement_agent")
+    def process(self, message):
+        question = message.payload["question"]
+        prompt = f"""
+Bạn là Requirement Analysis Agent.
+Nhiệm vụ:
+Phân tích yêu cầu mua sản phẩm của khách hàng.
+Hãy chuyển câu hỏi thành JSON.
+Các trường cần xác định:
+- category
+- brands
+- max_price
+- min_price
+- min_ram
+- max_weight
+- min_warranty
+- use_cases
+Nếu không có thông tin thì dùng null.
+Chỉ trả về JSON hợp lệ.
+Câu hỏi khách hàng:
+{question}
+"""
+        result = generate_text(prompt)
+        result = result.strip()
+        if result.startswith("```"):
+            result = result.replace("```json", "")
+            result = result.replace("```", "")
+            result = result.strip()
+        data = json.loads(result)
+        return data
+Bước 18. Kiểm tra Requirement Agent
+Tạo: test_requirement.py
+from agents.requirement_agent import RequirementAgent
+from models.agent_message import AgentMessage
+agent = RequirementAgent()
+message = AgentMessage(
+    task_id="TASK-001",
+    from_agent="user",
+    to_agent="requirement_agent",
+    message_type="user_question",
+    payload={
+        "question":
+        "Tôi cần laptop Dell hoặc Asus dưới 20 triệu, "
+        "RAM ít nhất 16GB, dùng để lập trình và học AI."
+    }
+)
+result = agent.process(message)
+print("\n===== REQUIREMENT AGENT RESULT =====")
+print(result)
+Chạy: python test_requirement.py
+Đến đây, chúng ta hiện có: USER→Requirement Agent→Structured JSON
+và:
+Python
+   │
+   ├────────── Gemini API
+   │
+   └────────── MySQL
+Sinh viên thực hiện bước tiếp theo:
+Bước 19. Retrieval Agent
+Bước 20. SQL Tool
+Bước 21. Knowledge Agent
+Bước 22. ChromaDB / Vector Database
+Bước 23. Recommendation Agent
+Bước 24. Critic Agent
+Bước 25. Retry mechanism
+Bước 26. Message Bus
+Bước 27. Orchestrator Agent
+Bước 28. Response Agent
+Bước 29. Flask API
+Bước 30. Chat UI
+Bước 31. Logging
+Bước 32. Testing
+Bước 33. Đánh giá Single-Agent vs Multi-Agent
+Lưu ý: chúng ta sẽ không viết tất cả vào một file app.py. Mỗi Agent sẽ có vai trò, input/output, Tool và quyền hạn riêng, còn Orchestrator mới là thành phần điều phối toàn bộ quá trình. Sau khi Bước 18 chạy được, bước tiếp theo là xây dựng Retrieval Agent + SQL Tool, rồi chúng ta sẽ nối hai Agent đầu tiên thành một workflow thực sự.

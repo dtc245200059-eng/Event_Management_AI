@@ -2,7 +2,7 @@
 Attendee Model.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Attendee(db.Model):
     __tablename__ = 'attendees'
@@ -16,7 +16,7 @@ class Attendee(db.Model):
     organization = db.Column(db.String(200), nullable=True)
     job_title = db.Column(db.String(100), nullable=True)
     interests = db.Column(db.Text, nullable=True)  # e.g., "AI, Machine Learning, Data Science, Cloud Computing"
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     registrations = db.relationship('Registration', backref='attendee', lazy='dynamic', cascade='all, delete-orphan')

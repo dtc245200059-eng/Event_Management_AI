@@ -15,7 +15,7 @@ class Config:
     
     # Gemini AI
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
-    GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.0-flash')
+    GEMINI_MODEL = os.getenv('GEMINI_MODEL', 'gemini-2.5-flash')
     ENABLE_AI_FALLBACK_MOCK = os.getenv('ENABLE_AI_FALLBACK_MOCK', 'True').lower() in ('true', '1', 't')
     RATE_LIMIT_PER_MINUTE = int(os.getenv('RATE_LIMIT_PER_MINUTE', 30))
     
@@ -30,6 +30,7 @@ class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
     WTF_CSRF_ENABLED = False
+    GEMINI_API_KEY = ''
     ENABLE_AI_FALLBACK_MOCK = True
 
 class ProductionConfig(Config):

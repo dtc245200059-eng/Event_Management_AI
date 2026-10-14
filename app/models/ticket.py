@@ -2,7 +2,7 @@
 Ticket Model for ticket tiers, prices and quotas.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Ticket(db.Model):
     __tablename__ = 'tickets'
@@ -17,7 +17,7 @@ class Ticket(db.Model):
     quota = db.Column(db.Integer, nullable=False, default=100)  # Maximum available tickets
     sold_count = db.Column(db.Integer, nullable=False, default=0)
     status = db.Column(db.String(20), default='active')  # active, closed, sold_out
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     registrations = db.relationship('Registration', backref='ticket', lazy='dynamic')

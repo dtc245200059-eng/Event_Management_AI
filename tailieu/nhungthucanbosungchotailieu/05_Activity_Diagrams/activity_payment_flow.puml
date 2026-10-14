@@ -1,0 +1,240 @@
+@startuml Activity_Payment_Flow
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+
+skinparam activity {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+}
+
+skinparam activity {
+    BackgroundColor<<error>> #FFCDD2
+    BorderColor<<error>> #C62828
+}
+
+skinparam activity {
+    BackgroundColor<<success>> #C8E6C9
+    BorderColor<<success>> #2E7D32
+}
+
+skinparam activity {
+    BackgroundColor<<payment>> #FFF3E0
+    BorderColor<<payment>> #E65100
+}
+
+skinparam activity {
+    BackgroundColor<<ai>> #F3E5F5
+    BorderColor<<ai>> #7B1FA2
+}
+
+skinparam partition {
+    BackgroundColor #F5F5F5
+    BorderColor #9E9E9E
+}
+
+title **Activity Diagram — Luồng Đăng ký Vé & Thanh toán hoàn chỉnh**\n\
+Chương IV §4.5 (Bổ sung)\n\
+Bao gồm: Free/Paid/VIP, Payment Gateway, Hoàn/Hủy
+
+start
+
+partition "Giai đoạn 1: Chọn Sự kiện & Loại Vé" {
+    :Attendee truy cập trang sự kiện;
+    :Xem chi tiết sự kiện
+    (title, description, speakers,
+    schedule, venue);
+
+    :Chọn loại vé;
+    note right
+        **Loại vé:**
+        • Free (Miễn phí)
+        • Paid (Trả phí)
+        • VIP (Cao cấp)
+    end note
+}
+
+partition "Giai đoạn 2: Kiểm tra Điều kiện" {
+    :Hệ thống kiểm tra
+    trạng thái sự kiện;
+
+    if (Sự kiện đang mở đăng ký?) then (Có)
+        :Kiểm tra quota vé;
+        if (Còn vé?) then (Có)
+            :Kiểm tra đăng ký trùng;
+            if (Attendee đã đăng ký?) then (Đã đăng ký)
+                :Thông báo: "Bạn đã
+                đăng ký sự kiện này" <<error>>;
+                stop
+            else (Chưa đăng ký)
+                :Tiếp tục đăng ký;
+            endif
+        else (Hết vé)
+            :Thông báo: "Vé đã hết.
+            Vui lòng chọn loại vé khác." <<error>>;
+            stop
+        endif
+    else (Không)
+        :Thông báo: "Sự kiện
+        đã đóng đăng ký" <<error>>;
+        stop
+    endif
+}
+
+partition "Giai đoạn 3: Nhập Thông tin & Tạo Đăng ký" {
+    :Nhập thông tin người tham dự
+    (Họ tên, Email, SĐT, Đơn vị);
+
+    :Validate dữ liệu đầu vào;
+    if (Dữ liệu hợp lệ?) then (Có)
+        :BEGIN TRANSACTION;
+        :Tạo Attendee (nếu mới);
+        :Tạo Registration
+        (status = 'pending');
+        :Cập nhật sold_count += 1;
+        :COMMIT TRANSACTION;
+    else (Không hợp lệ)
+        :Hiển thị lỗi validation <<error>>;
+        stop
+    endif
+}
+
+partition "Giai đoạn 4: Xử lý Thanh toán" {
+    if (Loại vé?) then (Free)
+        :Tự động xác nhận đăng ký
+        (registration_status = 'confirmed',
+        payment_status = 'free') <<success>>;
+        :Sinh mã QR Ticket;
+    else (Paid / VIP)
+        :Tạo yêu cầu thanh toán
+        (amount, order_id) <<payment>>;
+        :Chuyển hướng đến
+        Payment Gateway
+        (VNPay/MoMo/Stripe) <<payment>>;
+
+        :Attendee thực hiện
+        thanh toán <<payment>>;
+
+        if (Kết quả thanh toán?) then (Thành công)
+            :Nhận IPN Callback
+            từ Payment Gateway <<payment>>;
+            :Xác minh giao dịch
+            (txn_ref, amount, checksum) <<payment>>;
+
+            if (Giao dịch hợp lệ?) then (Hợp lệ)
+                :BEGIN TRANSACTION;
+                :payment_status = 'paid';
+                :registration_status = 'confirmed';
+                :paid_at = NOW();
+                :COMMIT TRANSACTION <<success>>;
+                :Sinh mã QR Ticket;
+            else (Không hợp lệ)
+                :Ghi nhận giao dịch bất thường;
+                :Đánh dấu cần đối soát <<error>>;
+                stop
+            endif
+
+        elseif (Timeout / Pending) then
+            :payment_status = 'pending';
+            :Chờ IPN callback
+            (timeout 15 phút) <<payment>>;
+
+            if (Nhận callback trong 15'?) then (Có)
+                :Xử lý theo kết quả callback;
+            else (Hết hạn)
+                :payment_status = 'expired';
+                :registration_status = 'cancelled';
+                :Rollback sold_count -= 1 <<error>>;
+                :Thông báo: "Hết thời gian thanh toán";
+                stop
+            endif
+
+        else (Thất bại)
+            :payment_status = 'failed';
+            :Giữ registration 15 phút
+            (cho phép thử lại) <<error>>;
+
+            if (Thử lại?) then (Có)
+                :Tạo yêu cầu thanh toán mới;
+            else (Không)
+                :registration_status = 'cancelled';
+                :Rollback sold_count -= 1;
+                stop
+            endif
+        endif
+    endif
+}
+
+partition "Giai đoạn 5: Xác nhận & Gửi Thông báo" {
+    :Sinh QR Code
+    (ticket_number unique);
+    :Lưu qr_code_path
+    trong registrations;
+
+    fork
+        :Gửi email xác nhận
+        (Mã vé, QR Code,
+        thông tin sự kiện);
+    fork again
+        :Ghi log đăng ký
+        thành công;
+    fork again
+        :Cập nhật Dashboard
+        (KPI counters);
+    end fork
+
+    :Hiển thị trang xác nhận
+    cho Attendee <<success>>;
+    note right
+        **Thông tin hiển thị:**
+        ✅ Đăng ký thành công!
+        Mã vé: TKT-2026-00456
+        Loại vé: VIP
+        QR Code: [Image]
+        Sự kiện: Hội thảo AI 2026
+        Ngày: 15/11/2026
+    end note
+}
+
+partition "Giai đoạn 6: Hoàn/Hủy Vé (Tùy chọn)" #FFF3E0 {
+    :Attendee yêu cầu hủy đăng ký;
+
+    if (Còn trong thời hạn hoàn?) then (Có\n>24h trước sự kiện)
+
+        if (Loại vé?) then (Free)
+            :registration_status = 'cancelled';
+            :Rollback sold_count -= 1 <<success>>;
+        else (Paid/VIP)
+            :Gửi yêu cầu hoàn tiền
+            đến Payment Gateway <<payment>>;
+
+            if (Hoàn thành công?) then (Có)
+                :refund_status = 'refunded';
+                :registration_status = 'cancelled';
+                :Rollback sold_count -= 1 <<success>>;
+            else (Lỗi hoàn)
+                :refund_status = 'failed';
+                :Đánh dấu cần xử lý thủ công <<error>>;
+            endif
+        endif
+
+    else (Không\n<24h trước sự kiện)
+        :Từ chối hoàn vé;
+        :Thông báo: "Quá hạn
+        chính sách hoàn vé" <<error>>;
+    endif
+}
+
+stop
+
+legend right
+    |= Màu |= Ý nghĩa |
+    | <#E3F2FD> | Hoạt động thông thường |
+    | <#C8E6C9> | Hoạt động thành công |
+    | <#FFCDD2> | Hoạt động lỗi/từ chối |
+    | <#FFF3E0> | Hoạt động thanh toán |
+    | <#F3E5F5> | Hoạt động AI |
+endlegend
+
+@enduml

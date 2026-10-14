@@ -1,88 +1,213 @@
 <!DOCTYPE html>
-<html lang="vi" data-theme="dark">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Immediate Theme Pre-load Script (Executes before any CSS to prevent any FOUT / Theme Flash) -->
+    <script>
+        (function() {
+            try {
+                var savedTheme = localStorage.getItem('theme');
+                var theme = savedTheme;
+                if (!theme || (theme !== 'light' && theme !== 'dark')) {
+                    theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        })();
+    </script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>{% block title %}{{ app_title }}{% endblock %}</title>
-    <!-- Modern Google Fonts: Plus Jakarta Sans, Outfit, Space Grotesk -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Meta SEO & CSRF & Apple Mobile Web App -->
+    <meta name="description" content="Nền tảng Quản trị & Trải nghiệm Sự kiện Thông minh tích hợp Trí tuệ Nhân tạo EventAI Pro.">
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome 6 Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Custom Glassmorphic CSS -->
+    <!-- Apple Design System CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body data-event-id="{% block event_id %}{% endblock %}">
 
-    <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg glass-nav sticky-top py-3">
+    <!-- APPLE-INSPIRED BLURRED NAVBAR -->
+    <nav class="navbar navbar-expand-lg apple-nav sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fa-solid fa-sparkles" style="color: #6366f1;"></i>
-                <span>Event<span style="color: #06b6d4;">AI</span> Pro</span>
+            <a class="navbar-brand" href="{{ url_for('main.index') }}" title="EventAI Pro Homepage">
+                <i class="fa-solid fa-sparkles text-primary" style="font-size: 1rem;"></i>
+                <span>Event<strong>AI</strong> Pro</span>
             </a>
-            <button class="navbar-toggler border-0 text-light" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-                <i class="fa-solid fa-bars fs-4"></i>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4 gap-1">
+
+            <!-- Action Cluster: Notifications + Theme Toggle + User / Auth + Mobile Hamburger -->
+            <div class="d-flex align-items-center gap-2 ms-auto ms-lg-0 order-lg-last">
+                <!-- Notification Bell with Popover Dropdown (Always next to theme toggle) -->
+                <div class="dropdown position-relative" id="notificationDropdownContainer">
+                    <button class="apple-theme-btn position-relative" id="notificationBellBtn" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="Thông báo sự kiện" aria-label="Notifications">
+                        <i class="fa-regular fa-bell" id="notificationBellIcon"></i>
+                        {% if unread_notif_count and unread_notif_count > 0 %}
+                        <span class="notification-badge" id="notifBadge">{{ unread_notif_count }}</span>
+                        {% else %}
+                        <span class="notification-badge d-none" id="notifBadge">0</span>
+                        {% endif %}
+                    </button>
+                    <!-- Apple-styled Notification Popover -->
+                    <div class="dropdown-menu dropdown-menu-end apple-dropdown-menu notification-popover mt-2 p-0 shadow-lg" style="min-width: 320px; max-width: 360px; background: var(--surface-primary); border-color: var(--border-hairline) !important; border-radius: var(--radius-lg);">
+                        <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--border-hairline) !important;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa-solid fa-bell text-primary small"></i>
+                                <h6 class="mb-0 fw-semibold" style="font-size: 0.95rem; color: var(--text-primary);">Thông Báo</h6>
+                            </div>
+                            {% if unread_notif_count and unread_notif_count > 0 %}
+                            <span class="badge bg-primary rounded-pill small" style="font-size: 0.68rem;">{{ unread_notif_count }} mới</span>
+                            {% endif %}
+                        </div>
+                        <div class="notification-list-body" id="notificationListBody" style="max-height: 320px; overflow-y: auto;">
+                            {% if recent_notifications %}
+                                {% for n in recent_notifications %}
+                                <a href="{{ url_for('notifications.view_detail', notif_id=n.id) }}" class="notification-item d-flex gap-3 p-3 text-decoration-none border-bottom" style="border-color: var(--border-hairline) !important;">
+                                    <div class="notification-item-icon flex-shrink-0 mt-1">
+                                        {% if n.notification_type == 'reminder' %}
+                                        <i class="fa-solid fa-clock text-warning"></i>
+                                        {% elif n.notification_type == 'invitation' %}
+                                        <i class="fa-solid fa-envelope-open-text text-primary"></i>
+                                        {% elif n.notification_type == 'thank_you' %}
+                                        <i class="fa-solid fa-heart text-success"></i>
+                                        {% else %}
+                                        <i class="fa-solid fa-bullhorn text-info"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="fw-semibold text-truncate small notif-title" style="color: var(--text-primary);">{{ n.title }}</div>
+                                        <div class="text-truncate small notif-event" style="color: var(--text-secondary); font-size: 0.78rem;">{{ n.event.title if n.event else '' }}</div>
+                                        <div class="small notif-time" style="color: var(--text-tertiary); font-size: 0.72rem;">{{ n.sent_at.strftime('%H:%M • %d/%m/%Y') }}</div>
+                                    </div>
+                                </a>
+                                {% endfor %}
+                            {% else %}
+                                <div class="p-4 text-center">
+                                    <i class="fa-regular fa-bell-slash fs-4 mb-2 d-block text-secondary opacity-50"></i>
+                                    <p class="small mb-0" style="color: var(--text-secondary);">Chưa có thông báo mới nào</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="p-2.5 text-center border-top" style="border-color: var(--border-hairline) !important; background: var(--surface-secondary); border-bottom-left-radius: var(--radius-lg); border-bottom-right-radius: var(--radius-lg);">
+                            <a href="{{ url_for('notifications.inbox') }}" class="small fw-medium text-primary text-decoration-none d-block">
+                                Xem tất cả trong Hộp thư <i class="fa-solid fa-chevron-right ms-1 small"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Apple Theme Toggle Button (Light/Dark/System) -->
+                <button class="apple-theme-btn" id="themeToggleBtn" title="Chuyển chế độ Sáng / Tối / Tự động" aria-label="Toggle theme">
+                    <i class="fa-solid fa-sun" id="themeIcon"></i>
+                </button>
+
+                <!-- User Profile / Auth (Desktop) -->
+                <div class="d-none d-lg-block">
+                    {% if current_user.is_authenticated %}
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-secondary d-flex align-items-center gap-2 py-1 px-3" type="button" data-bs-toggle="dropdown">
+                                <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="22" height="22" style="object-fit: cover;" alt="Avatar">
+                                <span class="d-none d-xl-inline">{{ current_user.full_name }}</span>
+                                <span class="badge bg-secondary" style="font-size: 0.65rem;">{{ current_user.role }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm mt-2 p-2" style="background: var(--surface-primary); border-color: var(--border-hairline) !important; border-radius: var(--radius-lg); min-width: 200px;">
+                                <li><a class="dropdown-item py-2 rounded-2" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user me-2 text-secondary"></i> Hồ Sơ Cá Nhân</a></li>
+                                <li><a class="dropdown-item py-2 rounded-2" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-2 text-secondary"></i> Vé Của Tôi</a></li>
+                                <li><a class="dropdown-item py-2 rounded-2" href="{{ url_for('notifications.inbox') }}"><i class="fa-solid fa-bell me-2 text-secondary"></i> Hộp Thư Thông Báo</a></li>
+                                <li><hr class="dropdown-divider" style="border-color: var(--border-hairline);"></li>
+                                <li><a class="dropdown-item py-2 rounded-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-secondary">Đăng Nhập</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary">Đăng Ký</a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Drawer Toggle Button -->
+                <button class="navbar-toggler border-0 p-1 d-lg-none mobile-drawer-trigger" type="button" id="mobileDrawerOpenBtn" aria-label="Mở menu điều hướng">
+                    <i class="fa-solid fa-bars fs-5" style="color: var(--text-primary);"></i>
+                </button>
+            </div>
+
+            <!-- Navbar Menu Items (Collapsible on Mobile) -->
+            <div class="collapse navbar-collapse order-lg-1" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}"><i class="fa-solid fa-house me-1"></i> Trang Chủ</a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Trang Chủ</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.event_list') }}"><i class="fa-solid fa-calendar-days me-1"></i> Sự Kiện</a>
+                        <a class="nav-link" href="{{ url_for('main.event_list') }}">Sự Kiện</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-primary fw-semibold" href="{{ url_for('ai.chat_workspace') }}"><i class="fa-solid fa-sparkles me-1"></i> Trợ Lý AI</a>
+                        <a class="nav-link" href="{{ url_for('ai.chat_workspace') }}">
+                            <span class="badge bg-primary me-1" style="font-size: 0.65rem;">AI</span> Trợ Lý AI
+                        </a>
                     </li>
+
                     {% if current_user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-1"></i> Vé Của Tôi</a>
+                            <a class="nav-link" href="{{ url_for('tickets.my_tickets') }}">Vé Của Tôi</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('notifications.inbox') }}">Thông Báo</a>
                         </li>
                         {% if current_user.is_staff %}
                             <li class="nav-item">
-                                <a class="nav-link text-info" href="{{ url_for('checkin.index') }}"><i class="fa-solid fa-qrcode me-1"></i> Quét Check-in</a>
+                                <a class="nav-link" href="{{ url_for('checkin.index') }}">Soát Vé</a>
                             </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-warning" href="{{ url_for('events.manage') }}"><i class="fa-solid fa-list-check me-1"></i> Quản Lý Sự Kiện</a>
+                        {% endif %}
+                        {% if current_user.is_organizer %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    Tổ Chức
+                                </a>
+                                <ul class="dropdown-menu shadow-sm border" style="background: var(--surface-primary); border-color: var(--border-hairline) !important; border-radius: var(--radius-md);">
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('events.manage') }}"><i class="fa-solid fa-list-check me-2 text-secondary"></i>Quản Lý Sự Kiện</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('events.speakers_list') }}"><i class="fa-solid fa-microphone me-2 text-secondary"></i>Diễn Giả</a></li>
+                                    <li><a class="dropdown-item py-2" href="{{ url_for('notifications.manage') }}"><i class="fa-solid fa-bullhorn me-2 text-secondary"></i>Truyền Thông AI</a></li>
+                                </ul>
                             </li>
                         {% endif %}
                         {% if current_user.is_admin %}
                             <li class="nav-item">
-                                <a class="nav-link text-danger" href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-chart-line me-1"></i> Admin Dashboard</a>
+                                <a class="nav-link text-primary fw-medium" href="{{ url_for('admin.dashboard') }}">Admin</a>
                             </li>
                         {% endif %}
                     {% endif %}
                 </ul>
 
-                <!-- Right Actions -->
-                <div class="d-flex align-items-center gap-3">
-                    <!-- Theme Toggle -->
-                    <button class="btn btn-sm btn-secondary-glass rounded-circle p-2" id="themeToggleBtn" title="Chuyển đổi Sáng/Tối" style="width: 38px; height: 38px;">
-                        ☀️
-                    </button>
-
+                <!-- Mobile Auth Buttons (Inside Drawer for mobile view only) -->
+                <div class="d-lg-none pt-3 pb-2 border-top mt-2" style="border-color: var(--border-hairline) !important;">
                     {% if current_user.is_authenticated %}
-                        <div class="dropdown">
-                            <button class="btn btn-secondary-glass dropdown-toggle d-flex align-items-center gap-2 py-1 px-3" type="button" data-bs-toggle="dropdown">
-                                <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="28" height="28" style="object-fit: cover;">
-                                <span>{{ current_user.full_name }}</span>
-                                <span class="badge bg-primary text-uppercase" style="font-size: 0.65rem;">{{ current_user.role }}</span>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end glass-panel mt-2 p-2">
-                                <li><a class="dropdown-item rounded" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user me-2"></i> Hồ Sơ Cá Nhân</a></li>
-                                <li><a class="dropdown-item rounded" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-2"></i> Vé Của Tôi</a></li>
-                                <li><hr class="dropdown-divider border-secondary"></li>
-                                <li><a class="dropdown-item rounded text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a></li>
-                            </ul>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;" alt="Avatar">
+                            <div>
+                                <div class="fw-semibold small" style="color: var(--text-primary);">{{ current_user.full_name }}</div>
+                                <div class="small" style="color: var(--text-secondary); font-size: 0.75rem;">@{{ current_user.username }} • <span class="badge bg-secondary">{{ current_user.role }}</span></div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            <a class="btn btn-sm btn-secondary text-start" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user me-2 text-secondary"></i> Hồ Sơ Cá Nhân</a>
+                            <a class="btn btn-sm btn-secondary text-start" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-2 text-secondary"></i> Vé Của Tôi</a>
+                            <a class="btn btn-sm btn-secondary text-start text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary-glass btn-sm">Đăng Nhập</a>
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary-gradient btn-sm">Đăng Ký</a>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-secondary flex-grow-1">Đăng Nhập</a>
+                            <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary flex-grow-1">Đăng Ký</a>
+                        </div>
                     {% endif %}
                 </div>
             </div>
@@ -94,35 +219,37 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show glass-panel border-0 shadow" role="alert">
-                        <i class="fa-solid {% if category == 'success' %}fa-circle-check text-success{% elif category == 'danger' %}fa-triangle-exclamation text-danger{% else %}fa-circle-info text-info{% endif %} me-2"></i>
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="alert alert-{{ category }} alert-dismissible fade show border-0 shadow-sm rounded-4 d-flex align-items-center justify-content-between py-3 px-4 mb-3" role="alert" style="background-color: var(--surface-secondary); color: var(--text-primary); border: 1px solid var(--border-hairline) !important;">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa-solid {% if category == 'success' %}fa-circle-check text-success{% elif category == 'danger' %}fa-triangle-exclamation text-danger{% else %}fa-circle-info text-primary{% endif %}"></i>
+                            <span class="small">{{ message }}</span>
+                        </div>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN APPLICATION CONTENT -->
     <main class="flex-grow-1">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- FOOTER -->
-    <footer class="app-footer mt-5 pt-5 pb-4 border-top">
+    <!-- APPLE-STYLE MINIMAL FOOTER -->
+    <footer class="app-footer">
         <div class="container">
             <div class="row g-4 mb-4">
-                <!-- Col 1: Brand & Bio -->
+                <!-- Col 1: Brand & Overview -->
                 <div class="col-lg-4 col-md-6">
                     <a class="navbar-brand mb-2 d-inline-flex" href="{{ url_for('main.index') }}">
                         <i class="fa-solid fa-sparkles text-primary me-2"></i>
-                        <span>Event<span class="text-cyan">AI</span> Pro</span>
+                        <span>Event<strong>AI</strong> Pro</span>
                     </a>
-                    <p class="footer-text mt-2 mb-3">
-                        Nền tảng quản trị và trải nghiệm sự kiện thông minh tích hợp Trí tuệ Nhân tạo thế hệ mới (AI-Augmented SDLC). Chuẩn hóa 9 bảng CSDL 3NF và kiến trúc 3 tầng bảo mật.
+                    <p class="mt-2 mb-3 small" style="color: var(--text-secondary); line-height: 1.6;">
+                        Nền tảng quản lý và trải nghiệm sự kiện thông minh tích hợp Trí tuệ Nhân tạo thế hệ mới (AI-Augmented SDLC). Chuẩn hóa 9 bảng CSDL 3NF, bảo mật đa tầng và tối ưu trải nghiệm.
                     </p>
-                    <div class="d-flex gap-2 social-icons">
+                    <div class="d-flex gap-2">
                         <a href="https://github.com" target="_blank" class="footer-social-btn" title="GitHub"><i class="fa-brands fa-github"></i></a>
                         <a href="https://linkedin.com" target="_blank" class="footer-social-btn" title="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
                         <a href="https://discord.com" target="_blank" class="footer-social-btn" title="Discord"><i class="fa-brands fa-discord"></i></a>
@@ -130,105 +257,363 @@
                     </div>
                 </div>
 
-                <!-- Col 2: Quick Links -->
+                <!-- Col 2: Navigation Links -->
                 <div class="col-lg-2 col-md-3 col-6">
                     <h6 class="footer-heading">Khám Phá</h6>
-                    <ul class="list-unstyled footer-links mb-0">
-                        <li><a href="{{ url_for('main.index') }}"><i class="fa-solid fa-angle-right me-1"></i> Trang Chủ</a></li>
-                        <li><a href="{{ url_for('main.event_list') }}"><i class="fa-solid fa-angle-right me-1"></i> Danh Sách Sự Kiện</a></li>
-                        <li><a href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-angle-right me-1"></i> Tra Cứu Vé</a></li>
-                        <li><a href="{{ url_for('main.event_list', category='Trí tuệ nhân tạo') }}"><i class="fa-solid fa-angle-right me-1"></i> Sự Kiện AI</a></li>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('main.index') }}">Trang Chủ</a></li>
+                        <li><a href="{{ url_for('main.event_list') }}">Danh Sách Sự Kiện</a></li>
+                        <li><a href="{{ url_for('tickets.my_tickets') }}">Tra Cứu Vé</a></li>
+                        <li><a href="{{ url_for('main.event_list', category='Trí tuệ nhân tạo') }}">Sự Kiện AI</a></li>
                     </ul>
                 </div>
 
-                <!-- Col 3: AI & Features -->
+                <!-- Col 3: AI Capabilities -->
                 <div class="col-lg-3 col-md-3 col-6">
-                    <h6 class="footer-heading">Tính Năng AI</h6>
-                    <ul class="list-unstyled footer-links mb-0">
-                        <li><span class="footer-feature-item"><i class="fa-solid fa-robot text-primary me-2"></i> RAG Chatbot Widget</span></li>
-                        <li><span class="footer-feature-item"><i class="fa-solid fa-wand-magic-sparkles text-info me-2"></i> Content Generator</span></li>
-                        <li><span class="footer-feature-item"><i class="fa-solid fa-chart-pie text-success me-2"></i> Predictive Analytics</span></li>
-                        <li><span class="footer-feature-item"><i class="fa-solid fa-qrcode text-warning me-2"></i> Camera QR Check-in</span></li>
+                    <h6 class="footer-heading">Công Nghệ AI</h6>
+                    <ul class="footer-links">
+                        <li><a href="{{ url_for('ai.chat_workspace') }}">RAG Chatbot Workspace</a></li>
+                        <li><a href="{{ url_for('main.index') }}#aiRecommendationsContainer">Đề Xuất Sở Thích (TF-IDF)</a></li>
+                        <li><a href="{{ url_for('admin.dashboard') }}">Dự Báo Tham Dự (ML)</a></li>
+                        <li><a href="{{ url_for('checkin.index') }}">Soát Vé QR Code Camera</a></li>
                     </ul>
                 </div>
 
                 <!-- Col 4: Support & Contact -->
                 <div class="col-lg-3 col-md-6">
                     <h6 class="footer-heading">Liên Hệ & Hỗ Trợ</h6>
-                    <p class="footer-text mb-2">
-                        <i class="fa-solid fa-envelope text-primary me-2"></i> support@eventai.vn
+                    <p class="mb-1 small" style="color: var(--text-secondary);">
+                        <i class="fa-solid fa-envelope me-2 text-primary"></i> support@eventai.vn
                     </p>
-                    <p class="footer-text mb-2">
-                        <i class="fa-solid fa-phone text-success me-2"></i> Hotline: 1900 8888 (24/7)
+                    <p class="mb-1 small" style="color: var(--text-secondary);">
+                        <i class="fa-solid fa-phone me-2 text-success"></i> Hotline: 1900 8888 (24/7)
                     </p>
-                    <p class="footer-text mb-0">
-                        <i class="fa-solid fa-location-dot text-danger me-2"></i> Trung tâm Công nghệ Cao, Hà Nội
+                    <p class="mb-0 small" style="color: var(--text-secondary);">
+                        <i class="fa-solid fa-location-dot me-2 text-danger"></i> Trung tâm Công nghệ Cao, Hà Nội
                     </p>
                 </div>
             </div>
 
-            <!-- Bottom Copyright Bar -->
-            <div class="footer-bottom pt-3 mt-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-                <div class="footer-text mb-0">
+            <!-- Bottom Copyright & Legal -->
+            <div class="pt-3 border-top d-flex flex-column flex-md-row justify-content-between align-items-center gap-2" style="border-color: var(--border-hairline) !important;">
+                <div class="small" style="color: var(--text-secondary);">
                     © {{ current_year }} <strong>EventAI Pro Platform</strong>. All rights reserved.
                 </div>
-                <div class="footer-text small">
-                    Phát triển theo quy trình <span class="text-primary fw-semibold">AI-Augmented SDLC</span> (Human-in-the-loop).
+                <div class="small" style="color: var(--text-tertiary);">
+                    Phát triển theo quy trình <span class="text-primary fw-medium">AI-Augmented SDLC</span> (Human-in-the-loop).
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- FLOATING AI ASSISTANT WIDGET -->
-    <div class="ai-floating-widget">
-        <!-- Floating Chat Button -->
-        <button class="ai-chat-btn" id="aiChatToggleBtn" title="Hỏi đáp cùng Trợ lý Event AI">
-            <i class="fa-solid fa-robot"></i>
+    <!-- APPLE MOBILE DRAWER BACKDROP -->
+    <div class="apple-drawer-backdrop" id="appleDrawerBackdrop"></div>
+
+    <!-- APPLE MOBILE SLIDE-IN DRAWER -->
+    <aside class="apple-mobile-drawer" id="appleMobileDrawer" aria-label="Mobile Navigation Drawer">
+        <div class="apple-drawer-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-sparkles text-primary" style="font-size: 1rem;"></i>
+                <span class="fw-bold" style="font-size: 1.05rem; color: var(--text-primary);">Event<strong>AI</strong> Pro</span>
+            </div>
+            <button class="apple-drawer-close" id="appleDrawerCloseBtn" aria-label="Đóng menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="apple-drawer-body">
+            {% if current_user.is_authenticated %}
+            <!-- User Profile Card -->
+            <div class="apple-drawer-profile-card">
+                <img src="{{ current_user.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle flex-shrink-0" width="44" height="44" style="object-fit: cover;" alt="Avatar">
+                <div class="min-w-0 flex-grow-1">
+                    <div class="fw-bold text-truncate" style="font-size: 0.95rem; color: var(--text-primary);">{{ current_user.full_name }}</div>
+                    <div class="text-truncate small" style="color: var(--text-secondary); font-size: 0.78rem;">@{{ current_user.username }}</div>
+                    <span class="badge bg-secondary mt-1" style="font-size: 0.65rem;">{{ current_user.role }}</span>
+                </div>
+            </div>
+            {% else %}
+            <!-- Guest Auth CTA Card -->
+            <div class="p-3 mb-3 text-center rounded-4" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                <div class="small mb-2" style="color: var(--text-secondary);">Đăng nhập để trải nghiệm đầy đủ tính năng sự kiện & trợ lý AI cá nhân hóa.</div>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-secondary flex-grow-1">Đăng Nhập</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-sm btn-primary flex-grow-1">Đăng Ký</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Section: Khám Phá -->
+            <div class="apple-drawer-section-title">Khám Phá</div>
+            <ul class="apple-drawer-list">
+                <li>
+                    <a href="{{ url_for('main.index') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-house item-icon"></i>
+                            <span>Trang Chủ</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('main.event_list') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-calendar-days item-icon"></i>
+                            <span>Khám Phá Sự Kiện</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('ai.chat_workspace') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-robot item-icon"></i>
+                            <span>Phòng Chat Trợ Lý AI</span>
+                        </div>
+                        <span class="badge bg-primary rounded-pill small" style="font-size: 0.65rem;">AI</span>
+                    </a>
+                </li>
+            </ul>
+
+            {% if current_user.is_authenticated %}
+            <!-- Section: Cá Nhân -->
+            <div class="apple-drawer-section-title">Cá Nhân</div>
+            <ul class="apple-drawer-list">
+                <li>
+                    <a href="{{ url_for('tickets.my_tickets') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-ticket item-icon text-success"></i>
+                            <span>Vé Của Tôi</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('notifications.inbox') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-bell item-icon text-warning"></i>
+                            <span>Hộp Thư Thông Báo</span>
+                        </div>
+                        {% if unread_notif_count and unread_notif_count > 0 %}
+                        <span class="badge bg-danger rounded-pill small" style="font-size: 0.65rem;">{{ unread_notif_count }}</span>
+                        {% else %}
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                        {% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth.profile') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-user item-icon text-primary"></i>
+                            <span>Hồ Sơ Cá Nhân</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+            </ul>
+            {% endif %}
+
+            {% if current_user.is_authenticated and (current_user.is_staff or current_user.is_organizer or current_user.is_admin) %}
+            <!-- Section: Quản Trị Nghiệp Vụ -->
+            <div class="apple-drawer-section-title">Quản Trị & Nghiệp Vụ</div>
+            <ul class="apple-drawer-list">
+                {% if current_user.is_staff %}
+                <li>
+                    <a href="{{ url_for('checkin.index') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-qrcode item-icon text-info"></i>
+                            <span>Soát Vé Camera QR</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% if current_user.is_organizer %}
+                <li>
+                    <a href="{{ url_for('events.manage') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-list-check item-icon text-primary"></i>
+                            <span>Quản Lý Sự Kiện</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('events.speakers_list') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-microphone item-icon text-warning"></i>
+                            <span>Danh Sách Diễn Giả</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('notifications.manage') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-bullhorn item-icon text-info"></i>
+                            <span>Truyền Thông Thông Báo AI</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                {% endif %}
+                {% if current_user.is_admin %}
+                <li>
+                    <a href="{{ url_for('admin.dashboard') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-gauge-high item-icon text-danger"></i>
+                            <span>Bảng Điều Khiển Admin</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('admin.users_list') }}" class="apple-drawer-item">
+                        <div class="item-left">
+                            <i class="fa-solid fa-users item-icon text-primary"></i>
+                            <span>Quản Lý Người Dùng</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-secondary small opacity-50"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
+
+            <!-- Section: Cài Đặt Giao Diện -->
+            <div class="apple-drawer-section-title">Giao Diện & Hệ Thống</div>
+            <ul class="apple-drawer-list">
+                <li>
+                    <button type="button" class="apple-drawer-item w-100 text-start border-0 bg-transparent" id="drawerThemeToggleBtn">
+                        <div class="item-left">
+                            <i class="fa-solid fa-circle-half-stroke item-icon"></i>
+                            <span>Giao Diện Sáng / Tối</span>
+                        </div>
+                        <span class="small text-secondary" id="drawerThemeLabel">Chuyển đổi</span>
+                    </button>
+                </li>
+            </ul>
+
+            {% if current_user.is_authenticated %}
+            <!-- Logout Button -->
+            <div class="apple-drawer-footer">
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary w-100 text-danger border-0 d-flex align-items-center justify-content-center gap-2" style="background: var(--surface-secondary);">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Đăng Xuất</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </aside>
+
+    <!-- APPLE-STYLE BOTTOM NAVIGATION (iOS Tab Bar for Mobile & Tablet) -->
+    <nav class="apple-bottom-nav d-lg-none" id="appleBottomNav" aria-label="Mobile Bottom Navigation">
+        <!-- 1. Home Tab -->
+        <a href="{{ url_for('main.index') }}" class="apple-bottom-nav-item" id="bottomNavHomeTab" data-route="main.index">
+            <i class="fa-solid fa-house"></i>
+            <span>Trang chủ</span>
+        </a>
+
+        <!-- 2. Events Tab -->
+        <a href="{{ url_for('main.event_list') }}" class="apple-bottom-nav-item" id="bottomNavEventsTab" data-route="main.event_list">
+            <i class="fa-solid fa-calendar-days"></i>
+            <span>Sự kiện</span>
+        </a>
+
+        <!-- 3. AI Assistant Center Tab -->
+        <button type="button" class="apple-bottom-nav-item ai-center-tab" id="bottomNavAiTab" aria-label="Mở Trợ lý AI EventAI">
+            <div class="ai-tab-circle">
+                <i class="fa-solid fa-sparkles"></i>
+            </div>
+            <span>Trợ lý AI</span>
         </button>
 
-        <!-- Floating Chat Window -->
-        <div class="ai-chat-window hidden" id="aiChatWindow">
-            <div class="ai-chat-header d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-2">
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></div>
-                    <strong class="fs-6">🤖 Trợ Lý EventAI</strong>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <a href="{{ url_for('ai.chat_workspace') }}" class="btn btn-sm p-0 border-0 fs-6" title="Phóng to toàn trang phòng chat AI">
-                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                    </a>
-                    <button class="btn btn-sm p-0 border-0 fs-5" id="aiChatCloseBtn" title="Đóng">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
+        <!-- 4. Role Action Tab -->
+        {% if current_user.is_authenticated %}
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.dashboard') }}" class="apple-bottom-nav-item" id="bottomNavRoleTab" data-route="admin.dashboard">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span>Admin</span>
+                </a>
+            {% elif current_user.is_staff %}
+                <a href="{{ url_for('checkin.index') }}" class="apple-bottom-nav-item" id="bottomNavRoleTab" data-route="checkin.index">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Soát vé</span>
+                </a>
+            {% else %}
+                <a href="{{ url_for('tickets.my_tickets') }}" class="apple-bottom-nav-item" id="bottomNavRoleTab" data-route="tickets.my_tickets">
+                    <i class="fa-solid fa-ticket"></i>
+                    <span>Vé của tôi</span>
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{{ url_for('auth.login') }}" class="apple-bottom-nav-item" id="bottomNavRoleTab" data-route="auth.login">
+                <i class="fa-solid fa-user"></i>
+                <span>Tài khoản</span>
+            </a>
+        {% endif %}
 
-            <!-- Messages Stream -->
-            <div class="ai-chat-messages" id="aiChatMessages">
-                <div class="chat-msg bot">
-                    Xin chào! Tôi là Trợ lý AI của hệ thống sự kiện. Bạn cần tra cứu lịch trình, diễn giả, thông tin vé hay địa điểm tổ chức nào?
-                </div>
-            </div>
+        <!-- 5. Menu Drawer Trigger Tab -->
+        <button type="button" class="apple-bottom-nav-item" id="bottomNavMenuTab" aria-label="Mở Menu Mở Rộng">
+            <i class="fa-solid fa-bars"></i>
+            <span>Menu</span>
+        </button>
+    </nav>
 
-            <!-- Quick Prompts Suggestions -->
-            <div class="px-3 py-1 d-flex gap-1 overflow-x-auto border-top border-secondary border-opacity-25" style="background: rgba(0,0,0,0.2);">
-                <button class="btn btn-xs btn-outline-info py-0 px-2 quick-prompt-btn" style="font-size: 0.72rem; white-space: nowrap;" data-prompt="Lịch trình sự kiện AI Summit 2026 có những phiên nào?">📅 Lịch trình</button>
-                <button class="btn btn-xs btn-outline-warning py-0 px-2 quick-prompt-btn" style="font-size: 0.72rem; white-space: nowrap;" data-prompt="Có những diễn giả nào nổi bật?">🎤 Diễn giả</button>
-                <button class="btn btn-xs btn-outline-success py-0 px-2 quick-prompt-btn" style="font-size: 0.72rem; white-space: nowrap;" data-prompt="Giá vé và quyền lợi vé VIP thế nào?">🎟️ Giá vé</button>
-            </div>
+    <!-- AI CHAT BACKDROP (Mobile / Tablet Overlay) -->
+    <div class="ai-chat-backdrop" id="aiChatBackdrop"></div>
 
-            <!-- Chat Input -->
-            <div class="ai-chat-input-area">
-                <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Nhập câu hỏi về sự kiện..." autocomplete="off">
-                <button class="btn btn-sm btn-primary-gradient rounded-circle px-3" id="aiChatSendBtn">
-                    <i class="fa-solid fa-paper-plane"></i>
+    <!-- AI ASSISTANT CHAT WINDOW (Top-level Overlay Container) -->
+    <div class="ai-chat-window hidden" id="aiChatWindow" role="dialog" aria-modal="true" aria-label="Trợ lý EventAI">
+        <div class="ai-chat-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green);"></div>
+                <strong class="fs-6" style="color: var(--text-primary); font-weight: 600; letter-spacing: -0.01em;">Trợ Lý EventAI</strong>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+                <a href="{{ url_for('ai.chat_workspace') }}" class="btn btn-sm p-1 border-0" title="Phóng to toàn trang phòng chat AI" style="color: var(--text-secondary);">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center small"></i>
+                </a>
+                <button class="btn btn-sm p-1 border-0" id="aiChatCloseBtn" title="Đóng" style="color: var(--text-secondary);" aria-label="Đóng trợ lý AI">
+                    <i class="fa-solid fa-xmark fs-6"></i>
                 </button>
             </div>
         </div>
+
+        <!-- Messages Stream -->
+        <div class="ai-chat-messages" id="aiChatMessages">
+            <div class="chat-msg bot">
+                Xin chào! Tôi là Trợ lý AI của hệ thống sự kiện. Bạn cần tra cứu lịch trình, diễn giả, thông tin vé hay địa điểm tổ chức nào?
+            </div>
+        </div>
+
+        <!-- Quick Prompts Suggestions -->
+        <div class="px-3 py-2 d-flex gap-1.5 overflow-x-auto border-top" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important;">
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Lịch trình sự kiện AI Summit 2026 có những phiên nào?">📅 Lịch trình</button>
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Có những diễn giả nào nổi bật?">🎤 Diễn giả</button>
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Giá vé và quyền lợi vé VIP thế nào?">🎟️ Giá vé</button>
+        </div>
+
+        <!-- Chat Input -->
+        <div class="ai-chat-input-area">
+            <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Nhập câu hỏi về sự kiện..." autocomplete="off">
+            <button class="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center" id="aiChatSendBtn" style="width: 36px; height: 36px; flex-shrink: 0;" aria-label="Send">
+                <i class="fa-solid fa-arrow-up" style="font-size: 0.85rem;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- FLOATING AI ASSISTANT TRIGGER BUTTON (DESKTOP) -->
+    <div class="ai-floating-widget" id="aiFloatingWidget">
+        <button class="ai-chat-btn" id="aiChatToggleBtn" title="Hỏi đáp cùng Trợ lý EventAI" aria-label="Open AI Assistant">
+            <i class="fa-solid fa-sparkles"></i>
+        </button>
     </div>
 
     <!-- Bootstrap 5 Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Marked.js for rich Markdown & Table rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- Custom Application JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/ai_chat.js') }}"></script>

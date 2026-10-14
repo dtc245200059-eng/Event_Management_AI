@@ -2,7 +2,7 @@
 Speaker Model.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Speaker(db.Model):
     __tablename__ = 'speakers'
@@ -16,7 +16,7 @@ class Speaker(db.Model):
     email = db.Column(db.String(150), nullable=True)
     phone = db.Column(db.String(30), nullable=True)
     linkedin_url = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     schedules = db.relationship('Schedule', backref='speaker', lazy='dynamic')

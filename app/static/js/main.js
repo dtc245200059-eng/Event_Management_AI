@@ -1,30 +1,11 @@
 /**
- * Main Application JS Controller.
- * Features: Auto-scroll & Drag-to-swipe AI Recommendations + Modern Pagination.
+ * EventAI Pro - Main Application Controller.
+ * Features: Apple-style Light/Dark/System Theme Controller, AI Recommendations Slider, Rounded Pagination.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Theme Toggle (Dark / Light mode)
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const currentTheme = localStorage.getItem('theme') || 'dark';
-
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    updateThemeIcon(currentTheme);
-
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            const nextTheme = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', nextTheme);
-            localStorage.setItem('theme', nextTheme);
-            updateThemeIcon(nextTheme);
-        });
-    }
-
-    function updateThemeIcon(theme) {
-        if (!themeToggleBtn) return;
-        themeToggleBtn.innerHTML = theme === 'dark' ? '☀️' : '🌙';
-    }
+    // 1. Apple-style Theme Controller (Light / Dark / Auto System)
+    initThemeController();
 
     // 2. AI Recommendations: Auto-scroll & Drag to Swipe
     const recsContainer = document.getElementById('aiRecommendationsContainer');
@@ -34,8 +15,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Home Events Modern Pagination (6 events per page)
     initHomeEventsPagination();
+
+    // 4. Apple Mobile Drawer Controller (Slide-in Menu)
+    initMobileDrawer();
+
+    // 5. Apple iOS Bottom Navigation Bar (Tab active state & actions)
+    initMobileNavigation();
 });
 
+/**
+ * Initializes Theme Switcher supporting Light, Dark, and System modes.
+ * Features: Instant sync without FOUC, butter-smooth 250ms crossfade on click,
+ * accessibility aria-labels, and themeChanged event dispatch for dynamic components.
+ */
+function initThemeController() {
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    const themeIcon = document.getElementById('themeIcon');
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    // 1. Resolve current theme from localStorage or system fallback
+    let savedTheme = localStorage.getItem('theme');
+    let currentTheme = savedTheme;
+    if (!currentTheme || (currentTheme !== 'light' && currentTheme !== 'dark')) {
+        currentTheme = mediaQuery.matches ? 'dark' : 'light';
+    }
+
+    // 2. Synchronize DOM & icons on load without animation
+    applyTheme(currentTheme, false);
+
+    // 3. Listen for OS theme preference changes if user hasn't explicitly selected one
+    mediaQuery.addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            const systemTheme = e.matches ? 'dark' : 'light';
+            applyTheme(systemTheme, true);
+        }
+    });
+
+    // 4. Click Toggle Handler
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            const activeTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+            const nextTheme = activeTheme === 'dark' ? 'light' : 'dark';
+            try {
+                localStorage.setItem('theme', nextTheme);
+            } catch (err) {
+                console.warn('LocalStorage unavailable for theme storage:', err);
+            }
+            applyTheme(nextTheme, true);
+        });
+    }
+
+    function applyTheme(theme, animate = false) {
+        if (animate) {
+            document.documentElement.classList.add('theme-transition');
+            setTimeout(() => {
+                document.documentElement.classList.remove('theme-transition');
+            }, 300);
+        }
+
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-bs-theme', theme);
+
+        // Icon matches the active theme state
+        if (themeIcon) {
+            themeIcon.className = theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
+
+        // Accessibility attributes for screen readers and tooltips
+        if (themeToggleBtn) {
+            const nextLabel = theme === 'dark' ? 'Chế độ Sáng' : 'Chế độ Tối';
+            const currentLabel = theme === 'dark' ? 'Chế độ Tối' : 'Chế độ Sáng';
+            themeToggleBtn.setAttribute('aria-label', `Chuyển sang ${nextLabel}`);
+            themeToggleBtn.setAttribute('title', `${currentLabel} (Nhấp để chuyển sang ${nextLabel})`);
+        }
+
+        // Broadcast event for custom interactive elements (e.g. Chart.js in Dashboard)
+        window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: theme } }));
+    }
+}
+
+/**
+ * Loads AI event recommendations and wires smooth infinite track.
+ */
 async function loadAIRecommendations(container) {
     try {
         const response = await fetch('/api/ai/recommendations');
@@ -48,29 +109,29 @@ async function loadAIRecommendations(container) {
                 card.className = 'ai-slider-item';
                 
                 card.innerHTML = `
-                    <div class="event-card clickable-event-card h-100" onclick="if(!window.aiSliderDragged) window.location.href='/events/${item.id}'">
-                        <div class="event-card-img-wrapper">
+                    <div class="apple-card clickable-event-card h-100" onclick="if(!window.aiSliderDragged) window.location.href='/events/${item.id}'" style="cursor: pointer;">
+                        <div class="event-card-img-wrapper position-relative">
                             <img src="${item.banner_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'}" class="event-card-img" alt="${item.title}" draggable="false">
                             <span class="event-badge-category">${item.category}</span>
-                            <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(99, 102, 241, 0.9); color: white; font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 9999px;">
+                            <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0, 113, 227, 0.92); color: white; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-pill); backdrop-filter: blur(8px);">
                                 ✨ Phù hợp ${item.match_percentage}%
                             </div>
                         </div>
-                        <div class="event-card-body d-flex flex-column">
-                            <h5 class="event-card-title">${item.title}</h5>
+                        <div class="event-card-body d-flex flex-column p-4">
+                            <h5 class="event-card-title mb-2" style="font-size: 1.05rem;">${item.title}</h5>
                             <div class="event-meta-item">
-                                <i class="fa-solid fa-calendar-day text-primary"></i>
+                                <i class="fa-solid fa-calendar-day text-primary" style="font-size: 0.85rem;"></i>
                                 <span>${item.start_date}</span>
                             </div>
                             <div class="event-meta-item">
-                                <i class="fa-solid fa-location-dot text-danger"></i>
+                                <i class="fa-solid fa-location-dot text-danger" style="font-size: 0.85rem;"></i>
                                 <span class="text-truncate">${item.location_address || 'Online Zoom'}</span>
                             </div>
-                            <div style="font-size: 0.76rem; color: #a855f7; margin-bottom: 0.8rem;" class="text-truncate-2">
+                            <div style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.8rem; line-height: 1.4;" class="text-truncate-2">
                                 💡 ${item.reason}
                             </div>
                             <div class="mt-auto pt-2">
-                                <a href="/events/${item.id}" class="btn btn-sm btn-primary-gradient w-100" draggable="false">Xem Chi Tiết</a>
+                                <a href="/events/${item.id}" class="btn btn-sm btn-secondary w-100" draggable="false">Xem Chi Tiết</a>
                             </div>
                         </div>
                     </div>
@@ -253,7 +314,7 @@ function initHomeEventsPagination() {
 
         // Update Info Text
         if (infoContainer) {
-            infoContainer.innerHTML = `Hiển thị trang <strong>${currentPage}</strong> trên tổng số <strong>${totalPages}</strong> trang (Tổng cộng ${totalEvents} sự kiện)`;
+            infoContainer.innerHTML = `Hiển thị trang <strong>${currentPage}</strong> / <strong>${totalPages}</strong> (Tổng cộng ${totalEvents} sự kiện)`;
         }
     }
 
@@ -290,14 +351,138 @@ function initHomeEventsPagination() {
 document.addEventListener('click', (e) => {
     const card = e.target.closest('.clickable-event-card');
     if (card && card.dataset.eventUrl) {
-        // If clicked on an internal link or button, let it handle naturally
         if (e.target.closest('a') || e.target.closest('button')) {
             return;
         }
-        // If user was dragging the slider, prevent navigation
         if (window.aiSliderDragged) {
             return;
         }
         window.location.href = card.dataset.eventUrl;
     }
 });
+
+/**
+ * Apple iOS Mobile Slide-in Drawer Controller
+ * Features: Smooth slide-in, backdrop blur, lock body scroll, theme switcher sync.
+ */
+function initMobileDrawer() {
+    const openBtn = document.getElementById('mobileDrawerOpenBtn');
+    const drawer = document.getElementById('appleMobileDrawer');
+    const backdrop = document.getElementById('appleDrawerBackdrop');
+    const closeBtn = document.getElementById('appleDrawerCloseBtn');
+    const bottomNavMenuTab = document.getElementById('bottomNavMenuTab');
+    const drawerThemeToggleBtn = document.getElementById('drawerThemeToggleBtn');
+    const drawerThemeLabel = document.getElementById('drawerThemeLabel');
+
+    if (!drawer || !backdrop) return;
+
+    function openDrawer() {
+        if (typeof window.closeEventAIChat === 'function') {
+            window.closeEventAIChat();
+        }
+        drawer.classList.add('open', 'active');
+        backdrop.classList.add('open', 'active');
+        document.body.classList.add('mobile-drawer-open');
+        updateDrawerThemeLabel();
+    }
+
+    function closeDrawer() {
+        drawer.classList.remove('open', 'active');
+        backdrop.classList.remove('open', 'active');
+        document.body.classList.remove('mobile-drawer-open');
+    }
+
+    // Expose globally for cross-component orchestration
+    window.openMobileDrawer = openDrawer;
+    window.closeMobileDrawer = closeDrawer;
+
+    function updateDrawerThemeLabel() {
+        if (!drawerThemeLabel) return;
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        drawerThemeLabel.textContent = currentTheme === 'dark' ? 'Chế độ Tối' : 'Chế độ Sáng';
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openDrawer);
+    if (bottomNavMenuTab) bottomNavMenuTab.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (backdrop) backdrop.addEventListener('click', closeDrawer);
+
+    // Auto close drawer when clicking any link inside
+    drawer.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            closeDrawer();
+        });
+    });
+
+    // Escape key closes drawer
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && (drawer.classList.contains('open') || drawer.classList.contains('active'))) {
+            closeDrawer();
+        }
+    });
+
+    // Theme toggle inside drawer
+    if (drawerThemeToggleBtn) {
+        drawerThemeToggleBtn.addEventListener('click', () => {
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (themeToggleBtn) {
+                themeToggleBtn.click();
+                updateDrawerThemeLabel();
+            }
+        });
+    }
+
+    window.addEventListener('themeChanged', updateDrawerThemeLabel);
+    updateDrawerThemeLabel();
+}
+
+/**
+ * Apple iOS Bottom Navigation Bar Controller
+ * Features: Auto route highlighting, AI sparkling tab integration, haptic feedback simulation.
+ */
+function initMobileNavigation() {
+    const currentPath = window.location.pathname;
+    const homeTab = document.getElementById('bottomNavHomeTab');
+    const eventsTab = document.getElementById('bottomNavEventsTab');
+    const aiTab = document.getElementById('bottomNavAiTab');
+    const roleTab = document.getElementById('bottomNavRoleTab');
+
+    // Highlight active destination
+    if (homeTab && currentPath === '/') {
+        homeTab.classList.add('active');
+    } else if (eventsTab && (currentPath.startsWith('/events') || currentPath.startsWith('/event'))) {
+        eventsTab.classList.add('active');
+    } else if (roleTab && (
+        currentPath.startsWith('/admin') ||
+        currentPath.startsWith('/checkin') ||
+        currentPath.startsWith('/tickets') ||
+        currentPath.startsWith('/auth')
+    )) {
+        roleTab.classList.add('active');
+    }
+
+    // AI Tab triggers the AI Assistant Sheet
+    if (aiTab) {
+        aiTab.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (typeof window.closeMobileDrawer === 'function') {
+                window.closeMobileDrawer();
+            }
+            if (typeof window.openEventAIChat === 'function') {
+                window.openEventAIChat();
+            } else {
+                window.location.href = '/ai/workspace';
+            }
+        });
+    }
+}
+
+/**
+ * Global CSRF Token retriever for Fetch/AJAX requests.
+ */
+window.getCsrfToken = function() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? (meta.getAttribute('content') || '') : '';
+};
+
+

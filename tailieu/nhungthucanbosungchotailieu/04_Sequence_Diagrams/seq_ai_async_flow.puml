@@ -1,0 +1,244 @@
+@startuml Sequence_AI_Async_Flow
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+skinparam participant {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+}
+
+skinparam participant {
+    BackgroundColor<<ai>> #F3E5F5
+    BorderColor<<ai>> #7B1FA2
+}
+
+skinparam participant {
+    BackgroundColor<<external>> #FFCDD2
+    BorderColor<<external>> #C62828
+}
+
+skinparam participant {
+    BackgroundColor<<data>> #FFF9C4
+    BorderColor<<data>> #F9A825
+}
+
+title **Sequence Diagram — Luồng xử lý bất đồng bộ (Async) khi gọi AI**\n\
+Chương III §3.1.7 — Hình 3.4 (Bổ sung chi tiết)\n\
+Thể hiện: Rate Limiter, Timeout, Fallback Mock, Async Processing
+
+actor "User\n(Attendee/Manager)" as User
+participant "Browser\n(JavaScript)" as Browser
+participant "Flask Route\n(ai_bp)" as Route
+participant "Rate\nLimiter" as RateLimiter <<ai>>
+participant "AI\nOrchestrator" as Orchestrator <<ai>>
+database "SQLite\nDatabase" as DB <<data>>
+participant "PII\nFilter" as PIIFilter <<ai>>
+participant "Gemini\nService" as GeminiSvc <<ai>>
+participant "Gemini\n2.0 Flash API" as GeminiAPI <<external>>
+participant "Fallback\nMock Engine" as MockEngine <<ai>>
+
+' ============================
+' MAIN SUCCESS FLOW
+' ============================
+== Luồng chính: Chatbot RAG (Gemini phản hồi thành công) ==
+
+User -> Browser : Nhập câu hỏi\n"Sự kiện AI diễn ra khi nào?"
+activate Browser
+
+Browser -> Route : POST /api/ai/chat\n{message, event_id, history}
+activate Route
+
+Route -> Route : Input Validation\n(length ≤ 500, sanitize)
+
+Route -> RateLimiter : check_rate(user_id)
+activate RateLimiter
+alt Chưa vượt quota (< 5 req/min)
+    RateLimiter --> Route : ALLOWED\n(remaining: 4)
+else Vượt quota
+    RateLimiter --> Route : DENIED
+    Route --> Browser : HTTP 429\n{retry_after: 30}
+    Browser --> User : "Vui lòng đợi 30 giây"
+end
+deactivate RateLimiter
+
+Route -> Orchestrator : process_chat(message, user, event_id)
+activate Orchestrator
+
+' Intent Classification
+Orchestrator -> Orchestrator : Intent Classification\n→ "schedule_query"
+
+' Database Retrieval
+Orchestrator -> DB : SELECT events, schedules,\nspeakers, venues, tickets\nWHERE keyword LIKE '%AI%'\nAND status IN ('published','ongoing')
+activate DB
+DB --> Orchestrator : Event + Schedule +\nSpeaker + Venue + Ticket data
+deactivate DB
+
+' PII Filtering
+Orchestrator -> PIIFilter : filter_pii(context_data)
+activate PIIFilter
+PIIFilter -> PIIFilter : Remove email, phone,\npayment_ref
+PIIFilter --> Orchestrator : Cleaned context
+deactivate PIIFilter
+
+' Build Prompt
+Orchestrator -> Orchestrator : Build Prompt\n(System + Context + User Q)
+
+' Call Gemini (with timeout)
+Orchestrator -> GeminiSvc : generate_response(prompt)
+activate GeminiSvc
+
+GeminiSvc -> GeminiAPI : POST /v1beta/models/\ngemini-2.0-flash:generateContent\n(timeout=3s)
+activate GeminiAPI
+
+GeminiAPI --> GeminiSvc : 200 OK\n{ai_response, tokens_used}
+deactivate GeminiAPI
+
+GeminiSvc --> Orchestrator : AI Response (Markdown)
+deactivate GeminiSvc
+
+' Response Validation
+Orchestrator -> Orchestrator : Response Validation\n(check PII leak, length)
+
+' Log to DB
+Orchestrator -> DB : INSERT INTO ai_chat_history\n(user_id, event_id, chat_type='chat',\nresponse_mode='live', latency_ms)
+activate DB
+DB --> Orchestrator : OK (chat_history_id: 456)
+deactivate DB
+
+Orchestrator --> Route : {response, intent,\nsources, mode='live'}
+deactivate Orchestrator
+
+Route --> Browser : HTTP 200\n{status: 'success', response}
+deactivate Route
+
+Browser -> Browser : Render Markdown\n→ HTML (sanitized)
+Browser --> User : Hiển thị câu trả lời\ntrong Chat Widget
+deactivate Browser
+
+' ============================
+' TIMEOUT/FALLBACK FLOW
+' ============================
+== Luồng phụ: Gemini Timeout → Fallback Mock ==
+
+User -> Browser : "Có sự kiện nào tuần sau?"
+activate Browser
+
+Browser -> Route : POST /api/ai/chat
+activate Route
+
+Route -> Orchestrator : process_chat(message)
+activate Orchestrator
+
+Orchestrator -> DB : Retrieve context data
+activate DB
+DB --> Orchestrator : Context data
+deactivate DB
+
+Orchestrator -> PIIFilter : filter_pii()
+activate PIIFilter
+PIIFilter --> Orchestrator : Cleaned context
+deactivate PIIFilter
+
+Orchestrator -> GeminiSvc : generate_response(prompt)
+activate GeminiSvc
+
+GeminiSvc -> GeminiAPI : POST (timeout=3s)
+activate GeminiAPI
+
+note right of GeminiAPI
+    **TIMEOUT!**
+    Gemini không phản hồi
+    trong 3 giây
+end note
+
+GeminiAPI --x GeminiSvc : ⏱️ Timeout Exception\n(3000ms exceeded)
+deactivate GeminiAPI
+
+GeminiSvc --> Orchestrator : TimeoutError
+deactivate GeminiSvc
+
+' Fallback to Mock
+Orchestrator -> MockEngine : fallback_response(\nintent='event_info',\ncontext=context_data)
+activate MockEngine
+
+MockEngine -> MockEngine : Format event list\nfrom raw context data\n(no AI, just formatting)
+
+MockEngine --> Orchestrator : Formatted response\n(basic, no AI enrichment)
+deactivate MockEngine
+
+' Log fallback
+Orchestrator -> DB : INSERT INTO ai_chat_history\n(response_mode='mock',\nmodel_name='fallback_mock')
+activate DB
+DB --> Orchestrator : OK
+deactivate DB
+
+Orchestrator --> Route : {response, mode='mock'}
+deactivate Orchestrator
+
+Route --> Browser : HTTP 200\n{status: 'success',\nresponse_mode: 'mock'}
+deactivate Route
+
+Browser --> User : Hiển thị câu trả lời\n+ badge "AI đang bảo trì"
+deactivate Browser
+
+' ============================
+' BATCH ASYNC FLOW (Sentiment)
+' ============================
+== Luồng Async: Batch Sentiment Analysis (Background) ==
+
+actor "Manager" as Mgr
+participant "Flask Route\n(ai_bp)" as Route2
+participant "AI\nOrchestrator" as Orch2 <<ai>>
+participant "Sentiment\nService" as SentSvc <<ai>>
+
+Mgr -> Browser : Click "Phân tích tất cả\nphản hồi sự kiện #12"
+activate Browser
+
+Browser -> Route2 : POST /api/ai/sentiment/batch\n{event_id: 12}
+activate Route2
+
+Route2 -> DB : SELECT feedback_text,\nfeedback_rating\nFROM registrations\nWHERE event_id=12\nAND feedback_text IS NOT NULL
+activate DB
+DB --> Route2 : 50 feedbacks
+deactivate DB
+
+Route2 -> Orch2 : analyze_batch(feedbacks)
+activate Orch2
+
+note right of Orch2
+    **Batch Processing Strategy:**
+    50 feedbacks ÷ 20 per batch = 3 batches
+    Gửi Gemini tuần tự, mỗi batch timeout 30s
+end note
+
+loop Batch 1..3 (20 feedbacks/batch)
+    Orch2 -> SentSvc : analyze_batch_chunk(chunk_n)
+    activate SentSvc
+    SentSvc -> GeminiAPI : Sentiment prompt\n(batch of 20 feedbacks)
+    activate GeminiAPI
+    GeminiAPI --> SentSvc : Sentiment results
+    deactivate GeminiAPI
+    SentSvc --> Orch2 : Batch results
+    deactivate SentSvc
+
+    Orch2 -> DB : UPDATE registrations\nSET sentiment, sentiment_score\nWHERE id IN (batch_ids)
+    activate DB
+    DB --> Orch2 : Updated
+    deactivate DB
+end
+
+Orch2 -> Orch2 : Aggregate results\n(distribution, top topics,\noverall assessment)
+
+Orch2 --> Route2 : {summary, individual_results}
+deactivate Orch2
+
+Route2 --> Browser : HTTP 200\n{status: 'success', summary}
+deactivate Route2
+
+Browser --> Mgr : Hiển thị Sentiment\nDashboard + Charts
+deactivate Browser
+
+@enduml

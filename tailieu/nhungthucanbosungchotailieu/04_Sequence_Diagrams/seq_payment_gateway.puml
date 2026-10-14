@@ -1,0 +1,224 @@
+@startuml Sequence_Payment_Gateway
+!theme plain
+skinparam style strictuml
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+skinparam participant {
+    BackgroundColor #E3F2FD
+    BorderColor #1565C0
+    FontStyle bold
+}
+
+skinparam participant {
+    BackgroundColor<<external>> #FFCDD2
+    BorderColor<<external>> #C62828
+}
+
+skinparam participant {
+    BackgroundColor<<data>> #FFF9C4
+    BorderColor<<data>> #F9A825
+}
+
+title **Sequence Diagram — Tích hợp Payment Gateway**\n\
+Chương III §UC05 — Thanh toán & Hoàn/Hủy Vé\n\
+Luồng: Đăng ký vé Paid/VIP → Thanh toán → Xác nhận → Hoàn vé
+
+actor "Attendee" as User
+participant "Browser" as Browser
+participant "Flask Route\n(registrations_bp)" as RegRoute
+participant "Registration\nService" as RegSvc
+participant "Ticket\nService" as TicketSvc
+database "SQLite DB" as DB <<data>>
+participant "Payment\nGateway API\n(VNPay/MoMo)" as PayGW <<external>>
+
+' ============================
+' FLOW 1: PAID TICKET REGISTRATION
+' ============================
+== Luồng 1: Đăng ký Vé Paid/VIP ==
+
+User -> Browser : Chọn sự kiện → Chọn vé "VIP" (200.000₫)
+activate Browser
+
+Browser -> RegRoute : POST /registrations/create\n{event_id: 12, ticket_id: 5,\nattendee_info: {...}}
+activate RegRoute
+
+RegRoute -> TicketSvc : check_ticket_availability(ticket_id=5)
+activate TicketSvc
+
+TicketSvc -> DB : SELECT quota, sold_count\nFROM tickets WHERE id=5
+activate DB
+DB --> TicketSvc : {quota: 50, sold_count: 45}
+deactivate DB
+
+alt Còn vé (sold_count < quota)
+    TicketSvc --> RegRoute : AVAILABLE (remaining: 5)
+else Hết vé
+    TicketSvc --> RegRoute : SOLD_OUT
+    RegRoute --> Browser : HTTP 409\n{message: "Vé VIP đã hết"}
+    Browser --> User : Thông báo hết vé
+end
+deactivate TicketSvc
+
+' Create registration with pending status
+RegRoute -> RegSvc : create_registration(data)
+activate RegSvc
+
+RegSvc -> DB : BEGIN TRANSACTION
+activate DB
+
+RegSvc -> DB : INSERT INTO registrations\n(event_id=12, attendee_id=15,\nticket_id=5,\nregistration_status='pending',\npayment_status='unpaid',\npayment_amount=200000)
+DB --> RegSvc : registration_id: 123
+
+RegSvc -> DB : UPDATE tickets\nSET sold_count = sold_count + 1\nWHERE id=5 AND sold_count < quota
+DB --> RegSvc : Updated (sold_count: 46)
+
+RegSvc -> DB : COMMIT TRANSACTION
+DB --> RegSvc : OK
+deactivate DB
+
+RegSvc --> RegRoute : {registration_id: 123,\nregistration_code: "REG-2026-00123"}
+deactivate RegSvc
+
+' ============================
+' FLOW 2: PAYMENT PROCESSING
+' ============================
+== Luồng 2: Xử lý Thanh toán qua Payment Gateway ==
+
+RegRoute -> RegRoute : Generate payment request\n(amount, order_id, return_url,\nipn_url)
+
+RegRoute -> PayGW : POST /payment/create\n{amount: 200000,\norder_id: "REG-2026-00123",\nreturn_url: "/payments/return",\nipn_url: "/payments/ipn"}
+activate PayGW
+
+PayGW --> RegRoute : {payment_url: "https://pay.vnpay.vn/...",\ntransaction_ref: "VNP-123456"}
+deactivate PayGW
+
+RegRoute -> DB : UPDATE registrations\nSET payment_ref = 'VNP-123456'\nWHERE id = 123
+activate DB
+DB --> RegRoute : Updated
+deactivate DB
+
+RegRoute --> Browser : HTTP 200\n{payment_url: "https://pay.vnpay.vn/..."}
+deactivate RegRoute
+
+Browser -> Browser : Redirect to\nPayment Gateway page
+Browser --> User : Trang thanh toán\nVNPay/MoMo
+
+User -> PayGW : Nhập thông tin thanh toán\nvà xác nhận
+activate PayGW
+
+alt Thanh toán thành công
+    PayGW --> Browser : Redirect to return_url\n?status=success&txn_ref=VNP-123456
+    PayGW -> RegRoute : POST /payments/ipn\n(IPN Callback - Server-to-Server)\n{txn_ref, status: 'success',\namount: 200000}
+    activate RegRoute
+
+    RegRoute -> RegSvc : confirm_payment(txn_ref='VNP-123456')
+    activate RegSvc
+
+    RegSvc -> DB : BEGIN TRANSACTION
+    activate DB
+
+    RegSvc -> DB : UPDATE registrations\nSET payment_status = 'paid',\nregistration_status = 'confirmed',\npaid_at = NOW()\nWHERE payment_ref = 'VNP-123456'
+    DB --> RegSvc : Updated
+
+    RegSvc -> DB : Generate QR Code\n(ticket_number: "TKT-2026-00456")
+    RegSvc -> DB : UPDATE registrations\nSET ticket_number = 'TKT-2026-00456',\nqr_code_path = '/static/qr/TKT-2026-00456.png'
+    DB --> RegSvc : Updated
+
+    RegSvc -> DB : COMMIT TRANSACTION
+    DB --> RegSvc : OK
+    deactivate DB
+
+    RegSvc --> RegRoute : PAYMENT_CONFIRMED
+    deactivate RegSvc
+
+    RegRoute --> PayGW : HTTP 200 {status: 'ok'}
+    deactivate RegRoute
+
+    Browser --> User : ✅ Thanh toán thành công!\nMã vé: TKT-2026-00456\n[QR Code]
+
+else Thanh toán thất bại
+    PayGW --> Browser : Redirect to return_url\n?status=failed
+    PayGW -> RegRoute : POST /payments/ipn\n{status: 'failed'}
+    activate RegRoute
+
+    RegRoute -> DB : UPDATE registrations\nSET payment_status = 'failed'\nWHERE payment_ref = 'VNP-123456'
+    activate DB
+    DB --> RegRoute : Updated
+    deactivate DB
+
+    note right of RegRoute
+        **Không rollback ticket quota ngay**
+        Giữ reservation 15 phút
+        Sau 15' nếu vẫn unpaid → release
+    end note
+
+    RegRoute --> PayGW : HTTP 200
+    deactivate RegRoute
+    Browser --> User : ❌ Thanh toán thất bại\n[Thử lại] [Hủy đăng ký]
+end
+deactivate PayGW
+
+' ============================
+' FLOW 3: REFUND
+' ============================
+== Luồng 3: Hoàn/Hủy Vé ==
+
+User -> Browser : Click "Hủy đăng ký"\ncho REG-2026-00123
+activate Browser
+
+Browser -> RegRoute : POST /registrations/123/cancel\n{reason: "Bận việc không tham dự được"}
+activate RegRoute
+
+RegRoute -> RegSvc : cancel_registration(id=123)
+activate RegSvc
+
+RegSvc -> DB : SELECT registration_status,\npayment_status, payment_amount,\npaid_at FROM registrations\nWHERE id = 123
+activate DB
+DB --> RegSvc : {status: 'confirmed',\npayment: 'paid', amount: 200000}
+deactivate DB
+
+RegSvc -> RegSvc : Check refund policy\n(event_start - NOW() > 24h?\n→ Eligible for refund)
+
+alt Đủ điều kiện hoàn tiền
+    RegSvc -> DB : BEGIN TRANSACTION
+    activate DB
+
+    RegSvc -> DB : UPDATE registrations\nSET registration_status = 'cancelled',\nrefund_status = 'processing'\nWHERE id = 123
+
+    RegSvc -> DB : UPDATE tickets\nSET sold_count = sold_count - 1\nWHERE id = 5
+    DB --> RegSvc : Updated
+
+    RegSvc -> DB : COMMIT
+    DB --> RegSvc : OK
+    deactivate DB
+
+    RegSvc -> PayGW : POST /payment/refund\n{txn_ref: 'VNP-123456',\namount: 200000}
+    activate PayGW
+    PayGW --> RegSvc : {refund_status: 'processing',\nrefund_ref: 'RF-789'}
+    deactivate PayGW
+
+    RegSvc -> DB : UPDATE registrations\nSET refund_status = 'refunded'\nWHERE id = 123
+    activate DB
+    DB --> RegSvc : Updated
+    deactivate DB
+
+    RegSvc --> RegRoute : REFUND_INITIATED
+    deactivate RegSvc
+
+    RegRoute --> Browser : HTTP 200\n{message: "Đã hủy. Hoàn tiền trong 3-5 ngày."}
+    deactivate RegRoute
+
+    Browser --> User : ✅ Đã hủy đăng ký\nHoàn tiền: 200.000₫\nTrong 3-5 ngày làm việc
+
+else Quá hạn hoàn tiền
+    RegSvc --> RegRoute : REFUND_NOT_ELIGIBLE\n{reason: "Quá hạn 24h trước sự kiện"}
+    deactivate RegSvc
+    RegRoute --> Browser : HTTP 400\n{message: "Không đủ điều kiện hoàn vé"}
+    deactivate RegRoute
+    Browser --> User : ⚠️ Không thể hoàn vé\n(quá hạn chính sách)
+end
+
+deactivate Browser
+
+@enduml

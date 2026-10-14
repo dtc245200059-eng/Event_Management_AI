@@ -1,7 +1,11 @@
 # Question Analysis & Natural Language Intent Specification
-**Hệ Thống**: Phân Hệ Trợ Lý Ảo RAG Sự Kiện (Event AI Assistant Subsystem)  
-**Tài Liệu Tham Chiếu**: `docs/chatbot-architecture.md`, `docs/requirements.md`  
-**Giai Đoạn**: Implementation & AI Specialization
+
+> **Hệ Thống:** Phân Hệ Trợ Lý Ảo RAG & Multi-Agent Sự Kiện (Event AI Assistant Subsystem)  
+> **Trạng thái triển khai:** `[IMPLEMENTED]` (Tích hợp trong RAG Service & Requirement Agent)  
+> **Tài Liệu Tham Chiếu:** [chatbot-architecture.md](file:///d:/Event_Management_AI/docs/chatbot-architecture.md), [multi-agent-architecture.md](file:///d:/Event_Management_AI/docs/multi-agent-architecture.md), [requirements.md](file:///d:/Event_Management_AI/docs/requirements.md)  
+> **Kỹ năng liên quan:** [event-retrieval](file:///d:/Event_Management_AI/.agents/skills/event-retrieval/SKILL.md), [rag-prompt](file:///d:/Event_Management_AI/.agents/skills/rag-prompt/SKILL.md), [ai-agent](file:///d:/Event_Management_AI/.agents/skills/ai-agent/SKILL.md)  
+> **Kiểm thử liên quan:** [tests/test_ai_agent.py](file:///d:/Event_Management_AI/tests/test_ai_agent.py), [tests/test_multi_agent.py](file:///d:/Event_Management_AI/tests/test_multi_agent.py)  
+> **Mã nguồn thực thi:** [app/services/rag_service.py](file:///d:/Event_Management_AI/app/services/rag_service.py), [app/agents/requirement_agent.py](file:///d:/Event_Management_AI/app/agents/requirement_agent.py)
 
 ---
 
@@ -15,7 +19,7 @@ Module **Question Analysis** đóng vai trò là tầng phân tích trung gian (
 ## 2. Danh Mục 5 Nhóm Ý Định Chính (Intent Taxonomies)
 
 | Intent Code | Tên Ý Định | Mô Tả & Mục Tiêu | Mẫu Câu Hỏi Tiếng Việt Điển Hình |
-| :--- | :--- | :--- | :--- |
+|:---|:---|:---|:---|
 | `schedule_query` | Hỏi về Lịch trình | Tra cứu thời gian, phiên hội thảo, timeline, phòng họp. | *"Sự kiện bắt đầu lúc mấy giờ?", "Khi nào diễn ra phiên workshop về AI?", "Lịch trình buổi chiều có gì?"* |
 | `speaker_query` | Hỏi về Diễn giả | Tra cứu thông tin chuyên gia, học hàm, chức vụ, bài chia sẻ. | *"Ai là diễn giả chính?", "TS. Lê Quang Dũng chia sẻ về chủ đề gì?", "Có chuyên gia nào đến từ Google không?"* |
 | `ticket_query` | Hỏi về Vé & Giá vé | Tra cứu các hạng vé, giá vé, số lượng còn lại, quyền lợi vé VIP. | *"Vé VIP giá bao nhiêu?", "Còn vé miễn phí không?", "Làm thế nào để mua vé Standard?"* |

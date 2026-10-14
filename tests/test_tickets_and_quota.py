@@ -2,7 +2,7 @@
 Unit Tests for Ticketing Quotas, Atomic Booking, and QR Check-in.
 """
 from datetime import datetime, timedelta
-from app.extensions import db
+from app.extensions import db, utc_now
 from app.models import Event, Ticket, Registration
 
 def test_ticket_quota_limit(app, sample_users):
@@ -11,8 +11,8 @@ def test_ticket_quota_limit(app, sample_users):
             event_code='EVT-TEST-01',
             title='Test Event Quota',
             category='Tech',
-            start_date=datetime.utcnow() + timedelta(days=2),
-            end_date=datetime.utcnow() + timedelta(days=2, hours=4),
+            start_date=utc_now() + timedelta(days=2),
+            end_date=utc_now() + timedelta(days=2, hours=4),
             status='published'
         )
         db.session.add(evt)
@@ -50,8 +50,8 @@ def test_checkin_anti_duplicate(app, client, sample_users):
         evt = Event(
             event_code='EVT-TEST-02',
             title='Checkin Event',
-            start_date=datetime.utcnow(),
-            end_date=datetime.utcnow() + timedelta(hours=3)
+            start_date=utc_now(),
+            end_date=utc_now() + timedelta(hours=3)
         )
         db.session.add(evt)
         db.session.commit()
@@ -96,8 +96,8 @@ def test_cancel_ticket_and_reclaim_quota(app, client, sample_users):
         evt = Event(
             event_code='EVT-TEST-CANCEL',
             title='Cancel Test Event',
-            start_date=datetime.utcnow() + timedelta(days=5),
-            end_date=datetime.utcnow() + timedelta(days=5, hours=3)
+            start_date=utc_now() + timedelta(days=5),
+            end_date=utc_now() + timedelta(days=5, hours=3)
         )
         db.session.add(evt)
         db.session.commit()
@@ -137,9 +137,11 @@ def test_cancel_ticket_and_reclaim_quota(app, client, sample_users):
 
     with app.app_context():
         updated_reg = db.session.get(Registration, reg_id)
+        assert updated_reg is not None
         assert updated_reg.registration_status == 'cancelled'
 
         updated_ticket = db.session.get(Ticket, updated_reg.ticket_id)
+        assert updated_ticket is not None
         assert updated_ticket.sold_count == 4
         assert updated_ticket.status == 'active'
         assert updated_ticket.is_available is True
@@ -152,8 +154,8 @@ def test_re_register_after_cancel_or_pending(app, client, sample_users):
         evt = Event(
             event_code='EVT-RE-REG',
             title='Re-Register Test Event',
-            start_date=datetime.utcnow() + timedelta(days=10),
-            end_date=datetime.utcnow() + timedelta(days=10, hours=4)
+            start_date=utc_now() + timedelta(days=10),
+            end_date=utc_now() + timedelta(days=10, hours=4)
         )
         db.session.add(evt)
         db.session.commit()
@@ -199,8 +201,8 @@ def test_auto_qr_generation_and_download(app, client, sample_users):
         evt = Event(
             event_code='EVT-QR-TEST',
             title='QR Auto Gen Test Event',
-            start_date=datetime.utcnow() + timedelta(days=3),
-            end_date=datetime.utcnow() + timedelta(days=3, hours=3)
+            start_date=utc_now() + timedelta(days=3),
+            end_date=utc_now() + timedelta(days=3, hours=3)
         )
         db.session.add(evt)
         db.session.commit()
@@ -247,8 +249,8 @@ def test_event_attendees_roster_and_quick_checkin(app, client, sample_users):
         evt = Event(
             event_code='EVT-ROSTER-01',
             title='Roster API Event',
-            start_date=datetime.utcnow() + timedelta(days=1),
-            end_date=datetime.utcnow() + timedelta(days=1, hours=2)
+            start_date=utc_now() + timedelta(days=1),
+            end_date=utc_now() + timedelta(days=1, hours=2)
         )
         db.session.add(evt)
         db.session.commit()
@@ -301,6 +303,7 @@ def test_event_attendees_roster_and_quick_checkin(app, client, sample_users):
 
     with app.app_context():
         updated = db.session.get(Registration, reg_id)
+        assert updated is not None
         assert updated.checked_in is True
         assert updated.checked_in_by == 'staff'
 
@@ -312,5 +315,6 @@ def test_event_attendees_roster_and_quick_checkin(app, client, sample_users):
 
     with app.app_context():
         re_updated = db.session.get(Registration, reg_id)
+        assert re_updated is not None
         assert re_updated.checked_in is False
 

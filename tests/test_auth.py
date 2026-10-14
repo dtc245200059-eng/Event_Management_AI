@@ -13,9 +13,9 @@ def test_user_password_hashing(app):
 
 def test_user_roles(app, sample_users):
     with app.app_context():
-        admin = User.query.get(sample_users['admin_id'])
-        staff = User.query.get(sample_users['staff_id'])
-        attendee = User.query.get(sample_users['user_id'])
+        admin = db.session.get(User, sample_users['admin_id'])
+        staff = db.session.get(User, sample_users['staff_id'])
+        attendee = db.session.get(User, sample_users['user_id'])
 
         assert admin.is_admin is True
         assert admin.is_staff is True

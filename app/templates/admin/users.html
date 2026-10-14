@@ -3,57 +3,63 @@
 {% block title %}Quản Lý Người Dùng & Phân Quyền - EventAI Pro{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-5">
     <!-- Header & Action Buttons -->
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1"><i class="fa-solid fa-users-gear text-primary me-2"></i>Quản Lý Người Dùng & Phân Quyền</h2>
-            <p class="text-muted small mb-0">Quản trị viên tạo lập tài khoản nhân viên (Staff), phân quyền người dùng và kiểm soát trạng thái truy cập</p>
+            <h2 class="mb-1">Quản Lý Người Dùng & Phân Quyền</h2>
+            <p class="section-subtitle mb-0">Quản trị viên tạo lập tài khoản nhân viên (Staff), phân quyền và kiểm soát quyền truy cập</p>
         </div>
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-primary-gradient" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                <i class="fa-solid fa-user-plus me-1"></i> Thêm Nhân Viên (Staff)
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="fa-solid fa-user-plus me-1"></i> Thêm Nhân Viên
             </button>
-            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary-glass">
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-sm">
                 <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
             </a>
         </div>
     </div>
 
     <!-- Quick Stats Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="checkout-spec-box p-3 rounded-3 text-center">
-                <small class="text-muted d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Tổng Tài Khoản</small>
-                <h3 class="fw-extrabold text-light mb-0">{{ total_users }}</h3>
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-2">
+            <div class="apple-card p-3 text-center">
+                <small class="d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem; color: var(--text-secondary);">Tổng Users</small>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ total_users }}</h3>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="apple-card p-3 text-center" style="background: var(--accent-red-subtle);">
+                <small class="text-danger d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Admin</small>
+                <h3 class="fw-bold text-danger mb-0">{{ total_admins }}</h3>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="checkout-spec-box p-3 rounded-3 text-center border-danger border-opacity-40">
-                <small class="text-danger d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Quản Trị Viên (Admin)</small>
-                <h3 class="fw-extrabold text-danger mb-0">{{ total_admins }}</h3>
+            <div class="apple-card p-3 text-center" style="background: var(--accent-orange-subtle);">
+                <small class="text-warning d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Ban Tổ Chức (Organizer)</small>
+                <h3 class="fw-bold text-warning mb-0">{{ total_organizers }}</h3>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="apple-card p-3 text-center" style="background: var(--accent-primary-subtle);">
+                <small class="text-primary d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Soát Vé (Staff)</small>
+                <h3 class="fw-bold text-primary mb-0">{{ total_staff }}</h3>
             </div>
         </div>
         <div class="col-6 col-md-3">
-            <div class="checkout-spec-box p-3 rounded-3 text-center border-info border-opacity-40">
-                <small class="text-info d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Nhân Viên (Staff)</small>
-                <h3 class="fw-extrabold text-info mb-0">{{ total_staff }}</h3>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="checkout-spec-box p-3 rounded-3 text-center border-primary border-opacity-40">
-                <small class="text-primary d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem;">Khách Mời (Attendee)</small>
-                <h3 class="fw-extrabold text-primary mb-0">{{ total_attendees }}</h3>
+            <div class="apple-card p-3 text-center" style="background: var(--surface-secondary);">
+                <small class="d-block mb-1 text-uppercase fw-semibold" style="font-size: 0.72rem; color: var(--text-secondary);">Khách Mời (Attendee)</small>
+                <h3 class="fw-bold mb-0" style="color: var(--text-primary);">{{ total_attendees }}</h3>
             </div>
         </div>
     </div>
 
     <!-- Users Table -->
-    <div class="glass-panel p-4">
+    <div class="apple-card p-4 p-md-5">
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+            <table class="table align-middle mb-0">
                 <thead>
-                    <tr class="text-muted small">
+                    <tr>
                         <th>USER</th>
                         <th>HỌ VÀ TÊN</th>
                         <th>EMAIL & SĐT</th>
@@ -68,30 +74,32 @@
                     <tr>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <img src="{{ u.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="34" height="34" style="object-fit: cover;">
+                                <img src="{{ u.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="32" height="32" style="object-fit: cover;" alt="Avatar">
                                 <div>
-                                    <strong class="text-light d-block">@{{ u.username }}</strong>
+                                    <strong style="color: var(--text-primary);">@{{ u.username }}</strong>
                                     {% if u.id == current_user.id %}
-                                    <span class="badge bg-secondary" style="font-size: 0.65rem;">Bạn</span>
+                                    <span class="badge bg-secondary ms-1" style="font-size: 0.65rem;">Bạn</span>
                                     {% endif %}
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <div class="fw-semibold">{{ u.full_name }}</div>
-                            <small class="text-muted">{{ u.attendee_profile.organization if u.attendee_profile and u.attendee_profile.organization else 'Chưa cập nhật' }}</small>
+                            <div class="fw-medium" style="color: var(--text-primary);">{{ u.full_name }}</div>
+                            <small style="color: var(--text-tertiary);">{{ u.attendee_profile.organization if u.attendee_profile and u.attendee_profile.organization else 'Chưa cập nhật' }}</small>
                         </td>
                         <td>
-                            <div class="small">{{ u.email }}</div>
-                            <small class="text-muted">{{ u.phone or 'Chưa có SĐT' }}</small>
+                            <div class="small" style="color: var(--text-primary);">{{ u.email }}</div>
+                            <small style="color: var(--text-tertiary);">{{ u.phone or 'Chưa có SĐT' }}</small>
                         </td>
                         <td>
                             {% if u.role == 'admin' %}
                                 <span class="badge bg-danger text-uppercase px-2 py-1"><i class="fa-solid fa-shield-halved me-1"></i> Admin</span>
-                            {% elif u.role == 'staff' %}
-                                <span class="badge badge-ticket-pro px-2 py-1"><i class="fa-solid fa-user-tag me-1"></i> Staff Soát Vé</span>
+                            {% elif u.role == 'organizer' %}
+                                <span class="badge bg-warning text-dark text-uppercase px-2 py-1"><i class="fa-solid fa-calendar-check me-1"></i> Ban Tổ Chức</span>
+                            {% elif u.role in ('staff', 'checkin_staff') %}
+                                <span class="badge bg-primary text-uppercase px-2 py-1"><i class="fa-solid fa-user-tag me-1"></i> Staff Soát Vé</span>
                             {% else %}
-                                <span class="badge bg-primary text-uppercase px-2 py-1"><i class="fa-solid fa-user me-1"></i> Khách Mời</span>
+                                <span class="badge bg-secondary text-uppercase px-2 py-1"><i class="fa-solid fa-user me-1"></i> Khách Mời</span>
                             {% endif %}
                         </td>
                         <td>
@@ -101,23 +109,23 @@
                                 <span class="badge bg-danger"><i class="fa-solid fa-lock me-1"></i> Bị Khóa</span>
                             {% endif %}
                         </td>
-                        <td class="small text-muted">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+                        <td class="small" style="color: var(--text-tertiary);">{{ u.created_at.strftime('%d/%m/%Y') }}</td>
                         <td class="text-end">
                             <div class="d-inline-flex gap-1">
                                 {% if u.id != current_user.id %}
                                 <!-- Button to Open Change Role Modal -->
-                                <button type="button" class="btn btn-xs btn-outline-info py-1 px-2" data-bs-toggle="modal" data-bs-target="#changeRoleModal{{ u.id }}" title="Thay đổi vai trò phân quyền">
+                                <button type="button" class="btn btn-xs btn-secondary" data-bs-toggle="modal" data-bs-target="#changeRoleModal{{ u.id }}" title="Phân quyền">
                                     <i class="fa-solid fa-user-gear me-1"></i> Phân Quyền
                                 </button>
 
                                 <!-- Form to Toggle Lock/Unlock Status -->
                                 <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" class="d-inline">
-                                    <button type="submit" class="btn btn-xs {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} py-1 px-2" title="{% if u.is_active %}Khóa tài khoản{% else %}Mở khóa tài khoản{% endif %}">
-                                        {% if u.is_active %}<i class="fa-solid fa-lock"></i>{% else %}<i class="fa-solid fa-lock-open"></i>{% endif %}
+                                    <button type="submit" class="btn btn-xs btn-secondary" title="{% if u.is_active %}Khóa tài khoản{% else %}Mở khóa tài khoản{% endif %}">
+                                        {% if u.is_active %}<i class="fa-solid fa-lock text-danger"></i>{% else %}<i class="fa-solid fa-lock-open text-success"></i>{% endif %}
                                     </button>
                                 </form>
                                 {% else %}
-                                <span class="badge bg-secondary bg-opacity-25 text-muted px-2 py-1" style="font-size: 0.72rem;">Đang đăng nhập</span>
+                                <span class="badge bg-secondary" style="font-size: 0.72rem;">Đang đăng nhập</span>
                                 {% endif %}
                             </div>
 
@@ -125,57 +133,65 @@
                             {% if u.id != current_user.id %}
                             <div class="modal fade text-start" id="changeRoleModal{{ u.id }}" tabindex="-1" aria-labelledby="changeRoleLabel{{ u.id }}" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content glass-panel border-primary border-opacity-50">
-                                        <div class="modal-header border-secondary border-opacity-25">
-                                            <h5 class="modal-title fw-bold" id="changeRoleLabel{{ u.id }}">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title fw-semibold" id="changeRoleLabel{{ u.id }}">
                                                 <i class="fa-solid fa-user-gear text-primary me-2"></i> Phân Quyền Tài Khoản
                                             </h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <form method="POST" action="{{ url_for('admin.change_user_role', user_id=u.id) }}">
-                                            <div class="modal-body">
-                                                <div class="checkout-spec-box p-3 rounded-3 mb-3">
+                                            <div class="modal-body p-4">
+                                                <div class="p-3 rounded-3 mb-4" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                                                     <div class="d-flex align-items-center gap-3">
-                                                        <img src="{{ u.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="45" height="45" style="object-fit: cover;">
+                                                        <img src="{{ u.avatar_url or 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100' }}" class="rounded-circle" width="40" height="40" style="object-fit: cover;" alt="Avatar">
                                                         <div>
-                                                            <h6 class="fw-bold mb-0 text-light">{{ u.full_name }}</h6>
-                                                            <small class="text-primary font-monospace">@{{ u.username }}</small> • <small class="text-muted">{{ u.email }}</small>
+                                                            <h6 class="fw-semibold mb-0" style="color: var(--text-primary);">{{ u.full_name }}</h6>
+                                                            <small class="text-primary font-monospace">@{{ u.username }}</small> • <small style="color: var(--text-secondary);">{{ u.email }}</small>
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label fw-semibold small">Chọn Vai Trò Mới Cho Tài Khoản:</label>
+                                                    <label class="form-label fw-semibold small">Chọn Vai Trò Mới:</label>
                                                     <div class="d-flex flex-column gap-2">
-                                                        <label class="p-2.5 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center gap-3 cursor-pointer" style="background: var(--spec-box-bg);">
+                                                        <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
+                                                            <input type="radio" name="role" value="organizer" {% if u.role == 'organizer' %}checked{% endif %} class="form-check-input mt-0">
+                                                            <div>
+                                                                <strong class="text-warning d-block"><i class="fa-solid fa-calendar-check me-1"></i> Ban Tổ Chức (Organizer)</strong>
+                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Quyền khởi tạo sự kiện, quản lý lịch trình, diễn giả và thông báo AI.</small>
+                                                            </div>
+                                                        </label>
+
+                                                        <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
                                                             <input type="radio" name="role" value="staff" {% if u.role == 'staff' %}checked{% endif %} class="form-check-input mt-0">
                                                             <div>
-                                                                <strong class="text-info d-block"><i class="fa-solid fa-user-tag me-1"></i> Nhân Viên Soát Vé (Staff)</strong>
-                                                                <small class="text-muted" style="font-size: 0.75rem;">Quyền truy cập module Quét QR Code & Check-in vé, xem danh sách khách tham dự.</small>
+                                                                <strong class="text-primary d-block"><i class="fa-solid fa-user-tag me-1"></i> Nhân Viên Soát Vé (Staff)</strong>
+                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Quyền truy cập Quét QR Code & Check-in vé, xem danh sách tham dự.</small>
                                                             </div>
                                                         </label>
 
-                                                        <label class="p-2.5 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center gap-3 cursor-pointer" style="background: var(--spec-box-bg);">
+                                                        <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
                                                             <input type="radio" name="role" value="attendee" {% if u.role == 'attendee' %}checked{% endif %} class="form-check-input mt-0">
                                                             <div>
-                                                                <strong class="text-primary d-block"><i class="fa-solid fa-user me-1"></i> Khách Mời (Attendee)</strong>
-                                                                <small class="text-muted" style="font-size: 0.75rem;">Khách hàng thông thường đăng ký mua vé, tham gia sự kiện và hỏi đáp AI.</small>
+                                                                <strong class="d-block" style="color: var(--text-primary);"><i class="fa-solid fa-user me-1"></i> Khách Mời (Attendee)</strong>
+                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Khách hàng thông thường đăng ký mua vé, tham gia sự kiện và hỏi đáp AI.</small>
                                                             </div>
                                                         </label>
 
-                                                        <label class="p-2.5 rounded-3 border border-secondary border-opacity-25 d-flex align-items-center gap-3 cursor-pointer" style="background: var(--spec-box-bg);">
+                                                        <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
                                                             <input type="radio" name="role" value="admin" {% if u.role == 'admin' %}checked{% endif %} class="form-check-input mt-0">
                                                             <div>
                                                                 <strong class="text-danger d-block"><i class="fa-solid fa-shield-halved me-1"></i> Quản Trị Viên (Admin)</strong>
-                                                                <small class="text-muted" style="font-size: 0.75rem;">Toàn quyền quản trị hệ thống, tạo sự kiện, xem phân tích và quản lý người dùng.</small>
+                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Toàn quyền quản trị hệ thống, duyệt sự kiện và quản lý tài khoản.</small>
                                                             </div>
                                                         </label>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="modal-footer border-secondary border-opacity-25">
-                                                <button type="button" class="btn btn-secondary-glass" data-bs-dismiss="modal">Hủy</button>
-                                                <button type="submit" class="btn btn-primary-gradient">
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                                                <button type="submit" class="btn btn-primary btn-sm">
                                                     <i class="fa-solid fa-check me-1"></i> Cập Nhật Phân Quyền
                                                 </button>
                                             </div>
@@ -196,78 +212,64 @@
 <!-- Modal Tạo Tài Khoản Mới / Thêm Nhân Viên (Staff) -->
 <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content glass-panel border-primary border-opacity-50">
-            <div class="modal-header border-secondary border-opacity-25">
-                <h5 class="modal-title fw-bold" id="createUserModalLabel">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-semibold" id="createUserModalLabel">
                     <i class="fa-solid fa-user-plus text-primary me-2"></i> Thêm Tài Khoản Nhân Viên / Phân Quyền
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('admin.create_user') }}">
-                <div class="modal-body p-4">
-                    <p class="text-muted small mb-4">
+                <div class="modal-body p-4 p-md-5">
+                    <p class="small mb-4" style="color: var(--text-secondary);">
                         Khởi tạo tài khoản nhân viên phục vụ công tác soát vé, check-in hoặc phân quyền cho thành viên mới của Ban tổ chức.
                     </p>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Tên Đăng Nhập (Username) <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-at"></i></span>
-                                <input type="text" name="username" class="form-control bg-dark border-secondary text-light" required placeholder="vd: staff_checkin_01" autocomplete="off">
-                            </div>
+                            <label class="form-label small fw-semibold">Tên Đăng Nhập <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" required placeholder="vd: staff_checkin_01" autocomplete="off">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Họ Và Tên Đầy Đủ <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-id-card"></i></span>
-                                <input type="text" name="full_name" class="form-control bg-dark border-secondary text-light" required placeholder="vd: Nguyễn Văn An" autocomplete="off">
-                            </div>
+                            <label class="form-label small fw-semibold">Họ Và Tên <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control" required placeholder="vd: Nguyễn Văn An" autocomplete="off">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Địa Chỉ Email <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-envelope"></i></span>
-                                <input type="email" name="email" class="form-control bg-dark border-secondary text-light" required placeholder="staff01@eventai.vn" autocomplete="off">
-                            </div>
+                            <input type="email" name="email" class="form-control" required placeholder="staff01@eventai.vn" autocomplete="off">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Mật Khẩu Khởi Tạo <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" name="password" class="form-control bg-dark border-secondary text-light" required placeholder="Tối thiểu 6 ký tự..." autocomplete="new-password">
-                            </div>
+                            <input type="password" name="password" class="form-control" required placeholder="Tối thiểu 6 ký tự..." autocomplete="new-password">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label small fw-semibold">Vai Trò Phân Quyền (Role) <span class="text-danger">*</span></label>
-                            <select name="role" class="form-select bg-dark border-secondary text-light" required>
-                                <option value="staff" selected>🛡️ Nhân Viên Soát Vé (Staff) - [Khuyên Dùng]</option>
-                                <option value="attendee">👤 Khách Mời (Attendee)</option>
-                                <option value="admin">👑 Quản Trị Viên (Admin)</option>
+                            <label class="form-label small fw-semibold">Vai Trò Phân Quyền <span class="text-danger">*</span></label>
+                            <select name="role" class="form-select" required>
+                                <option value="organizer">Ban Tổ Chức (Organizer)</option>
+                                <option value="staff" selected>Nhân Viên Soát Vé (Staff)</option>
+                                <option value="attendee">Khách Mời (Attendee)</option>
+                                <option value="admin">Quản Trị Viên (Admin)</option>
                             </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label small fw-semibold">Số Điện Thoại</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-phone"></i></span>
-                                <input type="text" name="phone" class="form-control bg-dark border-secondary text-light" placeholder="vd: 0988123456">
-                            </div>
+                            <input type="text" name="phone" class="form-control" placeholder="vd: 0988123456">
                         </div>
 
                         <div class="col-12">
                             <label class="form-label small fw-semibold">Đơn Vị / Bộ Phận Phụ Trách</label>
-                            <input type="text" name="organization" class="form-control bg-dark border-secondary text-light" placeholder="vd: Ban Lễ Tân & Soát Vé Hội Nghị ICTU">
+                            <input type="text" name="organization" class="form-control" placeholder="vd: Ban Lễ Tân & Soát Vé Hội Nghị ICTU">
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary border-opacity-25 p-3">
-                    <button type="button" class="btn btn-secondary-glass" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary-gradient">
+                <div class="modal-footer p-3">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="fa-solid fa-user-check me-1"></i> Tạo Tài Khoản Ngay
                     </button>
                 </div>

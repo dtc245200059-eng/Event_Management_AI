@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Soạn Thông Báo / Email Truyền Thông - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="apple-card p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                        <span class="apple-badge mb-2 d-inline-flex align-items-center gap-1">
+                            <i class="fa-solid fa-paper-plane text-primary"></i> Trình Soạn Thảo
+                        </span>
+                        <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Soạn Thông Báo & Email</h1>
+                        <p class="text-secondary small mb-0">Hỗ trợ trích xuất thông tin sự kiện để sinh bản thảo hoàn chỉnh bằng AI (Anti-Hallucination).</p>
+                    </div>
+                    <a href="{{ url_for('notifications.manage') }}" class="btn btn-secondary rounded-pill px-3 py-1.5 small">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Danh Sách
+                    </a>
+                </div>
+
+                <form method="POST" id="notificationForm">
+                    <div class="row g-3">
+                        <!-- Chọn Sự Kiện -->
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Sự kiện áp dụng *</label>
+                            <select name="event_id" id="eventSelect" class="form-select" required>
+                                <option value="">-- Chọn sự kiện cần gửi thông báo --</option>
+                                {% for evt in events %}
+                                <option value="{{ evt.id }}" {% if selected_event_id == evt.id %}selected{% endif %}>
+                                    {{ evt.title }} ({{ evt.start_date.strftime('%d/%m/%Y') }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Loại Thông Báo -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Loại thông báo *</label>
+                            <select name="notification_type" id="typeSelect" class="form-select">
+                                <option value="reminder">⏰ Nhắc lịch sự kiện</option>
+                                <option value="invitation">💌 Thư mời tham dự</option>
+                                <option value="thank_you">💖 Thư cảm ơn sau sự kiện</option>
+                                <option value="update">📢 Cập nhật thông tin khẩn</option>
+                            </select>
+                        </div>
+
+                        <!-- Đối tượng nhận -->
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Đối tượng người nhận *</label>
+                            <select name="target_audience" id="audienceSelect" class="form-select">
+                                <option value="all_registered">Tất cả người đã đăng ký</option>
+                                <option value="checked_in">Chỉ người đã check-in</option>
+                                <option value="not_checked_in">Người chưa check-in</option>
+                                <option value="vip">Chỉ khách mời VIP</option>
+                            </select>
+                        </div>
+
+                        <!-- AI GENERATOR BANNER & TRIGGER -->
+                        <div class="col-12">
+                            <div class="p-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-3" 
+                                 style="background: var(--bg-secondary); border: 1px solid var(--border-subtle);">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-primary"></i> 
+                                        <strong class="small fw-semibold">AI Communication Assistant</strong>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2 py-0.5" style="font-size: 0.65rem;">Gemini Powered</span>
+                                    </div>
+                                    <div class="text-secondary small">
+                                        Tự động liên kết cơ sở dữ liệu sự kiện (thời gian, địa điểm, agenda) để soạn bản thảo chuẩn xác, lịch sự.
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary rounded-pill px-3 py-1.5 text-nowrap" id="generateAIBtn">
+                                    <span id="aiBtnSpinner" class="spinner-border spinner-border-sm d-none me-1"></span>
+                                    <i class="fa-solid fa-sparkles text-primary me-1" id="aiBtnIcon"></i> 
+                                    <span id="aiBtnText" class="fw-medium small">AI Sinh Bản Thảo Email</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tiêu Đề Thông Báo -->
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Tiêu đề email / thông báo *</label>
+                            <input type="text" name="title" id="notifTitle" class="form-control" required placeholder="Ví dụ: [Nhắc Lịch] Sự kiện AI Summit 2026 sẽ khai mạc vào ngày mai!">
+                        </div>
+
+                        <!-- Thân Bài Nội Dung -->
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Nội dung chi tiết thông báo *</label>
+                            <textarea name="content" id="notifContent" rows="9" class="form-control" required placeholder="Nhập nội dung thông báo gửi đến khách tham dự hoặc bấm 'AI Sinh Bản Thảo' ở trên..."></textarea>
+                            <small class="text-secondary mt-1.5 d-block">
+                                <i class="fa-solid fa-shield-halved text-success me-1"></i> Hệ thống tuân thủ bảo mật PII: Không gửi số điện thoại, email cá nhân của khách tham dự cho mô hình AI.
+                            </small>
+                        </div>
+
+                        <!-- Nút Thao Tác -->
+                        <div class="col-12 d-flex justify-content-end gap-2 mt-4 pt-2">
+                            <button type="reset" class="btn btn-secondary rounded-pill px-3 py-2">Nhập Lại</button>
+                            <button type="submit" class="btn btn-primary rounded-pill px-4 py-2">
+                                <i class="fa-solid fa-paper-plane me-1.5"></i> Phát Hành Thông Báo Ngay
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const generateBtn = document.getElementById('generateAIBtn');
+    const eventSelect = document.getElementById('eventSelect');
+    const typeSelect = document.getElementById('typeSelect');
+    const audienceSelect = document.getElementById('audienceSelect');
+    const notifTitle = document.getElementById('notifTitle');
+    const notifContent = document.getElementById('notifContent');
+    const spinner = document.getElementById('aiBtnSpinner');
+    const icon = document.getElementById('aiBtnIcon');
+    const btnText = document.getElementById('aiBtnText');
+
+    generateBtn.addEventListener('click', async () => {
+        const eventId = eventSelect.value;
+        if (!eventId) {
+            alert('Vui lòng chọn sự kiện trước khi yêu cầu AI sinh nội dung.');
+            eventSelect.focus();
+            return;
+        }
+
+        const notifType = typeSelect.value;
+        const targetAudience = audienceSelect.options[audienceSelect.selectedIndex].text;
+
+        // UI Loading state
+        generateBtn.disabled = true;
+        spinner.classList.remove('d-none');
+        icon.classList.add('d-none');
+        btnText.textContent = 'Đang suy luận nội dung...';
+
+        try {
+            const resp = await fetch('/api/ai/generate-notification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    event_id: parseInt(eventId),
+                    notification_type: notifType,
+                    target_audience: targetAudience
+                })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                notifTitle.value = data.subject || '';
+                notifContent.value = data.content || '';
+                notifContent.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                alert('Không thể sinh nội dung: ' + (data.message || 'Lỗi không xác định'));
+            }
+        } catch (err) {
+            console.error('Lỗi gọi AI:', err);
+            alert('Có lỗi xảy ra khi kết nối tới dịch vụ AI. Vui lòng thử lại.');
+        } finally {
+            generateBtn.disabled = false;
+            spinner.classList.add('d-none');
+            icon.classList.remove('d-none');
+            btnText.textContent = 'AI Sinh Bản Thảo Email';
+        }
+    });
+});
+</script>
+{% endblock %}

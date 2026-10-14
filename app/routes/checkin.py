@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, abort
 from flask_login import login_required, current_user
-from app.extensions import db
+from app.extensions import db, utc_now
 from app.models import Registration, Event
 
 checkin_bp = Blueprint('checkin', __name__)
@@ -126,7 +126,7 @@ def verify_api():
 
     # Perform Check-in
     registration.checked_in = True
-    registration.checked_in_at = datetime.utcnow()
+    registration.checked_in_at = utc_now()
     registration.checked_in_by = current_user.username
     db.session.commit()
 
@@ -151,7 +151,7 @@ def verify_api():
 @staff_required
 def api_event_attendees(event_id):
     """Lấy danh sách chi tiết toàn bộ người tham dự của một sự kiện kèm trạng thái check-in và mã QR."""
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
     registrations = Registration.query.filter_by(event_id=event.id).order_by(Registration.created_at.desc()).all()
     
     from app.routes.tickets import ensure_registration_qr
@@ -203,7 +203,7 @@ def api_event_attendees(event_id):
 @staff_required
 def api_quick_checkin(reg_id):
     """Check-in nhanh 1 chạm cho nhân viên từ danh sách bảng."""
-    registration = Registration.query.get_or_404(reg_id)
+    registration = db.get_or_404(Registration, reg_id)
     
     if registration.registration_status == 'cancelled':
         return jsonify({
@@ -225,7 +225,7 @@ def api_quick_checkin(reg_id):
         }), 409
 
     registration.checked_in = True
-    registration.checked_in_at = datetime.utcnow()
+    registration.checked_in_at = utc_now()
     registration.checked_in_by = current_user.username
     db.session.commit()
 
@@ -243,7 +243,7 @@ def api_quick_checkin(reg_id):
 @staff_required
 def api_undo_checkin(reg_id):
     """Hoàn tác trạng thái check-in trong trường hợp nhân viên bấm nhầm."""
-    registration = Registration.query.get_or_404(reg_id)
+    registration = db.get_or_404(Registration, reg_id)
     registration.checked_in = False
     registration.checked_in_at = None
     registration.checked_in_by = None

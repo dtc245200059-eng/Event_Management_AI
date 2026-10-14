@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Chi Tiết Thông Báo - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="apple-card p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <a href="{{ url_for('notifications.manage') }}" class="btn btn-secondary rounded-pill px-3 py-1.5 small">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Quay Lại
+                    </a>
+                    <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 font-monospace">ID: #NOTIF-{{ notification.id }}</span>
+                </div>
+
+                <div class="mb-3 d-flex align-items-center flex-wrap gap-2">
+                    {% if notification.notification_type == 'reminder' %}
+                        <span class="badge bg-warning bg-opacity-15 text-warning border border-warning border-opacity-30 rounded-pill px-2.5 py-1"><i class="fa-solid fa-clock me-1"></i> Nhắc lịch sự kiện</span>
+                    {% elif notification.notification_type == 'thank_you' %}
+                        <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-30 rounded-pill px-2.5 py-1"><i class="fa-solid fa-heart me-1"></i> Thư cảm ơn tri ân</span>
+                    {% elif notification.notification_type == 'invitation' %}
+                        <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2.5 py-1"><i class="fa-solid fa-envelope-open-text me-1"></i> Thư mời tham dự</span>
+                    {% else %}
+                        <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-30 rounded-pill px-2.5 py-1"><i class="fa-solid fa-bullhorn me-1"></i> Thông báo cập nhật</span>
+                    {% endif %}
+                    <span class="text-primary fw-medium small">{{ notification.event.title if notification.event else '' }}</span>
+                </div>
+
+                <h2 class="h3 fw-semibold mb-3" style="letter-spacing: -0.02em;">{{ notification.title }}</h2>
+
+                <div class="p-3 rounded-4 mb-4 d-flex flex-wrap gap-4 text-secondary small" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle);">
+                    <div><i class="fa-regular fa-clock me-1"></i> Thời gian gửi: <strong class="text-body">{{ notification.sent_at.strftime('%H:%M • %d/%m/%Y') }}</strong></div>
+                    <div><i class="fa-solid fa-users me-1"></i> Đối tượng: <strong class="text-primary">{{ notification.target_audience }}</strong></div>
+                    <div><i class="fa-solid fa-paper-plane me-1"></i> Đã gửi tới: <strong class="text-success">{{ notification.recipient_count }} người</strong></div>
+                </div>
+
+                <div class="p-4 rounded-4" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); white-space: pre-line; line-height: 1.75;">
+                    {{ notification.content }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

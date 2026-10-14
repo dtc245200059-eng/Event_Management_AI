@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản Lý Hạng Vé - {{ event.title }} - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1.5">
+                <a href="{{ url_for('events.manage') }}" class="text-secondary text-decoration-none small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quản lý sự kiện
+                </a>
+                <span class="text-secondary small">/</span>
+                <span class="font-monospace small text-primary fw-medium">{{ event.event_code }}</span>
+            </div>
+            <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Các Hạng Vé Phát Hành</h1>
+            <p class="text-secondary small mb-0">{{ event.title }}</p>
+        </div>
+        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addTicketModal">
+            <i class="fa-solid fa-plus me-1.5"></i> Thêm Hạng Vé Mới
+        </button>
+    </div>
+
+    <!-- TICKET TIERS TABLE -->
+    <div class="apple-card p-4">
+        {% if tickets %}
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr class="text-secondary small">
+                        <th>MÃ VÉ / TÊN HẠNG VÉ</th>
+                        <th>LOẠI VÉ</th>
+                        <th>GIÁ TIỀN</th>
+                        <th>HẠN MỨC (QUOTA)</th>
+                        <th>ĐÃ PHÁT HÀNH</th>
+                        <th>CÒN LẠI</th>
+                        <th class="text-end">TRẠNG THÁI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in tickets %}
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ t.name }}</div>
+                            <small class="text-secondary font-monospace">{{ t.ticket_code }}</small>
+                        </td>
+                        <td>
+                            {% if t.ticket_type == 'free' %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20 rounded-pill px-2.5 py-1">MIỄN PHÍ</span>
+                            {% elif t.ticket_type == 'vip' %}
+                                <span class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-30 rounded-pill px-2.5 py-1">
+                                    <i class="fa-solid fa-crown me-1"></i> VIP
+                                </span>
+                            {% else %}
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2.5 py-1">TIÊU CHUẨN</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="fw-semibold">
+                                {% if t.price == 0 %}
+                                    <span class="text-success">0 VNĐ</span>
+                                {% else %}
+                                    {{ "{:,.0f}".format(t.price) }} VNĐ
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1">{{ t.quota }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-primary">{{ t.sold_count }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold {% if t.remaining_quota > 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ t.remaining_quota }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            {% if t.is_available %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-20 rounded-pill px-2.5 py-1">Đang mở bán</span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-20 rounded-pill px-2.5 py-1">Hết vé / Đóng</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="avatar-placeholder rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: var(--bg-secondary);">
+                <i class="fa-solid fa-ticket-simple fs-4 text-secondary"></i>
+            </div>
+            <h6 class="fw-semibold mb-1">Chưa có hạng vé nào</h6>
+            <p class="text-secondary small mb-4">Hãy tạo các hạng vé tiêu chuẩn hoặc VIP để khách tham dự có thể đăng ký.</p>
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addTicketModal">
+                <i class="fa-solid fa-plus me-1.5"></i> Thêm Hạng Vé Đầu Tiên
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- MODAL THÊM HẠNG VÉ -->
+<div class="modal fade" id="addTicketModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content apple-card p-3 p-md-4">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fa-solid fa-ticket text-primary me-2"></i>Thêm Hạng Vé Phát Hành
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('events.create_ticket', event_id=event.id) }}">
+                <div class="modal-body py-2">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tên hạng vé *</label>
+                        <input type="text" name="name" class="form-control" required placeholder="Ví dụ: Vé VIP Full Access / Vé Standard">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Phân loại vé *</label>
+                            <select name="ticket_type" class="form-select">
+                                <option value="standard">Tiêu chuẩn (Standard)</option>
+                                <option value="vip">VIP Pass</option>
+                                <option value="free">Miễn phí (Free)</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Giá vé (VNĐ) *</label>
+                            <input type="number" name="price" step="1000" min="0" value="0" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Hạn mức số lượng phát hành (Quota) *</label>
+                        <input type="number" name="quota" min="1" value="100" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Lưu Hạng Vé</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

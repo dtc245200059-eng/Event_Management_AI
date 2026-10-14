@@ -3,13 +3,13 @@
 {% block title %}Vé Của Tôi - EventAI Pro{% endblock %}
 
 {% block content %}
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
         <div>
-            <h2 class="fw-bold mb-1">Vé Sự Kiện Của Tôi</h2>
-            <p class="section-subtitle mb-0">Quản lý vé điện tử, xuất mã QR check-in, hủy vé linh hoạt và gửi phản hồi</p>
+            <h2 class="mb-1">Vé Sự Kiện Của Tôi</h2>
+            <p class="section-subtitle mb-0">Quản lý vé điện tử, xuất mã QR check-in và gửi phản hồi trải nghiệm</p>
         </div>
-        <a href="{{ url_for('main.event_list') }}" class="btn btn-primary-gradient btn-sm">
+        <a href="{{ url_for('main.event_list') }}" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-plus me-1"></i> Khám Phá Thêm Sự Kiện
         </a>
     </div>
@@ -18,10 +18,10 @@
         <div class="row g-4">
             {% for r in registrations %}
             <div class="col-md-6 col-lg-4">
-                <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden {% if r.registration_status == 'cancelled' %}opacity-75 border-danger border-opacity-50{% endif %}">
+                <div class="apple-card p-4 h-100 d-flex flex-column justify-content-between position-relative {% if r.registration_status == 'cancelled' %}opacity-75{% endif %}">
                     <div>
                         <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="badge {% if r.ticket.ticket_type == 'vip' %}badge-ticket-vip{% elif r.ticket.price > 0 %}badge-ticket-pro{% else %}badge-ticket-free{% endif %} text-uppercase fw-bold text-wrap px-2 py-1" style="max-width: 65%; line-height: 1.3;">
+                            <span class="badge {% if r.ticket.ticket_type == 'vip' %}bg-warning text-dark{% else %}bg-primary{% endif %} text-uppercase px-2 py-1">
                                 {{ r.ticket.name }}
                             </span>
                             
@@ -32,38 +32,38 @@
                             {% elif r.payment_status == 'pending' %}
                                 <span class="badge bg-warning text-dark"><i class="fa-solid fa-clock me-1"></i> Chờ Thanh Toán</span>
                             {% else %}
-                                <span class="badge bg-info text-dark"><i class="fa-solid fa-ticket me-1"></i> Hợp Lệ</span>
+                                <span class="badge bg-secondary"><i class="fa-solid fa-ticket me-1"></i> Hợp Lệ</span>
                             {% endif %}
                         </div>
 
-                        <h5 class="fw-bold text-light mb-2">{{ r.event.title }}</h5>
-                        <p class="text-muted small mb-2"><i class="fa-solid fa-calendar text-primary me-1"></i> {{ r.event.start_date.strftime('%H:%M • %d/%m/%Y') }}</p>
-                        <p class="text-muted small mb-3 text-truncate"><i class="fa-solid fa-location-dot text-danger me-1"></i> {{ r.event.location_address or 'Online' }}</p>
+                        <h5 class="fw-semibold mb-2" style="color: var(--text-primary); line-height: 1.3;">{{ r.event.title }}</h5>
+                        <p class="small mb-2" style="color: var(--text-secondary);"><i class="fa-solid fa-calendar text-primary me-1"></i> {{ r.event.start_date.strftime('%H:%M • %d/%m/%Y') }}</p>
+                        <p class="small mb-3 text-truncate" style="color: var(--text-secondary);"><i class="fa-solid fa-location-dot text-danger me-1"></i> {{ r.event.location_address or 'Online' }}</p>
                         
-                        <div class="checkout-spec-box p-2 rounded-2 mb-3 text-center font-monospace small">
-                            Mã vé: <strong class="{% if r.registration_status == 'cancelled' %}text-decoration-line-through text-danger{% else %}text-info{% endif %}">{{ r.ticket_number }}</strong>
+                        <div class="p-2 rounded-2 mb-3 text-center font-monospace small" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            Mã vé: <strong class="{% if r.registration_status == 'cancelled' %}text-decoration-line-through text-danger{% else %}text-primary{% endif %}">{{ r.ticket_number }}</strong>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="pt-3 border-top border-secondary border-opacity-25 d-flex gap-2">
+                    <div class="pt-3 border-top d-flex gap-2" style="border-color: var(--border-hairline) !important;">
                         {% if r.registration_status == 'cancelled' %}
-                            <button class="btn btn-sm btn-outline-danger w-100 disabled" disabled>
+                            <button class="btn btn-sm btn-secondary w-100 disabled" disabled>
                                 <i class="fa-solid fa-ban me-1"></i> Vé Này Đã Bị Hủy
                             </button>
                         {% elif r.payment_status == 'pending' %}
-                            <a href="{{ url_for('tickets.checkout', reg_id=r.id) }}" class="btn btn-sm btn-warning w-100 fw-bold">
+                            <a href="{{ url_for('tickets.checkout', reg_id=r.id) }}" class="btn btn-sm btn-primary w-100">
                                 <i class="fa-solid fa-credit-card me-1"></i> Thanh Toán Ngay
                             </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ r.id }}" title="Hủy đăng ký">
-                                <i class="fa-solid fa-trash-can"></i>
+                            <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-toggle="modal" data-bs-target="#cancelModal{{ r.id }}" title="Hủy đăng ký">
+                                <i class="fa-solid fa-xmark"></i>
                             </button>
                         {% else %}
-                            <a href="{{ url_for('tickets.view_ticket', reg_id=r.id) }}" class="btn btn-primary-gradient btn-sm flex-grow-1">
+                            <a href="{{ url_for('tickets.view_ticket', reg_id=r.id) }}" class="btn btn-primary btn-sm flex-grow-1">
                                 <i class="fa-solid fa-qrcode me-1"></i> Xem Vé QR
                             </a>
                             {% if not r.checked_in %}
-                                <button type="button" class="btn btn-sm btn-outline-danger px-3" data-bs-toggle="modal" data-bs-target="#cancelModal{{ r.id }}" title="Hủy vé tham dự">
+                                <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-toggle="modal" data-bs-target="#cancelModal{{ r.id }}" title="Hủy vé">
                                     <i class="fa-solid fa-xmark me-1"></i> Hủy
                                 </button>
                             {% endif %}
@@ -76,28 +76,28 @@
             {% if r.registration_status != 'cancelled' and not r.checked_in %}
             <div class="modal fade" id="cancelModal{{ r.id }}" tabindex="-1" aria-labelledby="cancelModalLabel{{ r.id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content glass-panel border-danger border-opacity-50">
-                        <div class="modal-header border-secondary border-opacity-25">
-                            <h5 class="modal-title text-danger fw-bold" id="cancelModalLabel{{ r.id }}">
-                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Xác Nhận Hủy Vé Tham Dự
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title fw-semibold text-danger" id="cancelModalLabel{{ r.id }}">
+                                <i class="fa-solid fa-triangle-exclamation me-2"></i> Xác Nhận Hủy Vé
                             </h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body py-4 text-start">
+                        <div class="modal-body py-4">
                             <p class="mb-2">Bạn có chắc chắn muốn hủy đăng ký vé cho sự kiện:</p>
-                            <h6 class="fw-bold text-info mb-3">"{{ r.event.title }}"</h6>
+                            <h6 class="fw-bold mb-3" style="color: var(--text-primary);">"{{ r.event.title }}"</h6>
                             
-                            <div class="p-3 rounded-2 small mb-3" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
-                                <div class="text-danger fw-bold mb-1"><i class="fa-solid fa-circle-info me-1"></i> Lưu ý quan trọng:</div>
-                                <div>• Mã vé <code>{{ r.ticket_number }}</code> sẽ bị vô hiệu hóa hoàn toàn trên hệ thống check-in.</div>
-                                <div>• Suất vé của bạn sẽ được hoàn trả về hệ thống cho người tham dự khác đăng ký.</div>
+                            <div class="p-3 rounded-3 small mb-2" style="background: var(--accent-red-subtle); border: 1px solid rgba(255, 59, 48, 0.25);">
+                                <div class="text-danger fw-semibold mb-1"><i class="fa-solid fa-circle-info me-1"></i> Lưu ý:</div>
+                                <div>• Mã vé <code>{{ r.ticket_number }}</code> sẽ bị vô hiệu hóa hoàn toàn.</div>
+                                <div>• Suất vé của bạn sẽ được hoàn trả về hệ thống cho người khác.</div>
                             </div>
                         </div>
-                        <div class="modal-footer border-secondary border-opacity-25">
-                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng (Giữ Vé)</button>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
                             <form method="POST" action="{{ url_for('tickets.cancel_ticket', reg_id=r.id) }}">
-                                <button type="submit" class="btn btn-sm btn-danger px-3">
-                                    <i class="fa-solid fa-trash-can me-1"></i> Xác Nhận Hủy Vé
+                                <button type="submit" class="btn btn-sm btn-primary" style="background-color: var(--accent-red) !important; border-color: var(--accent-red) !important;">
+                                    Xác Nhận Hủy Vé
                                 </button>
                             </form>
                         </div>
@@ -109,11 +109,14 @@
             {% endfor %}
         </div>
     {% else %}
-        <div class="glass-panel p-5 text-center my-4">
-            <i class="fa-solid fa-ticket-simple text-muted fs-1 mb-3"></i>
-            <h4>Bạn chưa sở hữu vé sự kiện nào</h4>
-            <p class="text-muted small mb-4">Hãy đăng ký tham gia các sự kiện công nghệ và AI mới nhất để nhận vé điện tử có mã QR check-in nhé!</p>
-            <a href="{{ url_for('main.event_list') }}" class="btn btn-primary-gradient">Khám Phá Danh Sách Sự Kiện</a>
+        <!-- Empty State -->
+        <div class="py-5 text-center">
+            <div class="apple-card p-5 d-inline-block" style="max-width: 480px;">
+                <i class="fa-solid fa-ticket-simple fs-1 mb-3" style="color: var(--text-tertiary);"></i>
+                <h4>Bạn chưa có vé sự kiện nào</h4>
+                <p class="small mb-4" style="color: var(--text-secondary);">Khám phá hàng chục sự kiện công nghệ và hội thảo đỉnh cao trên hệ thống.</p>
+                <a href="{{ url_for('main.event_list') }}" class="btn btn-primary btn-sm">Khám Phá Sự Kiện Ngay</a>
+            </div>
         </div>
     {% endif %}
 </div>

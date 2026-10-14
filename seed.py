@@ -10,10 +10,11 @@ import qrcode.image.svg
 
 sys.stdout.reconfigure(encoding='utf-8')
 from app import create_app
-from app.extensions import db
+from app.extensions import db, utc_now
 from app.models import (
     User, Speaker, Venue, Event, Schedule,
-    Attendee, Ticket, Registration, AIChatHistory
+    Attendee, Ticket, Registration, AIChatHistory,
+    Notification, EventFAQ
 )
 
 app = create_app('development')
@@ -59,6 +60,16 @@ def run_seed():
             avatar_url='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
         )
         staff.set_password('Staff@123')
+
+        organizer = User(
+            username='organizer',
+            email='organizer@eventai.vn',
+            full_name='Ban Tổ Chức Sự Kiện',
+            role='organizer',
+            phone='0933445566',
+            avatar_url='https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150'
+        )
+        organizer.set_password('Organizer@123')
 
         user1 = User(
             username='attendee1',
@@ -120,13 +131,24 @@ def run_seed():
         )
         user6.set_password('User@123')
 
-        db.session.add_all([admin, staff, user1, user2, user3, user4, user5, user6])
+        db.session.add_all([admin, organizer, staff, user1, user2, user3, user4, user5, user6])
         db.session.commit()
 
         # ==========================================
         # 2. TẠO ATTENDEE PROFILES
         # ==========================================
         print("🏷️ Đang tạo Attendee Profiles...")
+        att_org = Attendee(
+            attendee_code='ORG-2026-001',
+            user_id=organizer.id,
+            full_name=organizer.full_name,
+            email=organizer.email,
+            phone=organizer.phone,
+            organization='Ban Tổ Chức EventAI ICTU',
+            job_title='Lead Event Coordinator',
+            interests='Tổ chức sự kiện, Quản trị, Hội thảo AI'
+        )
+        db.session.add(att_org)
         att1 = Attendee(
             attendee_code='ATT-2026-001',
             user_id=user1.id,
@@ -312,7 +334,7 @@ def run_seed():
         # 5. TẠO CÁC SỰ KIỆN (BAO GỒM SỰ KIỆN ICTU)
         # ==========================================
         print("📅 Đang tạo các Sự kiện công nghệ & Sự kiện Trường ĐH CNTT & TT Thái Nguyên (ICTU)...")
-        now = datetime.utcnow()
+        now = utc_now()
         
         # 1. ICTU Graduation 2026
         evt_ictu_grad = Event(
@@ -730,7 +752,7 @@ def run_seed():
             chat_type='rag_chat',
             user_message='Lễ tốt nghiệp 2026 của trường Đại học CNTT & TT Thái Nguyên (ICTU) diễn ra ở đâu và vào lúc nào?',
             ai_response='**Lễ Bế Giảng & Trao Bằng Tốt Nghiệp Khóa 2022 - 2026** của Trường Đại học Công nghệ Thông tin và Truyền thông Thái Nguyên (ICTU) diễn ra tại **Hội trường Lớn C1 - ICTU** (Đường Z115, Xã Quyết Thắng, TP. Thái Nguyên) vào lúc **07:30 sáng**.\n\nChương trình có sự chủ trì của **PGS.TS. Phùng Trung Nghĩa** (Hiệu trưởng ICTU) cùng sự tham gia của các thầy cô lãnh đạo Khoa và các doanh nghiệp đối tác.\n\nBạn có thể đăng ký vé Tân cử nhân/kỹ sư hoặc vé khách mời miễn phí ngay trên hệ thống!',
-            model_name='gemini-2.0-flash',
+            model_name='gemini-3.7-flash',
             response_mode='live',
             latency_ms=1150
         )
@@ -738,7 +760,96 @@ def run_seed():
         db.session.add(chat1)
         db.session.commit()
 
-        print("✅ Hoàn tất Seed CSDL 9 bảng chuẩn 3NF với các sự kiện trường ĐH CNTT & TT Thái Nguyên (ICTU) và các hội thảo công nghệ lớn!")
+        # ==========================================
+        # 10. TẠO CÂU HỎI THƯỜNG GẶP (EVENT FAQS) & THÔNG BÁO MẪU (NOTIFICATIONS)
+        # ==========================================
+        print("❓ Đang tạo Event FAQs và Thông Báo Truyền Thông...")
+        faqs = [
+            EventFAQ(
+                event_id=evt_ictu_grad.id,
+                question='Quy định check-in và nhận lễ phục tốt nghiệp như thế nào?',
+                answer='Tân cử nhân mang theo mã QR trên điện thoại đến quầy lễ tân sảnh C1 từ 07:00 đến 07:25 để quét mã nhận lễ phục và số ghế danh dự.',
+                category='checkin'
+            ),
+            EventFAQ(
+                event_id=evt_ictu_grad.id,
+                question='Phụ huynh và người thân đi cùng có cần đăng ký vé không?',
+                answer='Phụ huynh và người thân đi cùng cần đăng ký vé Khách Mời Danh Dự (Miễn phí 0 VNĐ) trên hệ thống để ban tổ chức bố trí chỗ ngồi chu đáo.',
+                category='ticketing'
+            ),
+            EventFAQ(
+                event_id=evt_ictu_grad.id,
+                question='Khu vực trường ICTU có chỗ đỗ xe ô tô và xe máy không?',
+                answer='Trường ICTU có bãi đỗ xe miễn phí rộng rãi tại cổng chính và khu vực sân vận động cạnh Nhà C1.',
+                category='logistics'
+            ),
+            EventFAQ(
+                event_id=evt1.id,
+                question='Chính sách chuyển nhượng hoặc hủy vé hội thảo AI Summit như thế nào?',
+                answer='Người tham dự có thể hủy vé trực tiếp trong mục "Vé Của Tôi" trước 24 giờ diễn ra sự kiện để hoàn trả suất tham dự về hệ thống.',
+                category='ticketing'
+            ),
+            EventFAQ(
+                event_id=evt1.id,
+                question='Tham gia hội thảo có được cấp Giấy chứng nhận (Certificate) không?',
+                answer='Khách tham dự check-in đầy đủ và hoàn thành khảo sát phản hồi sau sự kiện sẽ được gửi Certificate điện tử có chữ ký chuyên gia qua email trong 48h.',
+                category='general'
+            ),
+            EventFAQ(
+                event_id=evt_ictu_hack.id,
+                question='Đội thi hackathon có được mang theo laptop và màn hình rời không?',
+                answer='Mỗi đội thi tự trang bị laptop cá nhân. Ban tổ chức cung cấp bàn làm việc, ổ cắm điện 220V và đường truyền Wifi tốc độ cao tại Lab AI Tòa D.',
+                category='logistics'
+            )
+        ]
+        db.session.add_all(faqs)
+
+        notifs = [
+            Notification(
+                event_id=evt_ictu_grad.id,
+                title='[Nhắc Lịch] Lễ Bế Giảng & Trao Bằng Tốt Nghiệp Khóa 2022 - 2026 sẽ khai mạc vào ngày mai!',
+                notification_type='reminder',
+                target_audience='all_registered',
+                content='Thân gửi các Tân Cử nhân, Kỹ sư và Quý Khách mời danh dự,\n\nBan Tổ Chức xin trân trọng nhắc lịch: Lễ Bế Giảng & Trao Bằng Tốt Nghiệp Khóa 2022 - 2026 sẽ diễn ra vào lúc 07:30 ngày 15/09/2026 tại Hội trường Lớn C1 - Trường ĐH CNTT&TT Thái Nguyên (ICTU).\n\nQuý vị vui lòng mở mục "Vé Của Tôi" trên website để xuất trình mã QR Check-in tại quầy đón tiếp trước 07:25.\n\nTrân trọng cảm ơn và chúc các bạn một ngày lễ tốt nghiệp tràn ngập niềm vui!',
+                recipient_count=20,
+                status='sent',
+                sent_at=utc_now() - timedelta(days=1),
+                created_by=admin.id
+            ),
+            Notification(
+                event_id=evt_ictu_hack.id,
+                title='[Thư Mời] Chào mừng các đội thi đến với ICTU AI Hackathon 2026: Sáng Tạo GenAI & Chuyển Đổi Số',
+                notification_type='invitation',
+                target_audience='all_registered',
+                content='Chào các bạn lập trình viên trẻ và sinh viên đam mê AI,\n\nBan Tổ Chức ICTU AI Hackathon 2026 xin nồng nhiệt chào đón bạn đến với cuộc thi sáng tạo công nghệ lớn nhất năm tại ICTU!\n\nVòng chung kết sẽ khởi tranh tại Lab AI Tòa D. Hãy chuẩn bị tinh thần và trang bị đầy đủ laptop, sạc pin để cùng bứt phá sáng tạo trong 24 giờ thi đấu hackathon.\n\nHẹn gặp lại các bạn tại lễ khai mạc!',
+                recipient_count=15,
+                status='sent',
+                sent_at=utc_now() - timedelta(days=2),
+                created_by=organizer.id
+            ),
+            Notification(
+                event_id=evt1.id,
+                title='[Tri Ân] Cảm ơn bạn đã tham dự Vietnam AI Summit 2026 & Mời đánh giá chất lượng',
+                notification_type='thank_you',
+                target_audience='checked_in',
+                content='Kính gửi Quý Khách tham dự Vietnam AI Summit 2026,\n\nBan Tổ Chức xin gửi lời cảm ơn chân thành và sâu sắc nhất đến Quý vị đã dành thời gian quý báu đến tham dự, giao lưu và thảo luận sôi nổi cùng các chuyên gia hàng đầu.\n\nĐể giúp chúng tôi hoàn thiện và nâng cao chất lượng tổ chức các kỳ hội thảo tiếp theo, kính mời Quý vị dành 1 phút để lại đánh giá và nhận xét trong mục "Vé Của Tôi".\n\nKính chúc Quý vị sức khỏe và thành công!',
+                recipient_count=8,
+                status='sent',
+                sent_at=utc_now() - timedelta(hours=3),
+                created_by=organizer.id
+            )
+        ]
+        db.session.add_all(notifs)
+        db.session.commit()
+
+        print("✅ Hoàn tất Seed CSDL đầy đủ bảng với tài khoản Ban Tổ Chức (organizer), Event FAQs và Thông Báo Truyền Thông!")
+        
+        # Tự động nạp thêm 10 sự kiện đa lĩnh vực (Âm nhạc, Ẩm thực, Y tế, Game, An ninh mạng, Thể thao...)
+        try:
+            import subprocess
+            subprocess.run(['python', 'seed_more_events.py'], check=True)
+        except Exception as se_err:
+            pass
 
 if __name__ == '__main__':
     run_seed()

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản Lý Lịch Trình - {{ event.title }} - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1.5">
+                <a href="{{ url_for('events.manage') }}" class="text-secondary text-decoration-none small">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Quản lý sự kiện
+                </a>
+                <span class="text-secondary small">/</span>
+                <span class="font-monospace small text-primary fw-medium">{{ event.event_code }}</span>
+            </div>
+            <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Lịch Trình & Các Phiên</h1>
+            <p class="text-secondary small mb-0">{{ event.title }} ({{ event.start_date.strftime('%d/%m/%Y') }})</p>
+        </div>
+        <div>
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+                <i class="fa-solid fa-plus me-1.5"></i> Thêm Phiên Thảo Luận
+            </button>
+        </div>
+    </div>
+
+    <!-- SCHEDULES TIMELINE LIST -->
+    <div class="apple-card p-4">
+        {% if schedules %}
+        <div class="d-flex flex-column gap-3">
+            {% for s in schedules %}
+            <div class="p-3 rounded-4 d-flex flex-wrap justify-content-between align-items-center gap-3" 
+                 style="background: var(--bg-secondary); border: 1px solid var(--border-subtle);">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="text-center px-3 py-2 rounded-3 text-nowrap" style="min-width: 120px; background: var(--bg-primary); border: 1px solid var(--border-subtle);">
+                        <span class="fw-semibold text-primary">{{ s.start_at.strftime('%H:%M') }}</span>
+                        <span class="text-secondary small"> - </span>
+                        <span class="fw-semibold">{{ s.end_at.strftime('%H:%M') }}</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-semibold mb-1">{{ s.title }}</h6>
+                        <div class="d-flex flex-wrap gap-3 text-secondary small mb-1">
+                            {% if s.speaker %}
+                            <span>
+                                <i class="fa-solid fa-microphone text-primary me-1"></i>
+                                Diễn giả: <strong>{{ s.speaker.name }}</strong> ({{ s.speaker.title }})
+                            </span>
+                            {% endif %}
+                            {% if s.venue %}
+                            <span>
+                                <i class="fa-solid fa-location-dot text-secondary me-1"></i>
+                                Phòng: <strong>{{ s.venue.name }}</strong> ({{ s.venue.room_name or 'Hội trường' }})
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% if s.description %}
+                        <p class="text-secondary small mb-0">{{ s.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <form method="POST" action="{{ url_for('events.delete_schedule', schedule_id=s.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa phiên thảo luận này khỏi lịch trình?');">
+                        <button type="submit" class="btn btn-sm btn-secondary text-danger rounded-pill px-3 py-1.5" title="Xóa phiên">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="avatar-placeholder rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: var(--bg-secondary);">
+                <i class="fa-regular fa-calendar-xmark fs-4 text-secondary"></i>
+            </div>
+            <h6 class="fw-semibold mb-1">Chưa có phiên thảo luận nào được thiết lập</h6>
+            <p class="text-secondary small mb-4">Hãy tạo các phiên họp (Agenda) để chatbot RAG và khách tham dự nắm rõ tiến trình sự kiện!</p>
+            <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+                <i class="fa-solid fa-plus me-1.5"></i> Thêm Phiên Đầu Tiên
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- MODAL THÊM PHIÊN THẢO LUẬN -->
+<div class="modal fade" id="addScheduleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content apple-card p-3 p-md-4">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fa-solid fa-calendar-plus text-primary me-2"></i>Thêm Phiên Thảo Luận Mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('events.create_schedule', event_id=event.id) }}">
+                <div class="modal-body py-2">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tên phiên / Chủ đề thuyết trình *</label>
+                        <input type="text" name="title" class="form-control" required placeholder="Ví dụ: Khai mạc & Keynote: Xu hướng GenAI 2026">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Giờ bắt đầu *</label>
+                            <input type="datetime-local" name="start_at" class="form-control" required value="{{ event.start_date.strftime('%Y-%m-%dT%H:%M') }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Giờ kết thúc *</label>
+                            <input type="datetime-local" name="end_at" class="form-control" required value="{{ event.end_date.strftime('%Y-%m-%dT%H:%M') }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Diễn giả chủ trì</label>
+                        <select name="speaker_id" class="form-select">
+                            <option value="">-- Chọn diễn giả (hoặc để trống) --</option>
+                            {% for spk in speakers %}
+                            <option value="{{ spk.id }}">{{ spk.name }} ({{ spk.organization or spk.title }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Phòng họp / Địa điểm</label>
+                        <select name="venue_id" class="form-select">
+                            <option value="">-- Chọn phòng tổ chức (hoặc để trống) --</option>
+                            {% for v in venues %}
+                            <option value="{{ v.id }}">{{ v.name }} ({{ v.room_name or 'Hội trường' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tóm tắt nội dung phiên</label>
+                        <textarea name="description" rows="3" class="form-control" placeholder="Tóm tắt điểm nhấn chia sẻ của phiên thảo luận..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Lưu Phiên Thảo Luận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

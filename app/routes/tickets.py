@@ -8,7 +8,7 @@ import qrcode
 import qrcode.image.svg
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, current_app, send_file
 from flask_login import login_required, current_user
-from app.extensions import db
+from app.extensions import db, utc_now
 from app.models import Event, Ticket, Registration, Attendee
 
 tickets_bp = Blueprint('tickets', __name__)
@@ -48,7 +48,7 @@ def ensure_registration_qr(registration):
 @tickets_bp.route('/register/<int:event_id>', methods=['GET', 'POST'])
 @login_required
 def register_ticket(event_id):
-    event = Event.query.get_or_404(event_id)
+    event = db.get_or_404(Event, event_id)
 
     # Check if attendee profile exists
     if not current_user.attendee_profile:
@@ -130,7 +130,7 @@ def register_ticket(event_id):
                 if ticket.sold_count >= ticket.quota:
                     ticket.status = 'sold_out'
 
-                reg_code = f"REG-{datetime.utcnow().strftime('%Y%m')}-{uuid.uuid4().hex[:8].upper()}"
+                reg_code = f"REG-{utc_now().strftime('%Y%m')}-{uuid.uuid4().hex[:8].upper()}"
                 new_reg = Registration(
                     registration_code=reg_code,
                     event_id=event.id,
@@ -176,7 +176,7 @@ def generate_payment_qr(reg_code, amount, method='vnpay'):
 @tickets_bp.route('/checkout/<int:reg_id>', methods=['GET', 'POST'])
 @login_required
 def checkout(reg_id):
-    reg = Registration.query.get_or_404(reg_id)
+    reg = db.get_or_404(Registration, reg_id)
     
     # Permission check
     if reg.attendee.user_id != current_user.id and not current_user.is_staff:
@@ -194,7 +194,7 @@ def checkout(reg_id):
         reg.payment_status = 'paid'
         reg.registration_status = 'confirmed'
         reg.payment_ref = trans_ref
-        reg.paid_at = datetime.utcnow()
+        reg.paid_at = utc_now()
         db.session.commit()
 
         flash(f'Thanh toán thành công qua {payment_method.upper()}! Mã giao dịch: {trans_ref}', 'success')
@@ -223,7 +223,7 @@ def my_tickets():
 @tickets_bp.route('/view/<int:reg_id>')
 @login_required
 def view_ticket(reg_id):
-    reg = Registration.query.get_or_404(reg_id)
+    reg = db.get_or_404(Registration, reg_id)
     if reg.attendee.user_id != current_user.id and not current_user.is_staff:
         abort(403)
     ensure_registration_qr(reg)
@@ -233,7 +233,7 @@ def view_ticket(reg_id):
 @login_required
 def download_qr(reg_id):
     """Cho phép người tham dự hoặc ban tổ chức tải tệp ảnh mã QR SVG của vé."""
-    reg = Registration.query.get_or_404(reg_id)
+    reg = db.get_or_404(Registration, reg_id)
     if reg.attendee.user_id != current_user.id and not current_user.is_staff:
         abort(403)
     qr_rel_path = ensure_registration_qr(reg)
@@ -249,7 +249,7 @@ def download_qr(reg_id):
 @login_required
 def cancel_ticket(reg_id):
     """Hủy đăng ký vé tham dự và hoàn trả quota số lượng vé."""
-    reg = Registration.query.get_or_404(reg_id)
+    reg = db.get_or_404(Registration, reg_id)
     
     # Check ownership
     if reg.attendee.user_id != current_user.id and not current_user.is_staff:
@@ -263,23 +263,29 @@ def cancel_ticket(reg_id):
         flash('Vé này đã thực hiện check-in vào sự kiện, không thể thực hiện hủy.', 'danger')
         return redirect(url_for('tickets.view_ticket', reg_id=reg.id))
 
-    # Cancel and release quota
-    reg.registration_status = 'cancelled'
-    
-    ticket = reg.ticket
-    if ticket and ticket.sold_count > 0:
-        ticket.sold_count -= 1
-        if ticket.status == 'sold_out' and ticket.sold_count < ticket.quota:
-            ticket.status = 'active'
+    try:
+        # Cancel and release quota
+        reg.registration_status = 'cancelled'
+        
+        ticket = reg.ticket
+        if ticket and ticket.sold_count > 0:
+            ticket.sold_count -= 1
+            if ticket.status == 'sold_out' and ticket.sold_count < ticket.quota:
+                ticket.status = 'active'
 
-    db.session.commit()
-    flash(f'Đã hủy vé #{reg.ticket_number} thành công. Suất tham dự sự kiện đã được hoàn trả.', 'success')
+        db.session.commit()
+        flash(f'Đã hủy vé #{reg.ticket_number} thành công. Suất tham dự sự kiện đã được hoàn trả.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Lỗi khi hủy vé {reg_id}: {str(e)}")
+        flash('Có lỗi xảy ra trong quá trình hủy vé. Vui lòng thử lại.', 'danger')
+
     return redirect(url_for('tickets.my_tickets'))
 
 @tickets_bp.route('/feedback/<int:reg_id>', methods=['POST'])
 @login_required
 def submit_feedback(reg_id):
-    reg = Registration.query.get_or_404(reg_id)
+    reg = db.get_or_404(Registration, reg_id)
     if reg.attendee.user_id != current_user.id:
         abort(403)
 
@@ -292,7 +298,7 @@ def submit_feedback(reg_id):
 
     reg.feedback_rating = rating
     reg.feedback_text = feedback_text
-    reg.feedback_submitted_at = datetime.utcnow()
+    reg.feedback_submitted_at = utc_now()
 
     # Rule-based / simple sentiment polarity initialization
     if feedback_text:

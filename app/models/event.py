@@ -2,7 +2,7 @@
 Event Model.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Event(db.Model):
     __tablename__ = 'events'
@@ -22,8 +22,8 @@ class Event(db.Model):
     status = db.Column(db.String(20), default='published', index=True)  # draft, published, ongoing, completed, cancelled
     tags = db.Column(db.String(255), nullable=True)  # comma separated e.g. "AI, Machine Learning, Python"
     created_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     schedules = db.relationship('Schedule', backref='event', lazy='dynamic', cascade='all, delete-orphan')

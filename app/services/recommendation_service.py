@@ -3,6 +3,7 @@ Recommendation Service: Content-Based Filtering using TF-IDF and Cosine Similari
 """
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from app.extensions import db
 from app.models import Event, Attendee
 
 def get_personalized_recommendations(attendee_id=None, user_interests=None, top_n=3):
@@ -17,7 +18,7 @@ def get_personalized_recommendations(attendee_id=None, user_interests=None, top_
     # 1. Determine query interest text
     interest_text = ""
     if attendee_id:
-        attendee = Attendee.query.get(attendee_id)
+        attendee = db.session.get(Attendee, attendee_id)
         if attendee and attendee.interests:
             interest_text = attendee.interests
     if not interest_text and user_interests:

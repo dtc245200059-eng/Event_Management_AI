@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Danh Bạ Diễn Giả & Chuyên Gia - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <span class="apple-badge mb-2 d-inline-flex align-items-center gap-1">
+                <i class="fa-solid fa-microphone-lines text-primary"></i> Diễn Giả Khách Mời
+            </span>
+            <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Danh Bạ Chuyên Gia</h1>
+            <p class="text-secondary small mb-0">Hồ sơ năng lực chuyên môn của các diễn giả, nhà nghiên cứu và lãnh đạo công nghệ.</p>
+        </div>
+        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addSpeakerModal">
+            <i class="fa-solid fa-user-plus me-1.5"></i> Thêm Diễn Giả Mới
+        </button>
+    </div>
+
+    <!-- SPEAKERS GRID -->
+    <div class="row g-4">
+        {% for spk in speakers %}
+        <div class="col-lg-4 col-md-6">
+            <div class="apple-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img src="{{ spk.avatar_url or 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' }}" 
+                             alt="{{ spk.name }}" class="rounded-circle shadow-sm" 
+                             width="60" height="60" style="object-fit: cover; border: 2px solid var(--border-subtle);">
+                        <div>
+                            <h5 class="fw-semibold mb-0.5">{{ spk.name }}</h5>
+                            <div class="text-primary small fw-medium">{{ spk.title }}</div>
+                            <small class="text-secondary">{{ spk.organization or 'Đơn vị đối tác' }}</small>
+                        </div>
+                    </div>
+                    <p class="text-secondary small line-clamp-3 mb-3" style="line-height: 1.6;">
+                        {{ spk.bio or 'Chuyên gia giàu kinh nghiệm trong lĩnh vực công nghệ thông tin và chuyển đổi số.' }}
+                    </p>
+                </div>
+                <div class="pt-3 border-top d-flex justify-content-between align-items-center" style="border-color: var(--border-subtle) !important;">
+                    <div class="d-flex gap-2">
+                        {% if spk.email %}
+                        <a href="mailto:{{ spk.email }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="{{ spk.email }}">
+                            <i class="fa-solid fa-envelope"></i>
+                        </a>
+                        {% endif %}
+                        {% if spk.linkedin_url %}
+                        <a href="{{ spk.linkedin_url }}" target="_blank" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="LinkedIn">
+                            <i class="fa-brands fa-linkedin text-primary"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% if current_user.is_admin %}
+                    <form method="POST" action="{{ url_for('events.delete_speaker', speaker_id=spk.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa hồ sơ diễn giả này?');">
+                        <button type="submit" class="btn btn-sm btn-secondary text-danger rounded-pill px-2.5 py-1">
+                            <i class="fa-solid fa-trash me-1"></i> Xóa
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12">
+            <div class="apple-card p-5 text-center">
+                <div class="avatar-placeholder rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 56px; height: 56px; background: var(--bg-secondary);">
+                    <i class="fa-solid fa-users-slash fs-4 text-secondary"></i>
+                </div>
+                <h6 class="fw-semibold mb-1">Chưa có hồ sơ diễn giả nào</h6>
+                <p class="text-secondary small mb-4">Hãy thêm hồ sơ của các chuyên gia để hiển thị trên trang chi tiết sự kiện.</p>
+                <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#addSpeakerModal">
+                    <i class="fa-solid fa-plus me-1.5"></i> Thêm Diễn Giả Đầu Tiên
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- MODAL THÊM DIỄN GIẢ -->
+<div class="modal fade" id="addSpeakerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content apple-card p-3 p-md-4">
+            <div class="modal-header border-0 pb-2">
+                <h5 class="modal-title fw-semibold">
+                    <i class="fa-solid fa-user-plus text-primary me-2"></i>Thêm Hồ Sơ Diễn Giả Mới
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('events.create_speaker') }}">
+                <div class="modal-body py-2">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Họ và tên diễn giả *</label>
+                        <input type="text" name="name" class="form-control" required placeholder="Ví dụ: TS. Trần Hải Nam">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Chức danh / Học hàm</label>
+                            <input type="text" name="title" class="form-control" placeholder="Ví dụ: Giám đốc AI / Phó Giáo sư">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Đơn vị công tác</label>
+                            <input type="text" name="organization" class="form-control" placeholder="Ví dụ: Viện Trí tuệ Nhân tạo ICTU">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Tiểu sử tóm tắt (Bio)</label>
+                        <textarea name="bio" rows="3" class="form-control" placeholder="Giới thiệu hướng nghiên cứu, thành tựu hoặc kinh nghiệm chuyên môn..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Ảnh đại diện Avatar URL</label>
+                        <input type="url" name="avatar_url" class="form-control" placeholder="https://images.unsplash.com/photo-...">
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Email liên hệ</label>
+                            <input type="email" name="email" class="form-control" placeholder="nam.tran@ai.edu.vn">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">LinkedIn Profile URL</label>
+                            <input type="url" name="linkedin_url" class="form-control" placeholder="https://linkedin.com/in/...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-3">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Lưu Hồ Sơ Diễn Giả</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

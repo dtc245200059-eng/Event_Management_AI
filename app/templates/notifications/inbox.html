@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Hộp Thư Thông Báo Sự Kiện - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <span class="apple-badge mb-2 d-inline-flex align-items-center gap-1">
+                <i class="fa-solid fa-bell text-primary"></i> Trung Tâm Tin Nhắn
+            </span>
+            <h1 class="h2 fw-semibold mb-1" style="letter-spacing: -0.02em;">Hộp Thư Thông Báo</h1>
+            <p class="text-secondary small mb-0">Cập nhật tin tức, nhắc lịch tham dự và thông điệp từ ban tổ chức các sự kiện bạn đã tham gia.</p>
+        </div>
+        <a href="{{ url_for('tickets.my_tickets') }}" class="btn btn-secondary rounded-pill px-4">
+            <i class="fa-solid fa-ticket me-1.5"></i> Vé Của Tôi
+        </a>
+    </div>
+
+    {% if notifications %}
+    <div class="row g-3">
+        {% for notif in notifications %}
+        <div class="col-12">
+            <div class="apple-card p-4 position-relative" style="border-left: 4px solid var(--apple-blue);">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        {% if notif.notification_type == 'reminder' %}
+                            <span class="badge bg-warning bg-opacity-15 text-warning border border-warning border-opacity-30 rounded-pill px-2.5 py-1">
+                                <i class="fa-solid fa-clock me-1"></i> Nhắc Lịch
+                            </span>
+                        {% elif notif.notification_type == 'thank_you' %}
+                            <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-30 rounded-pill px-2.5 py-1">
+                                <i class="fa-solid fa-heart me-1"></i> Tri Ân
+                            </span>
+                        {% elif notif.notification_type == 'invitation' %}
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20 rounded-pill px-2.5 py-1">
+                                <i class="fa-solid fa-envelope-open-text me-1"></i> Thư Mời
+                            </span>
+                        {% else %}
+                            <span class="badge bg-info bg-opacity-15 text-info border border-info border-opacity-30 rounded-pill px-2.5 py-1">
+                                <i class="fa-solid fa-bullhorn me-1"></i> Thông Báo
+                            </span>
+                        {% endif %}
+                        <span class="text-primary fw-medium small">{{ notif.event.title }}</span>
+                    </div>
+                    <small class="text-secondary">
+                        <i class="fa-regular fa-clock me-1"></i>{{ notif.sent_at.strftime('%H:%M • %d/%m/%Y') }}
+                    </small>
+                </div>
+
+                <h5 class="fw-semibold mb-2">{{ notif.title }}</h5>
+                <div class="text-secondary small mb-3" style="white-space: pre-line; line-height: 1.65;">
+                    {{ notif.content }}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top" style="border-color: var(--border-subtle) !important;">
+                    <div class="small text-secondary">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Ban Tổ Chức: {{ notif.event.title }}
+                    </div>
+                    {% if notif.event %}
+                    <a href="{{ url_for('main.event_detail', event_id=notif.event.id) }}" class="btn btn-sm btn-secondary rounded-pill px-3 py-1">
+                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i> Xem Sự Kiện
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="apple-card p-5 text-center">
+        <div class="avatar-placeholder rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 64px; height: 64px; background: var(--bg-secondary);">
+            <i class="fa-regular fa-bell-slash fs-3 text-secondary"></i>
+        </div>
+        <h5 class="fw-semibold mb-1">Hiện Chưa Có Thông Báo Mới</h5>
+        <p class="text-secondary small mb-4">Khi bạn đăng ký vé tham gia sự kiện, các nhắc nhở, lịch trình và tin nhắn từ ban tổ chức sẽ xuất hiện tại đây.</p>
+        <a href="{{ url_for('main.event_list') }}" class="btn btn-primary rounded-pill px-4">
+            <i class="fa-solid fa-magnifying-glass me-1.5"></i> Khám Phá Sự Kiện Ngay
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

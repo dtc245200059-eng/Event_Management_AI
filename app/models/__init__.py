@@ -11,6 +11,9 @@ from app.models.attendee import Attendee
 from app.models.ticket import Ticket
 from app.models.registration import Registration
 from app.models.ai_chat import AIChatHistory
+from app.models.notification import Notification
+from app.models.faq import EventFAQ
+from app.models.agent_message import AgentMessage, CriticVerdict
 
 __all__ = [
     'User',
@@ -21,5 +24,9 @@ __all__ = [
     'Attendee',
     'Ticket',
     'Registration',
-    'AIChatHistory'
+    'AIChatHistory',
+    'Notification',
+    'EventFAQ',
+    'AgentMessage',
+    'CriticVerdict'
 ]

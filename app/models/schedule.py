@@ -2,7 +2,7 @@
 Schedule Model for agenda and session timelines.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Schedule(db.Model):
     __tablename__ = 'schedules'
@@ -15,7 +15,7 @@ class Schedule(db.Model):
     description = db.Column(db.Text, nullable=True)
     start_at = db.Column(db.DateTime, nullable=False)
     end_at = db.Column(db.DateTime, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     def __repr__(self):
         return f"<Schedule id={self.id} event_id={self.event_id} title='{self.title}'>"
