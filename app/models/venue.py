@@ -2,7 +2,7 @@
 Venue Model for locations and meeting rooms.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Venue(db.Model):
     __tablename__ = 'venues'
@@ -15,7 +15,7 @@ class Venue(db.Model):
     room_name = db.Column(db.String(100), nullable=True)
     status = db.Column(db.String(20), default='available')  # available, maintenance, occupied
     description = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     # Relationships
     schedules = db.relationship('Schedule', backref='venue', lazy='dynamic')

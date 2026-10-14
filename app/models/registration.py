@@ -2,7 +2,7 @@
 Registration Model for attendee bookings, payment transactions, check-in, and feedback.
 """
 from datetime import datetime
-from app.extensions import db
+from app.extensions import db, utc_now
 
 class Registration(db.Model):
     __tablename__ = 'registrations'
@@ -37,8 +37,8 @@ class Registration(db.Model):
     sentiment_score = db.Column(db.Float, nullable=True)  # Polarity score (-1.0 to 1.0)
     feedback_submitted_at = db.Column(db.DateTime, nullable=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Unique constraint: One attendee per event per ticket
     __table_args__ = (

@@ -156,6 +156,34 @@ CREATE TABLE IF NOT EXISTS ai_chat_history (
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
 );
 
+-- 10. BẢNG NOTIFICATIONS (Thông báo sự kiện, thư mời, nhắc lịch tích hợp AI)
+CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    notification_type VARCHAR(30) NOT NULL DEFAULT 'reminder', -- 'invitation', 'reminder', 'thank_you', 'update'
+    target_audience VARCHAR(50) NOT NULL DEFAULT 'all_registered', -- 'all_registered', 'checked_in', 'not_checked_in', 'vip'
+    content TEXT NOT NULL,
+    recipient_count INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'sent', -- 'draft', 'sent'
+    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- 11. BẢNG EVENT_FAQS (Hỏi đáp chính sách, cẩm nang sự kiện phục vụ RAG Grounding)
+CREATE TABLE IF NOT EXISTS event_faqs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id INTEGER NOT NULL,
+    question VARCHAR(255) NOT NULL,
+    answer TEXT NOT NULL,
+    category VARCHAR(50) DEFAULT 'general', -- 'checkin', 'ticketing', 'venue', 'logistics', 'general'
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+);
+
 -- =============================================================================
 -- INDEXES TỐI ƯU HÓA HIỆU NĂNG TRUY VẤN
 -- =============================================================================
@@ -168,3 +196,8 @@ CREATE INDEX IF NOT EXISTS idx_registrations_event ON registrations(event_id);
 CREATE INDEX IF NOT EXISTS idx_registrations_attendee ON registrations(attendee_id);
 CREATE INDEX IF NOT EXISTS idx_registrations_ticket_number ON registrations(ticket_number);
 CREATE INDEX IF NOT EXISTS idx_registrations_checked_in ON registrations(checked_in);
+CREATE INDEX IF NOT EXISTS idx_notifications_event ON notifications(event_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(notification_type);
+CREATE INDEX IF NOT EXISTS idx_event_faqs_event ON event_faqs(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_faqs_category ON event_faqs(category);
+
