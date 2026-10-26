@@ -38,11 +38,15 @@ class User(UserMixin, db.Model):
 
     @property
     def is_organizer(self):
-        return self.role in ('admin', 'organizer')
+        return self.role in ('admin', 'organizer', 'staff')
+
+    @property
+    def is_checkin_staff(self):
+        return self.role in ('admin', 'organizer', 'staff', 'checkin_staff', 'CheckInStaff')
 
     @property
     def is_staff(self):
-        return self.role in ('admin', 'organizer', 'staff', 'checkin_staff')
+        return self.is_checkin_staff
 
     @property
     def is_attendee(self):

@@ -28,12 +28,13 @@ Báo cáo kiểm toán an ninh mạng này đánh giá mức độ an toàn củ
 │ 2. Cross-Site Scripting (XSS)        │ Jinja2 Auto-Escape    │[IMPLEMENT]│
 │ 3. CSRF & Session Management         │ HttpOnly Sessions     │[IMPLEMENT]│
 │ 4. Authentication & Password Hashing │ PBKDF2-SHA256 + Salt  │[IMPLEMENT]│
-│ 5. Authorization & RBAC Control      │ Role Decorators       │[IMPLEMENT]│
+│ 5. Authorization & RBAC Control      │ 4 Roles + Decorators  │[IMPLEMENT]│
 │ 6. Secrets & API Key Protection      │ Environment Variables │[IMPLEMENT]│
-│ 7. PII Masking & Data Privacy        │ Context Sanitization  │[IMPLEMENT]│
-│ 8. Prompt Injection Defense          │ Strict System Prompt  │[IMPLEMENT]│
-│ 9. Rate Limiting & DoS Protection    │ Token Budgeting       │[PARTIAL]  │
-│ 10. Anti-Hallucination & Fallback    │ Grounding + Mock Eng. │[IMPLEMENT]│
+│ 7. PII Masking & Data Privacy        │ Regex Masking + Zero  │[IMPLEMENT]│
+│ 8. Prompt Injection Defense          │ Step 8 Guardrail      │[IMPLEMENT]│
+│ 9. Rate Limiting & DoS Protection    │ Sliding Window/Redis  │[IMPLEMENT]│
+│ 10. Anti-Hallucination & Fallback    │ Grounding + Failover  │[IMPLEMENT]│
+│ 11. Concurrency & Race Condition     │ Atomic DB Check-in    │[IMPLEMENT]│
 └──────────────────────────────────────┴───────────────────────┴───────────┘
 ```
 

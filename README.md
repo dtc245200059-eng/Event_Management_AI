@@ -109,16 +109,16 @@ Hệ thống được tổ chức với **18 Skills chuyên môn hóa** đặt t
 
 ---
 
-## 👥 Danh Sách Tài Khoản Mẫu Đăng Nhập Mặc Định
+## 👥 Danh Sách Tài Khoản Mẫu Đăng Nhập Mặc Định (4 Vai Trò Chuẩn)
 
-| Vai trò | Tên đăng nhập | Mật khẩu | Mục đích sử dụng |
+| Vai trò | Tên đăng nhập | Mật khẩu | Quyền hạn & Mục đích sử dụng |
 | :--- | :--- | :--- | :--- |
-| **Admin** | `admin` | `Admin@123` | Toàn quyền quản trị, xem Dashboard biểu đồ Analytics, quản lý Users. |
-| **Organizer** | `organizer` | `Organizer@123` | Quản trị sự kiện, vé, diễn giả, lịch trình, gửi thông báo & AI draft/summary. |
-| **Staff** | `staff` | `Staff@123` | Vận hành quét mã QR Check-in bằng Camera Web hoặc nhập mã thủ công. |
-| **Attendee 1** | `attendee1` | `User@123` | Đã đặt vé VIP Vietnam AI Summit 2026, đã thanh toán và đã check-in. |
+| **Admin** | `admin` | `Admin@123` | Toàn quyền quản trị, xem Dashboard với 8 chỉ số thực, quản lý Users, xem Agent logs. |
+| **Organizer** | `organizer` | `Organizer@123` | Quản trị sự kiện, vé, diễn giả, lịch trình (start_at < end_at), soạn Email AI, xem & tóm tắt feedback. |
+| **CheckInStaff** | `staff` | `Staff@123` | Vận hành soát vé tại cửa `/checkin/` (quét QR / nhập mã), check-in nguyên tử (Atomic), bị chặn vào Admin. |
+| **Attendee 1** | `attendee1` | `User@123` | Đã đặt vé VIP Vietnam AI Summit 2026, đã thanh toán và đã check-in, gửi feedback. |
 | **Attendee 2** | `attendee2` | `User@123` | Đã đăng ký vé Miễn phí, chưa check-in, sở hữu mã QR vé điện tử. |
-| **Attendee 3** | `attendee3` | `User@123` | Đã đặt vé Cloud TechDay, có thể trải nghiệm gửi feedback đánh giá. |
+| **Attendee 3** | `attendee3` | `User@123` | Đã đặt vé Cloud TechDay, có thể trải nghiệm hủy vé hoặc đặt lại. |
 
 ---
 
@@ -127,7 +127,7 @@ Hệ thống được tổ chức với **18 Skills chuyên môn hóa** đặt t
 ### 1. Cài đặt môi trường Python & Dependencies
 ```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
@@ -144,12 +144,57 @@ python run.py
 
 ---
 
-## 🧪 Chạy Bộ Kiểm Thử Tự Động (Pytest)
+## 🧪 Chạy Bộ Kiểm Thử Tự Động (Pytest 42 Tests) & Benchmark Prompt
 
-Chạy **36 test cases tự động** qua 5 test suites bao quát toàn bộ logic xác thực, phân quyền RBAC, kiểm soát Quota vé, ngăn chặn check-in lặp lại, dịch vụ AI RAG và hệ thống Multi-Agent 7 thành phần:
+### Chạy Toàn Bộ 42 Ca Kiểm Thử Pytest Tự Động:
+Bao quát xác thực, phân quyền 4 vai trò RBAC, kiểm soát hạn mức vé, check-in nguyên tử chống lặp (HTTP 409), xác thực thời gian lịch trình, bảo vệ PII, và tầng Step 8 Response Validation của RAG:
 ```powershell
-.venv\Scripts\python.exe -m pytest -v
+.\.venv\Scripts\pytest.exe -v
 ```
+*(Kết quả: 42 passed in ~60s - 100% Passed, 0 Failures)*
+
+### Chạy Đánh Giá Thực Nghiệm So Sánh 3 Chiến Lược Prompt (V1 vs V2 vs V3):
+Thực thi 14 kịch bản kiểm thử bắt buộc (sự kiện bình thường, thiếu ngày, thiếu địa điểm, không tồn tại, hết vé, PII defense, Prompt Injection defense...):
+```powershell
+python eval_prompts.py
+```
+*(Báo cáo chi tiết được ghi nhận tại [docs/ai-prompt-comparison.md](docs/ai-prompt-comparison.md))*
+
+---
+
+## 👥 Phân Công Trách Nhiệm Nhóm 2 Thành Viên (RACI Matrix)
+
+- **Thành viên 1 — Phụ trách Giao diện & Nghiệp vụ Sự kiện (Front-end & Event Operations):**
+  - Thiết kế và chuẩn hóa giao diện theo chuẩn Apple Liquid Glass (Dark/Light mode, Responsive Mobile).
+  - Giao diện quản lý sự kiện, lịch trình (bắt lỗi `start_at < end_at`), diễn giả, địa điểm.
+  - Giao diện đăng ký vé, hiển thị vé điện tử, tạo và tải mã QR Vector SVG.
+  - Màn hình soát vé Check-in (`/checkin/`) tích hợp Web Camera Scanner và nhập mã dự phòng.
+  - Form thu thập ý kiến phản hồi và trang tổng hợp đánh giá `/events/<id>/feedback`.
+- **Thành viên 2 — Phụ trách CSDL, An Ninh & Tích Hợp AI (Data, Security & AI Architect):**
+  - Cấu trúc CSDL 11 bảng chuẩn 3NF, ràng buộc toàn vẹn, đánh index B-Tree và ACID transactions.
+  - Cơ chế kiểm soát truy cập phân quyền 4 vai trò RBAC (`is_admin`, `is_organizer`, `is_checkin_staff`, `is_attendee`).
+  - Check-in nguyên tử trên CSDL chia sẻ: `Registration.query.filter_by(id=..., checked_in=False).update(...)`.
+  - Tích hợp Gemini API và chuỗi Grounded RAG 8 bước với Step 8 Response Validation.
+  - Soạn thảo Email AI dùng placeholder `{attendee_name}`, `{event_name}`, lọc PII và bắt buộc duyệt bởi con người.
+  - Tóm tắt phản hồi AI: khử khuẩn untrusted text, trích xuất điểm khen, khiếu nại, cảnh báo mẫu nhỏ (<3).
+  - Xây dựng framework benchmark `eval_prompts.py` so sánh 3 chiến lược prompt V1, V2, V3.
+
+---
+
+## 🎬 Kịch Bản Trình Diễn Bắt Buộc (12-Step Demonstration Script)
+
+1. **Khách tham dự chọn sự kiện:** Đăng nhập `attendee2` (`User@123`), vào danh sách sự kiện chọn sự kiện công nghệ.
+2. **Đăng ký vé thành công:** Chọn hạng vé Miễn phí, xác nhận đăng ký; hệ thống kiểm tra sức chứa và ghi nhận đơn vé.
+3. **Vé điện tử & Mã QR được sinh ra:** Vào trang "Vé Của Tôi" (`/tickets/my-tickets`), xem mã vé duy nhất và mã QR trực quan.
+4. **Nhân viên soát vé kiểm tra:** Đăng nhập `staff` (`Staff@123`), truy cập màn hình Soát vé `/checkin/`.
+5. **Ghi nhận Check-in thành công:** Quét mã QR hoặc nhập mã vé `TK-...`; hệ thống hiển thị thông báo check-in thành công kèm tên khách và thời gian thực.
+6. **Từ chối Check-in quét lặp (Anti-duplicate):** Quét lại cùng mã vé lần thứ 2; hệ thống lập tức từ chối với cảnh báo đỏ HTTP 409: *"Vé này đã được check-in lúc..."*.
+7. **Bảng điều khiển Thống kê cập nhật:** Đăng nhập `admin` (`Admin@123`), vào `/admin/dashboard`; 8 chỉ số thực tế (tổng vé, lượt check-in, tỷ lệ tham dự) tự động tăng lên tức thì.
+8. **Khách gửi ý kiến phản hồi:** Khách tham dự đã check-in vào trang gửi đánh giá 5 sao kèm nhận xét về khâu tổ chức.
+9. **AI Tóm tắt Ý kiến Phản hồi:** Đăng nhập `organizer`, vào `/events/<id>/feedback`; hệ thống khử khuẩn thông tin cá nhân và hiển thị tóm tắt AI: điểm khen ngợi, khiếu nại và khuyến nghị.
+10. **Chatbot AI trả lời câu hỏi dựa trên dữ liệu thật:** Mở widget AI Chatbot, hỏi: *"Sự kiện Vietnam AI Summit 2026 diễn ra ở đâu và khi nào?"*; Chatbot trả lời chính xác từ CSDL, không bịa đặt ngày giờ hay địa điểm.
+11. **Soạn thảo Email AI (Mời / Nhắc nhở / Cảm ơn):** Organizer vào phân hệ gửi thông báo, chọn loại email, AI sinh bản thảo chứa placeholder `{attendee_name}`; Organizer chỉnh sửa và phê duyệt trước khi gửi.
+12. **So sánh 3 Phiên bản Prompt:** Mở báo cáo [docs/ai-prompt-comparison.md](docs/ai-prompt-comparison.md); trình chiếu bảng kết quả thực nghiệm 14 kịch bản chứng minh Prompt V3 đạt 100% độ chính xác, 0% ảo giác và kháng 100% prompt injection.
 
 ---
 

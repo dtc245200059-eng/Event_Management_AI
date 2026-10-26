@@ -16,7 +16,8 @@ def remove_accents(input_str):
     """Chuyển đổi chuỗi tiếng Việt có dấu thành không dấu để nhận diện ý định chuẩn xác."""
     if not input_str:
         return ""
-    nfkd_form = unicodedata.normalize('NFKD', input_str)
+    normalized_s = input_str.replace('đ', 'd').replace('Đ', 'd')
+    nfkd_form = unicodedata.normalize('NFKD', normalized_s)
     return "".join([c for c in nfkd_form if not unicodedata.combining(c)]).lower()
 
 def load_prompt_template(filename):
@@ -283,29 +284,149 @@ def build_retrieved_context(query_text="", target_event_id=None):
 
     return "\n\n".join(context_blocks)
 
-def answer_event_query(user_message, event_id=None, history=None):
+def validate_and_sanitize_response(raw_response, user_message, events, context, intent_data):
     """
-    RAG Pipeline hoàn chỉnh:
-    Query -> Question Analysis -> Event Retrieval -> Context Builder -> 5-part System Prompt -> Multi-turn Gemini / Local Fallback.
+    Step 8: Response Validation (Kiểm duyệt phản hồi chống ảo giác, rò rỉ PII và Prompt Injection).
+    - Phát hiện yêu cầu thông tin nhạy cảm (PII: Email, SĐT người tham dự) -> Từ chối chuẩn mực.
+    - Phát hiện nỗ lực Prompt Injection -> Giữ vững vai trò trợ lý, không tiết lộ system prompt.
+    - Phát hiện câu hỏi về sự kiện không tồn tại (No-Match): Nếu CSDL không có sự kiện mà mô hình
+      lại khẳng định có hoặc bịa đặt chi tiết, hàm sẽ can thiệp để chuẩn hóa câu trả lời.
+    """
+    u_lower = user_message.lower()
+    u_no_acc = remove_accents(u_lower)
+    r_lower = (raw_response or "").lower()
+
+    # 1. PII Protection Guardrail (Bảo vệ thông tin cá nhân người tham dự)
+    pii_keywords = [
+        'so dien thoai', 'sdt', 'email nguoi tham gia', 'danh sach nguoi tham gia',
+        'thong tin ca nhan cua khach', 'so phone', 'dia chi nha', 'danh sach email',
+        'phone number', 'contact list'
+    ]
+    if any(k in u_no_acc or k in u_lower for k in pii_keywords):
+        return (
+            "🛡️ **Thông báo Bảo Mật & Quyền Riêng Tư (PII Protection):**\n\n"
+            "Vì lý do bảo mật dữ liệu và tuân thủ chính sách bảo vệ quyền riêng tư cá nhân theo quy định của EventAI Pro, "
+            "hệ thống **tuyệt đối không cung cấp danh sách liên hệ, số điện thoại hoặc email cá nhân** của người tham dự sự kiện."
+        )
+
+    # 2. Prompt Injection Defense (Phòng vệ tấn công prompt injection)
+    injection_keywords = [
+        'ignore previous instructions', 'bo qua moi chi dan', 'system prompt',
+        'developer mode', 'jailbreak', 'you are now a', 'hãy quên các quy tắc'
+    ]
+    if any(k in u_lower for k in injection_keywords):
+        return (
+            "👋 Chào bạn! Tôi là EventAI Concierge - Trợ lý thông tin sự kiện của hệ thống EventAI Pro.\n\n"
+            "Tôi luôn tuân thủ nguyên tắc an toàn dữ liệu và sẵn sàng hỗ trợ bạn tra cứu lịch trình, diễn giả, "
+            "địa điểm và hướng dẫn đặt vé cho các sự kiện đang diễn ra. Bạn cần tìm hiểu sự kiện nào hôm nay?"
+        )
+
+    # 3. No-Match Grounding Guardrail (Chống ảo giác khi không tìm thấy sự kiện)
+    if not events:
+        hallucination_indicators = ['sự kiện sẽ diễn ra vào', 'giá vé của sự kiện là', 'tại địa điểm hội trường', 'lịch trình chi tiết gồm:']
+        if any(h in r_lower for h in hallucination_indicators) and "không tìm thấy" not in r_lower:
+            return (
+                "Rất tiếc, hiện tại hệ thống EventAI Pro **không tìm thấy sự kiện nào** phù hợp với yêu cầu hoặc từ khóa của bạn.\n\n"
+                "💡 **Gợi ý:** Bạn có thể kiểm tra lại tên sự kiện hoặc bấm vào liên kết dưới đây để khám phá các sự kiện đang mở bán:\n"
+                "[👉 Xem Toàn Bộ Sự Kiện Đang Diễn Ra](/events)"
+            )
+
+    return raw_response
+
+def execute_8_step_rag(user_message, event_id=None, prompt_strategy='v3', history=None):
+    """
+    Quy trình 8 bước giải đáp câu hỏi sự kiện có kiểm duyệt (Instructor Required Pipeline):
+    Step 1: User Question (Tiếp nhận câu hỏi)
+    Step 2: Question Analysis (Phân tích câu hỏi)
+    Step 3: Structured Intent (Trích xuất ý định có cấu trúc)
+    Step 4: Event Retrieval (Truy xuất sự kiện từ CSDL)
+    Step 5: Context Builder (Xây dựng ngữ cảnh Ground Truth)
+    Step 6: Prompt Builder (Xây dựng Prompt theo chiến lược v1/v2/v3)
+    Step 7: Gemini API (Gọi mô hình Gemini hoặc Local Fallback)
+    Step 8: Response Validation (Kiểm duyệt phản hồi chống ảo giác & PII)
     """
     start_time = time.time()
 
-    # 1. Trích xuất ngữ cảnh từ SQLite
-    context = build_retrieved_context(query_text=user_message, target_event_id=event_id)
+    # Step 1: User Question
+    raw_query = (user_message or "").strip()
 
-    # 2. Tải Prompt Template 5 thành phần
-    system_template = load_prompt_template('chatbot_system.txt')
-    if "{{retrieved_context}}" in system_template:
-        system_instruction = system_template.replace("{{retrieved_context}}", context)
-    else:
-        system_instruction = f"{system_template}\n\n=== CONTEXT DỮ LIỆU SỰ KIỆN ===\n{context}"
+    # Step 2 & 3: Question Analysis & Structured Intent
+    intent_data = analyze_question(raw_query)
 
-    # 3. Gọi Gemini API (hỗ trợ hội thoại đa lượt history) hoặc Local Fallback Engine
-    response_text, mode = call_gemini(
-        prompt=user_message,
+    # Step 4: Event Retrieval
+    events = retrieve_events(intent_data, target_event_id=event_id)
+
+    # Step 5: Context Builder
+    context = build_retrieved_context(query_text=raw_query, target_event_id=event_id)
+
+    # Step 6: Prompt Builder (Hỗ trợ 3 chiến lược: v1_basic, v2_grounded, v3_validated)
+    if prompt_strategy == 'v1':
+        eval_template = load_prompt_template('eval/prompt_v1_basic.txt')
+        if not eval_template:
+            eval_template = "System: Bạn là trợ lý AI sự kiện. Hãy trả lời câu hỏi của người dùng.\n\nCâu hỏi: {{user_question}}"
+        prompt_content = eval_template.replace('{{user_question}}', raw_query)
+        system_instruction = None
+
+    elif prompt_strategy == 'v2':
+        eval_template = load_prompt_template('eval/prompt_v2_grounded.txt')
+        if not eval_template:
+            eval_template = "System: CHỈ trả lời dựa trên CONTEXT dưới đây:\n{{retrieved_context}}\n\nCâu hỏi: {{user_question}}"
+        prompt_content = raw_query
+        system_instruction = eval_template.replace('{{retrieved_context}}', context)\
+                                          .replace('{{user_question}}', raw_query)
+
+    else: # 'v3' - Default Grounded + Validated Production Strategy
+        system_template = load_prompt_template('eval/prompt_v3_validated.txt')
+        if not system_template:
+            system_template = load_prompt_template('chatbot_system.txt')
+
+        if "{{retrieved_context}}" in system_template:
+            system_instruction = system_template.replace("{{retrieved_context}}", context)\
+                                                .replace("{{user_question}}", raw_query)
+        else:
+            system_instruction = f"{system_template}\n\n=== CONTEXT DỮ LIỆU SỰ KIỆN ===\n{context}"
+        prompt_content = raw_query
+
+    # Step 7: Gemini API Call
+    raw_response, mode = call_gemini(
+        prompt=prompt_content,
         system_instruction=system_instruction,
         history=history
     )
 
+    # Step 8: Response Validation (áp dụng cho chiến lược v3 và production)
+    if prompt_strategy == 'v3':
+        final_answer = validate_and_sanitize_response(
+            raw_response=raw_response,
+            user_message=raw_query,
+            events=events,
+            context=context,
+            intent_data=intent_data
+        )
+    else:
+        final_answer = raw_response
+
     latency_ms = int((time.time() - start_time) * 1000)
-    return response_text, mode, latency_ms
+
+    metadata = {
+        'intent_data': intent_data,
+        'retrieved_events_count': len(events),
+        'prompt_strategy': prompt_strategy,
+        'mode': mode,
+        'latency_ms': latency_ms,
+        'is_validated': (prompt_strategy == 'v3')
+    }
+
+    return final_answer, mode, latency_ms, metadata
+
+def answer_event_query(user_message, event_id=None, history=None):
+    """
+    Public entry point for Chatbot Controller. Runs the production 8-step pipeline with V3 strategy.
+    """
+    final_answer, mode, latency_ms, _ = execute_8_step_rag(
+        user_message=user_message,
+        event_id=event_id,
+        prompt_strategy='v3',
+        history=history
+    )
+    return final_answer, mode, latency_ms

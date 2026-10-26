@@ -199,6 +199,10 @@ def create_schedule(event_id):
         flash('Định dạng thời gian phiên không hợp lệ.', 'danger')
         return redirect(url_for('events.schedules', event_id=event.id))
 
+    if start_at >= end_at:
+        flash('Thời gian bắt đầu phiên phải trước thời gian kết thúc!', 'danger')
+        return redirect(url_for('events.schedules', event_id=event.id))
+
     schedule_item = Schedule(
         event_id=event.id,
         speaker_id=speaker_id if speaker_id else None,
@@ -212,6 +216,48 @@ def create_schedule(event_id):
     db.session.commit()
 
     flash(f'Đã thêm phiên thảo luận "{title}" vào lịch trình!', 'success')
+    return redirect(url_for('events.schedules', event_id=event.id))
+
+@events_bp.route('/schedules/<int:schedule_id>/edit', methods=['POST'])
+@login_required
+@organizer_required
+def edit_schedule(schedule_id):
+    item = db.get_or_404(Schedule, schedule_id)
+    event = item.event
+    if not current_user.is_admin and event.created_by != current_user.id:
+        abort(403)
+
+    title = request.form.get('title', '').strip()
+    speaker_id = request.form.get('speaker_id', type=int)
+    venue_id = request.form.get('venue_id', type=int)
+    start_at_str = request.form.get('start_at', '')
+    end_at_str = request.form.get('end_at', '')
+    description = request.form.get('description', '').strip()
+
+    if not title or not start_at_str or not end_at_str:
+        flash('Vui lòng nhập tên phiên và thời gian bắt đầu / kết thúc.', 'danger')
+        return redirect(url_for('events.schedules', event_id=event.id))
+
+    try:
+        start_at = datetime.strptime(start_at_str, '%Y-%m-%dT%H:%M')
+        end_at = datetime.strptime(end_at_str, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        flash('Định dạng thời gian phiên không hợp lệ.', 'danger')
+        return redirect(url_for('events.schedules', event_id=event.id))
+
+    if start_at >= end_at:
+        flash('Thời gian bắt đầu phiên phải trước thời gian kết thúc!', 'danger')
+        return redirect(url_for('events.schedules', event_id=event.id))
+
+    item.title = title
+    item.speaker_id = speaker_id if speaker_id else None
+    item.venue_id = venue_id if venue_id else None
+    item.start_at = start_at
+    item.end_at = end_at
+    item.description = description
+    db.session.commit()
+
+    flash(f'Đã cập nhật phiên thảo luận "{title}" thành công!', 'success')
     return redirect(url_for('events.schedules', event_id=event.id))
 
 @events_bp.route('/schedules/<int:schedule_id>/delete', methods=['POST'])
@@ -228,6 +274,7 @@ def delete_schedule(schedule_id):
     db.session.commit()
     flash('Đã xóa phiên thảo luận khỏi lịch trình.', 'info')
     return redirect(url_for('events.schedules', event_id=event_id))
+
 
 # ==========================================
 # QUẢN LÝ DIỄN GIẢ (SPEAKERS)
@@ -332,3 +379,52 @@ def create_ticket(event_id):
 
     flash(f'Đã thêm hạng vé "{name}" với {quota} suất phát hành!', 'success')
     return redirect(url_for('events.manage_tickets', event_id=event.id))
+
+# ==========================================
+# QUẢN LÝ VÀ TỔNG HỢP Ý KIẾN PHẢN HỒI (FEEDBACK REVIEW & AGGREGATION)
+# ==========================================
+@events_bp.route('/<int:event_id>/feedback', methods=['GET'])
+@login_required
+@organizer_required
+def event_feedback(event_id):
+    """
+    Authorized Feedback Review & Aggregation for Event Organizers and Admins.
+    Displays rating distribution, sentiment breakdown, individual comments and AI opinion summary.
+    """
+    event = db.get_or_404(Event, event_id)
+    if not current_user.is_admin and event.created_by != current_user.id:
+        abort(403)
+
+    from app.models import Registration
+    from app.services.sentiment_service import summarize_event_feedback_groups
+
+    feedbacks = Registration.query.filter(
+        Registration.event_id == event.id,
+        Registration.feedback_rating.isnot(None)
+    ).order_by(Registration.feedback_submitted_at.desc()).all()
+
+    total_feedbacks = len(feedbacks)
+    avg_rating = round(sum(f.feedback_rating for f in feedbacks) / total_feedbacks, 1) if total_feedbacks > 0 else 0.0
+
+    star_counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+    sentiment_counts = {'positive': 0, 'neutral': 0, 'negative': 0}
+    for f in feedbacks:
+        if f.feedback_rating in star_counts:
+            star_counts[f.feedback_rating] += 1
+        sent = f.sentiment or 'neutral'
+        if sent in sentiment_counts:
+            sentiment_counts[sent] += 1
+
+    ai_summary = summarize_event_feedback_groups(event.id) if total_feedbacks > 0 else None
+
+    return render_template(
+        'events/feedback_list.html',
+        event=event,
+        feedbacks=feedbacks,
+        total_feedbacks=total_feedbacks,
+        avg_rating=avg_rating,
+        star_counts=star_counts,
+        sentiment_counts=sentiment_counts,
+        ai_summary=ai_summary
+    )
+

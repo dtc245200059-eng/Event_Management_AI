@@ -1,0 +1,76 @@
+@startuml
+title Sơ Đồ Thành Phần Hệ Thống 3 Tầng (Component Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam componentStyle uml2
+skinparam roundcorner 5
+
+package "Tầng Giao Diện (Presentation Layer)" {
+  [Jinja2 Template Engine\n(Apple Liquid Glass UI)] as UI
+  [Responsive Navigation &\nMobile Drawer] as Nav
+  [Check-in Scanner Component\n(HTML5 QR / Video)] as Scanner
+  [AI Concierge Chat Widget\n(Vanilla JS + SSE)] as ChatWidget
+  [Email Draft Preview &\nMarkdown Editor] as EmailEditor
+}
+
+package "Tầng Ứng Dụng & Điều Khiển (Application Layer - Flask Web Server)" {
+  [Authentication & RBAC Middleware\n(Flask-Login + Decorators)] as Auth
+  [Event & Schedule Controller] as EventCtrl
+  [Atomic Check-in Controller] as CheckInCtrl
+  [Notification & Email Controller] as NotifCtrl
+  [Admin Dashboard Controller\n(8 Real Metrics)] as AdminCtrl
+  [AI Gateway Controller\n(/api/ai/*)] as AIGateway
+}
+
+package "Tầng Dịch Vụ AI & Phân Tích (Dual-Engine AI Service Layer)" {
+  [8-Step Grounded RAG Pipeline\n(rag_service.py)] as RAGPipeline
+  [Question Analysis &\nStructured Intent Engine] as IntentEngine
+  [Response Validation Guardrail\n(Step 8 Anti-Hallucination)] as Guardrail
+  [PII Sanitizer &\nUntrusted Text Filter] as PIISanitizer
+  [Feedback Sentiment &\nOpinion Cluster Analyzer] as SentimentAnalyzer
+  [Multi-Agent MessageBus\n(7 Specialized Agents + Critic)] as MultiAgent
+}
+
+package "Tầng Dịch Vụ Ngoài & Nền Tảng AI (External AI Providers)" {
+  cloud "Google Cloud GenAI\n(Gemini 2.5 / 3.8 Flash)" as GeminiCloud
+  [Local Grounded Fallback Engine\n(Offline Resilient Engine)] as LocalEngine
+}
+
+package "Tầng Dữ Liệu & Lưu Trữ (Data Persistence Layer)" {
+  database "SQLite Database\n(instance/event_management.db)" as DB
+  [SQLAlchemy ORM Models\n(11 Tables, Relations & Indexes)] as ORM
+}
+
+' Connections
+UI --> Auth
+ChatWidget --> AIGateway
+Scanner --> CheckInCtrl
+EmailEditor --> NotifCtrl
+
+Auth --> EventCtrl
+Auth --> CheckInCtrl
+Auth --> NotifCtrl
+Auth --> AdminCtrl
+
+EventCtrl --> ORM
+CheckInCtrl --> ORM
+NotifCtrl --> ORM
+AdminCtrl --> ORM
+
+AIGateway --> RAGPipeline
+AIGateway --> SentimentAnalyzer
+AIGateway --> MultiAgent
+NotifCtrl --> PIISanitizer
+
+RAGPipeline --> IntentEngine
+RAGPipeline --> ORM : Query Events
+RAGPipeline --> Guardrail
+Guardrail --> GeminiCloud : Live Call
+Guardrail --> LocalEngine : Offline Fallback
+SentimentAnalyzer --> PIISanitizer
+SentimentAnalyzer --> GeminiCloud
+MultiAgent --> GeminiCloud
+
+ORM --> DB
+
+@enduml

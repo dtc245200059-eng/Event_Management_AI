@@ -1,0 +1,168 @@
+@startuml
+title Mô Hình Dữ Liệu Quan Hệ 11 Bảng (Entity Relationship Diagram - ERD) - EventAI Pro
+skinparam linetype ortho
+skinparam monochrome false
+skinparam roundcorner 5
+skinparam defaultFontName "Segoe UI"
+
+entity "users" as users {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * username : VARCHAR(80) <<UNIQUE, INDEX>>
+  * email : VARCHAR(120) <<UNIQUE, INDEX>>
+  * password_hash : VARCHAR(255)
+  * role : VARCHAR(20) [attendee, organizer, checkin_staff, admin]
+  * is_active : BOOLEAN [DEFAULT TRUE]
+  * created_at : DATETIME
+}
+
+entity "attendee_profiles" as attendee_profiles {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * user_id : INTEGER <<FK, UNIQUE, INDEX>>
+  * full_name : VARCHAR(100)
+  * phone : VARCHAR(20)
+  * student_id : VARCHAR(50)
+  * organization : VARCHAR(150)
+  * interests : TEXT
+  * updated_at : DATETIME
+}
+
+entity "events" as events {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * event_code : VARCHAR(50) <<UNIQUE, INDEX>>
+  * title : VARCHAR(200) <<INDEX>>
+  * description : TEXT
+  * category : VARCHAR(100) <<INDEX>>
+  * start_date : DATETIME <<INDEX>>
+  * end_date : DATETIME
+  * location_type : VARCHAR(20) [offline, online, hybrid]
+  * location_address : VARCHAR(255)
+  * max_capacity : INTEGER
+  * current_registrations : INTEGER [DEFAULT 0]
+  * banner_url : VARCHAR(500)
+  * status : VARCHAR(20) [draft, published, ongoing, completed, cancelled]
+  * tags : VARCHAR(255)
+  * created_by : INTEGER <<FK>>
+  * created_at : DATETIME
+}
+
+entity "tickets" as tickets {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * event_id : INTEGER <<FK, INDEX>>
+  * name : VARCHAR(100)
+  * ticket_type : VARCHAR(50) [standard, vip, student, early_bird]
+  * price : FLOAT [DEFAULT 0.0]
+  * quota : INTEGER
+  * remaining_quota : INTEGER
+  * is_available : BOOLEAN [DEFAULT TRUE]
+}
+
+entity "registrations" as registrations {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * registration_code : VARCHAR(64) <<UNIQUE, INDEX>>
+  * event_id : INTEGER <<FK, INDEX>>
+  * attendee_id : INTEGER <<FK, INDEX>>
+  * ticket_id : INTEGER <<FK>>
+  * registration_status : VARCHAR(20) [confirmed, checked_in, cancelled]
+  * checked_in : BOOLEAN [DEFAULT FALSE, INDEX]
+  * checked_in_at : DATETIME
+  * checkin_by_staff_id : INTEGER <<FK>>
+  * feedback_rating : INTEGER [1..5]
+  * feedback_text : TEXT
+  * sentiment : VARCHAR(20) [positive, neutral, negative]
+  * created_at : DATETIME
+}
+
+entity "issued_tickets" as issued_tickets {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * registration_id : INTEGER <<FK, UNIQUE, INDEX>>
+  * ticket_number : VARCHAR(64) <<UNIQUE, INDEX>>
+  * qr_code_hash : VARCHAR(255)
+  * status : VARCHAR(20) [valid, used, revoked]
+  * issued_at : DATETIME
+}
+
+entity "schedules" as schedules {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * event_id : INTEGER <<FK, INDEX>>
+  * title : VARCHAR(200)
+  * description : TEXT
+  * start_at : DATETIME
+  * end_at : DATETIME
+  * speaker_id : INTEGER <<FK>>
+  * venue_id : INTEGER <<FK>>
+}
+
+entity "speakers" as speakers {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * name : VARCHAR(100)
+  * title : VARCHAR(100)
+  * organization : VARCHAR(150)
+  * bio : TEXT
+  * avatar_url : VARCHAR(500)
+}
+
+entity "venues" as venues {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * name : VARCHAR(150)
+  * address : VARCHAR(255)
+  * capacity : INTEGER
+  * room_number : VARCHAR(50)
+}
+
+entity "notifications" as notifications {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * event_id : INTEGER <<FK, INDEX>>
+  * title : VARCHAR(200)
+  * notification_type : VARCHAR(50) [invitation, reminder, thank_you, update]
+  * target_audience : VARCHAR(50) [all_registered, checked_in, not_checked_in, vip]
+  * content : TEXT
+  * recipient_count : INTEGER [DEFAULT 0]
+  * status : VARCHAR(20) [draft, sent]
+  * sent_at : DATETIME
+  * created_by : INTEGER <<FK>>
+}
+
+entity "ai_chat_histories" as ai_chat_histories {
+  * **id** : INTEGER <<PK, AUTOINCREMENT>>
+  --
+  * user_id : INTEGER <<FK>>
+  * event_id : INTEGER <<FK>>
+  * chat_type : VARCHAR(50) [rag_chat, multi_agent_advisory]
+  * user_message : TEXT
+  * ai_response : TEXT
+  * model_name : VARCHAR(100)
+  * response_mode : VARCHAR(20) [live, mock]
+  * latency_ms : INTEGER
+  * created_at : DATETIME
+}
+
+' Quan hệ thực thể
+users ||--o| attendee_profiles : "1 - 0..1"
+users ||--o{ events : "tạo ra (created_by)"
+users ||--o{ notifications : "phát hành"
+
+events ||--o{ tickets : "sở hữu các hạng vé"
+events ||--o{ registrations : "có danh sách đăng ký"
+events ||--o{ schedules : "gồm các phiên agenda"
+events ||--o{ notifications : "thông báo liên kết"
+events ||--o{ ai_chat_histories : "ngữ cảnh tư vấn"
+
+attendee_profiles ||--o{ registrations : "tham gia các sự kiện"
+
+tickets ||--o{ registrations : "được áp dụng"
+registrations ||--|| issued_tickets : "sinh vé định danh 1 - 1"
+
+speakers ||--o{ schedules : "thuyết trình tại phiên"
+venues ||--o{ schedules : "địa điểm phiên họp"
+
+@enduml

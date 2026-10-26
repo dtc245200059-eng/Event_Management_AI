@@ -1,0 +1,92 @@
+@startuml
+title Biểu Đồ Ca Sử Dụng Tổng Thể (Use Case Diagram) - Hệ Thống EventAI Pro
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam monochrome false
+skinparam shadowing true
+skinparam defaultFontName "Segoe UI"
+skinparam roundcorner 10
+
+actor "Người Tham Dự\n(Attendee)" as Attendee #4A90E2
+actor "Ban Tổ Chức\n(Organizer)" as Organizer #F39C12
+actor "Nhân Viên Soát Vé\n(CheckInStaff)" as CheckInStaff #27AE60
+actor "Quản Trị Viên\n(Admin)" as Admin #E74C3C
+
+rectangle "Hệ Thống Quản Lý Sự Kiện Tích Hợp AI (EventAI Pro)" {
+
+  ' Nhóm ca sử dụng cho Attendee
+  package "Phân Hệ Khách Tham Dự" {
+    usecase "UC01: Khám phá & Tìm kiếm sự kiện" as UC01
+    usecase "UC02: Đăng ký tham gia sự kiện" as UC02
+    usecase "UC03: Quản lý vé điện tử & QR cá nhân" as UC03
+    usecase "UC04: Hủy đăng ký & hoàn trả quota" as UC04
+    usecase "UC05: Gửi đánh giá & phản hồi sự kiện" as UC05
+    usecase "UC06: Hỏi đáp với Trợ lý AI Concierge" as UC06
+  }
+
+  ' Nhóm ca sử dụng cho CheckInStaff
+  package "Phân Hệ Điểm Danh & Soát Vé" {
+    usecase "UC07: Quét mã QR vé tại quầy" as UC07
+    usecase "UC08: Nhập mã đăng ký thủ công" as UC08
+    usecase "UC09: Xác thực tính hợp lệ & chống check-in trùng" as UC09
+    usecase "UC10: Xem thống kê check-in thời gian thực" as UC10
+  }
+
+  ' Nhóm ca sử dụng cho Organizer
+  package "Phân Hệ Tổ Chức Sự Kiện" {
+    usecase "UC11: Tạo & Cập nhật thông tin sự kiện" as UC11
+    usecase "UC12: Quản lý lịch trình Agenda (start < end)" as UC12
+    usecase "UC13: Quản lý hạng vé & sức chứa (Capacity)" as UC13
+    usecase "UC14: Xem danh sách & AI tóm tắt phản hồi" as UC14
+    usecase "UC15: Soạn thảo Email/Thông báo bằng AI" as UC15
+    usecase "UC16: Phê duyệt & Phát hành thông báo" as UC16
+  }
+
+  ' Nhóm ca sử dụng cho Admin
+  package "Phân Hệ Quản Trị Hệ Thống" {
+    usecase "UC17: Quản trị người dùng & Phân quyền RBAC" as UC17
+    usecase "UC18: Xem Dashboard Thống Kê 8 Chỉ Số" as UC18
+    usecase "UC19: Quản lý danh mục, địa điểm & diễn giả" as UC19
+    usecase "UC20: Giám sát nhật ký AI & Phân tích dự báo" as UC20
+  }
+
+  ' Ca sử dụng hệ thống AI & Kiểm duyệt
+  package "Dịch Vụ AI & Kiểm Duyệt Rào Chắn" {
+    usecase "UC21: RAG 8 bước & Response Validation" as UC21
+    usecase "UC22: Ẩn thông tin cá nhân (PII Sanitization)" as UC22
+  }
+}
+
+' Liên kết vai trò
+Attendee --> UC01
+Attendee --> UC02
+Attendee --> UC03
+Attendee --> UC04
+Attendee --> UC05
+Attendee --> UC06
+
+CheckInStaff --> UC07
+CheckInStaff --> UC08
+CheckInStaff --> UC10
+UC07 ..> UC09 : <<include>>
+UC08 ..> UC09 : <<include>>
+
+Organizer --> UC11
+Organizer --> UC12
+Organizer --> UC13
+Organizer --> UC14
+Organizer --> UC15
+Organizer --> UC16
+Organizer --|> CheckInStaff : Kế thừa quyền soát vé
+
+Admin --> UC17
+Admin --> UC18
+Admin --> UC19
+Admin --> UC20
+Admin --|> Organizer : Toàn quyền quản trị
+
+UC06 ..> UC21 : <<include>>
+UC14 ..> UC22 : <<include>>
+UC15 ..> UC22 : <<include>>
+
+@enduml

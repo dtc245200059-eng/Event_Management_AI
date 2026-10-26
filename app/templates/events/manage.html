@@ -72,7 +72,11 @@
                                 <a href="{{ url_for('notifications.create', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Gửi thông báo AI">
                                     <i class="fa-solid fa-paper-plane text-primary"></i>
                                 </a>
+                                <a href="{{ url_for('events.event_feedback', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Ý kiến phản hồi & AI Summary">
+                                    <i class="fa-solid fa-comment-dots text-warning"></i>
+                                </a>
                                 <a href="{{ url_for('events.edit', event_id=evt.id) }}" class="btn btn-sm btn-secondary rounded-pill px-2.5 py-1" title="Chỉnh sửa">
+
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </a>
                                 <form method="POST" action="{{ url_for('events.delete', event_id=evt.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa sự kiện này không?');" class="d-inline">

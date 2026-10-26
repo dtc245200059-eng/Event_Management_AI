@@ -1,0 +1,52 @@
+@startuml
+title Sơ Đồ Triển Khai Hạ Tầng (Deployment Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 5
+
+node "Thiết Bị Người Dùng (Client Devices)" {
+  node "Máy Tính Để Bàn / Laptop" {
+    artifact "Trình duyệt Web (Chrome, Edge, Safari)\nHTML5 / CSS3 / Vanilla JS" as DesktopBrowser
+  }
+  node "Điểm Soát Vé Quầy / Di Động (Mobile & Tablet)" {
+    artifact "Camera QR Scanner WebApp\n(Responsive Touch / Viewport)" as MobileBrowser
+  }
+}
+
+node "Máy Chủ Ứng Dụng (Application Host - Docker / Local Linux / Windows Server)" {
+  node "Web Server & Reverse Proxy" {
+    component "Nginx / Gunicorn WSGI\n(Port 80/443 -> Port 5000)" as WebServer
+  }
+
+  node "Flask Application Container (Python 3.11+ Runtime)" {
+    component "EventAI Pro Core WebApp\n(Blueprints, Jinja2, Flask-Login)" as FlaskApp
+    component "Dual-Engine AI Services\n(RAG 8 bước + Local Fallback)" as AIService
+    component "SQLAlchemy Connection Pool\n(WAL Mode, Transaction Isolation)" as ConnectionPool
+  }
+
+  node "Tầng Lưu Trữ File & Database" {
+    database "SQLite 3 Database File\n(instance/event_management.db)\n[Write-Ahead Logging enabled]" as SQLiteDB
+    folder "Static Assets\n(/app/static/css, /js, /images)" as StaticFiles
+  }
+}
+
+cloud "Google Cloud Platform" {
+  node "Google Cloud Vertex / GenAI Service" {
+    component "Gemini 2.5 / 3.8 Flash API\n(Endpoint: generativelanguage.googleapis.com)" as GeminiAPI
+  }
+}
+
+DesktopBrowser -- WebServer : HTTPS / WSS
+MobileBrowser -- WebServer : HTTPS (Yêu cầu SSL cho Camera)
+
+WebServer -- FlaskApp : WSGI Proxy pass
+WebServer -- StaticFiles : Direct static serving
+
+FlaskApp -- AIService : In-Process Call
+FlaskApp -- ConnectionPool
+ConnectionPool -- SQLiteDB : File I/O (ACID)
+
+AIService ..> GeminiAPI : HTTPS REST / gRPC\n(GEMINI_API_KEY)
+AIService ..> SQLiteDB : Grounded Context Retrieval
+
+@enduml

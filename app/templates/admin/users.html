@@ -164,12 +164,13 @@
                                                         </label>
 
                                                         <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
-                                                            <input type="radio" name="role" value="staff" {% if u.role == 'staff' %}checked{% endif %} class="form-check-input mt-0">
+                                                            <input type="radio" name="role" value="checkin_staff" {% if u.role in ('checkin_staff', 'staff') %}checked{% endif %} class="form-check-input mt-0">
                                                             <div>
-                                                                <strong class="text-primary d-block"><i class="fa-solid fa-user-tag me-1"></i> Nhân Viên Soát Vé (Staff)</strong>
-                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Quyền truy cập Quét QR Code & Check-in vé, xem danh sách tham dự.</small>
+                                                                <strong class="text-primary d-block"><i class="fa-solid fa-qrcode me-1"></i> Nhân Viên Check-in (CheckInStaff)</strong>
+                                                                <small style="color: var(--text-secondary); font-size: 0.75rem;">Quyền truy cập Quét QR Code & Check-in vé, xem danh sách điểm danh.</small>
                                                             </div>
                                                         </label>
+
 
                                                         <label class="p-3 rounded-3 border d-flex align-items-center gap-3" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important; cursor: pointer;">
                                                             <input type="radio" name="role" value="attendee" {% if u.role == 'attendee' %}checked{% endif %} class="form-check-input mt-0">
@@ -250,7 +251,8 @@
                             <label class="form-label small fw-semibold">Vai Trò Phân Quyền <span class="text-danger">*</span></label>
                             <select name="role" class="form-select" required>
                                 <option value="organizer">Ban Tổ Chức (Organizer)</option>
-                                <option value="staff" selected>Nhân Viên Soát Vé (Staff)</option>
+                                <option value="checkin_staff" selected>Nhân Viên Check-in (CheckInStaff)</option>
+                                <option value="staff">Nhân Viên Soát Vé (Staff)</option>
                                 <option value="attendee">Khách Mời (Attendee)</option>
                                 <option value="admin">Quản Trị Viên (Admin)</option>
                             </select>

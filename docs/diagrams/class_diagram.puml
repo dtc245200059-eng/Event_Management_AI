@@ -1,0 +1,183 @@
+@startuml
+title Sơ Đồ Lớp Tổng Thể (Class Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam classAttributeIconSize 0
+skinparam roundcorner 5
+
+package "Domain Models (app.models)" {
+  class User {
+    +id : int
+    +username : str
+    +email : str
+    +password_hash : str
+    +role : str
+    +is_active : bool
+    +is_organizer : bool
+    +is_checkin_staff : bool
+    +is_admin : bool
+    +set_password(pwd)
+    +check_password(pwd) : bool
+  }
+
+  class AttendeeProfile {
+    +id : int
+    +user_id : int
+    +full_name : str
+    +phone : str
+    +student_id : str
+    +interests : str
+  }
+
+  class Event {
+    +id : int
+    +event_code : str
+    +title : str
+    +category : str
+    +start_date : datetime
+    +end_date : datetime
+    +location_type : str
+    +max_capacity : int
+    +current_registrations : int
+    +status : str
+    +is_upcoming : bool
+  }
+
+  class Ticket {
+    +id : int
+    +event_id : int
+    +name : str
+    +ticket_type : str
+    +price : float
+    +quota : int
+    +remaining_quota : int
+    +is_available : bool
+  }
+
+  class Registration {
+    +id : int
+    +registration_code : str
+    +event_id : int
+    +attendee_id : int
+    +ticket_id : int
+    +registration_status : str
+    +checked_in : bool
+    +checked_in_at : datetime
+    +checkin_by_staff_id : int
+    +feedback_rating : int
+    +feedback_text : str
+    +sentiment : str
+  }
+
+  class IssuedTicket {
+    +id : int
+    +registration_id : int
+    +ticket_number : str
+    +qr_code_hash : str
+    +status : str
+    +issued_at : datetime
+  }
+
+  class Schedule {
+    +id : int
+    +event_id : int
+    +title : str
+    +start_at : datetime
+    +end_at : datetime
+    +speaker_id : int
+    +venue_id : int
+  }
+
+  class Notification {
+    +id : int
+    +event_id : int
+    +title : str
+    +notification_type : str
+    +content : str
+    +recipient_count : int
+    +status : str
+    +sent_at : datetime
+  }
+}
+
+package "Services Layer (app.services)" {
+  class RAGService {
+    +analyze_question(query) : dict
+    +retrieve_events(intent, event_id) : list
+    +build_retrieved_context(query, event_id) : str
+    +execute_8_step_rag(msg, strategy) : tuple
+    +validate_and_sanitize_response(...) : str
+  }
+
+  class GeminiService {
+    +call_gemini(prompt, sys_inst, history) : tuple
+    +generate_comprehensive_response(...) : str
+    +check_rate_limit(client_id) : bool
+  }
+
+  class SentimentService {
+    +analyze_event_feedback_sentiment(event_id) : dict
+    +summarize_event_feedback_groups(event_id) : dict
+    +sanitize_untrusted_feedback(text) : str
+  }
+}
+
+package "Controllers / Blueprints (app.routes)" {
+  class EventController {
+    +index()
+    +detail(id)
+    +create()
+    +edit(id)
+    +register(id)
+    +manage()
+    +create_schedule(event_id)
+    +edit_schedule(schedule_id)
+    +event_feedback(event_id)
+  }
+
+  class CheckInController {
+    +checkin_screen()
+    +process_checkin()
+    +checkin_history()
+  }
+
+  class NotificationController {
+    +manage()
+    +create()
+    +inbox()
+  }
+
+  class AdminController {
+    +dashboard()
+    +users()
+    +change_role()
+  }
+
+  class AIController {
+    +chat()
+    +generate_notification()
+    +feedback_summary(event_id)
+    +multi_agent_advisory()
+  }
+}
+
+' Relations
+User "1" -- "0..1" AttendeeProfile
+User "1" -- "0..*" Event : creates
+Event "1" -- "0..*" Ticket
+Event "1" -- "0..*" Registration
+Event "1" -- "0..*" Schedule
+Event "1" -- "0..*" Notification
+Registration "1" -- "1" IssuedTicket
+AttendeeProfile "1" -- "0..*" Registration
+
+EventController ..> Event : manages
+EventController ..> Schedule : validates
+CheckInController ..> Registration : updates atomic
+CheckInController ..> IssuedTicket : verifies
+AIController ..> RAGService : invokes
+AIController ..> GeminiService : delegates
+AIController ..> SentimentService : analyzes
+RAGService ..> GeminiService : calls
+
+@enduml

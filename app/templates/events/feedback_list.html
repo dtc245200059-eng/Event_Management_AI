@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+
+{% block title %}Tổng Hợp Phản Hồi: {{ event.title }} - EventAI Pro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header & Navigation -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><a href="{{ url_for('events.manage') }}" class="text-decoration-none" style="color: var(--accent-primary);">Quản Lý Sự Kiện</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Ý Kiến Phản Hồi</li>
+                </ol>
+            </nav>
+            <h2 class="mb-1 fw-bold" style="color: var(--text-primary);">Tổng Hợp & Phân Tích Ý Kiến Phản Hồi</h2>
+            <p class="section-subtitle mb-0" style="color: var(--text-secondary);">
+                Sự kiện: <strong>{{ event.title }}</strong> (Mã: <code>{{ event.event_code }}</code>)
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('events.manage') }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Quay lại Sự Kiện
+            </a>
+            <a href="{{ url_for('events.schedules', event_id=event.id) }}" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-calendar-days me-1"></i> Xem Lịch Trình
+            </a>
+        </div>
+    </div>
+
+    {% if total_feedbacks == 0 %}
+    <!-- Empty State -->
+    <div class="apple-card p-5 text-center my-4">
+        <div class="mb-3" style="font-size: 3rem; color: var(--text-tertiary);">
+            <i class="fa-regular fa-comment-dots"></i>
+        </div>
+        <h4 class="fw-bold mb-2" style="color: var(--text-primary);">Chưa có ý kiến phản hồi nào</h4>
+        <p class="mb-4" style="color: var(--text-secondary); max-width: 500px; margin: 0 auto;">
+            Người tham dự sau khi hoàn tất check-in hoặc tham gia sự kiện có thể gửi đánh giá từ 1 đến 5 sao kèm ý kiến nhận xét. Dữ liệu sẽ tự động tổng hợp tại đây.
+        </p>
+        <a href="{{ url_for('events.manage') }}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-list-check me-1"></i> Về Danh Sách Sự Kiện
+        </a>
+    </div>
+    {% else %}
+
+    <!-- 4 Overview Metric Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="apple-card p-4 h-100">
+                <div class="small fw-semibold mb-2" style="color: var(--text-secondary); letter-spacing: 0.04em;">ĐIỂM TRUNG BÌNH</div>
+                <div class="d-flex align-items-baseline gap-2 mb-1">
+                    <span class="metric-value fw-bold" style="color: var(--accent-orange); font-size: 2.5rem;">{{ avg_rating }}</span>
+                    <span class="text-muted" style="font-size: 1.1rem;">/ 5.0</span>
+                </div>
+                <div class="text-warning small mb-1">
+                    {% for i in range(1, 6) %}
+                        {% if i <= avg_rating %}
+                            <i class="fa-solid fa-star"></i>
+                        {% elif i - 0.5 <= avg_rating %}
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        {% else %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="small" style="color: var(--text-tertiary);">Trên tổng số {{ total_feedbacks }} lượt đánh giá</div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="apple-card p-4 h-100">
+                <div class="small fw-semibold mb-2" style="color: var(--text-secondary); letter-spacing: 0.04em;">TỔNG PHẢN HỒI</div>
+                <div class="metric-value mb-1" style="color: var(--accent-primary); font-size: 2.5rem;">{{ total_feedbacks }}</div>
+                <div class="small" style="color: var(--text-tertiary);">Lượt nhận xét từ khách tham dự</div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="apple-card p-4 h-100">
+                <div class="small fw-semibold mb-2" style="color: var(--text-secondary); letter-spacing: 0.04em;">CẢM XÚC TÍCH CỰC</div>
+                <div class="metric-value mb-1" style="color: var(--accent-green); font-size: 2.5rem;">
+                    {{ sentiment_counts.get('positive', 0) }}
+                </div>
+                <div class="small" style="color: var(--text-tertiary);">
+                    {{ "%.1f"|format(sentiment_counts.get('positive', 0) / total_feedbacks * 100) }}% phản hồi hài lòng
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <div class="apple-card p-4 h-100">
+                <div class="small fw-semibold mb-2" style="color: var(--text-secondary); letter-spacing: 0.04em;">CẦN CẢI THIỆN</div>
+                <div class="metric-value mb-1" style="color: #FF3B30; font-size: 2.5rem;">
+                    {{ sentiment_counts.get('negative', 0) }}
+                </div>
+                <div class="small" style="color: var(--text-tertiary);">
+                    {{ "%.1f"|format(sentiment_counts.get('negative', 0) / total_feedbacks * 100) }}% góp ý phàn nàn
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Distribution & AI Summary -->
+    <div class="row g-4 mb-4">
+        <!-- Star Distribution -->
+        <div class="col-lg-5">
+            <div class="apple-card p-4 h-100">
+                <h5 class="fw-bold mb-3" style="color: var(--text-primary);">Phân Bố Số Sao Đánh Giá</h5>
+                <div class="d-flex flex-column gap-2">
+                    {% for star in [5, 4, 3, 2, 1] %}
+                    {% set count = star_counts.get(star, 0) %}
+                    {% set pct = (count / total_feedbacks * 100) if total_feedbacks > 0 else 0 %}
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small fw-bold text-nowrap" style="width: 45px; color: var(--text-secondary);">
+                            {{ star }} <i class="fa-solid fa-star text-warning" style="font-size: 0.8rem;"></i>
+                        </span>
+                        <div class="progress flex-grow-1" style="height: 10px; background-color: var(--surface-tertiary); border-radius: 6px;">
+                            <div class="progress-bar {% if star >= 4 %}bg-success{% elif star == 3 %}bg-warning{% else %}bg-danger{% endif %}"
+                                 role="progressbar"
+                                 {{ ('style="width: ' ~ pct ~ '%; border-radius: 6px;"')|safe }}
+                                 aria-valuenow="{{ pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="small text-muted text-end" style="width: 60px;">{{ count }} ({{ "%.0f"|format(pct) }}%)</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Feedback Opinion Groups Summarizer -->
+        <div class="col-lg-7">
+            <div class="apple-card p-4 h-100" style="border: 1px solid var(--accent-primary-subtle); background: var(--surface);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0" style="color: var(--text-primary);">
+                        <i class="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>AI Tóm Tắt Ý Kiến Phản Hồi
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">Advisor AI</span>
+                </div>
+
+                {% if ai_summary.sample_warning %}
+                <div class="alert alert-warning py-2 px-3 small mb-3">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> {{ ai_summary.sample_warning }}
+                </div>
+                {% elif total_feedbacks < 3 %}
+                <div class="alert alert-warning py-2 px-3 small mb-3">
+                    <i class="fa-solid fa-circle-exclamation me-1"></i> Số lượng phản hồi hiện tại ({{ total_feedbacks }}) còn ít. Tóm tắt AI chỉ mang tính tham khảo sơ bộ.
+                </div>
+                {% endif %}
+
+                {% if ai_summary %}
+                {% if ai_summary.recurring_positive_points or ai_summary.common_complaints %}
+                <div class="row g-2 mb-3 small">
+                    {% if ai_summary.recurring_positive_points %}
+                    <div class="col-md-6">
+                        <div class="p-2.5 rounded-3" style="background: rgba(52, 199, 89, 0.08); border: 1px solid rgba(52, 199, 89, 0.2);">
+                            <div class="fw-bold text-success mb-1"><i class="fa-solid fa-thumbs-up me-1"></i> Điểm tích cực lặp lại:</div>
+                            <ul class="mb-0 ps-3 text-muted">
+                                {% for pt in ai_summary.recurring_positive_points %}
+                                <li>{{ pt }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if ai_summary.common_complaints %}
+                    <div class="col-md-6">
+                        <div class="p-2.5 rounded-3" style="background: rgba(255, 59, 48, 0.08); border: 1px solid rgba(255, 59, 48, 0.2);">
+                            <div class="fw-bold text-danger mb-1"><i class="fa-solid fa-triangle-exclamation me-1"></i> Phàn nàn / Vấn đề tồn tại:</div>
+                            <ul class="mb-0 ps-3 text-muted">
+                                {% for cp in ai_summary.common_complaints %}
+                                <li>{{ cp }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="row g-3 small">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            <div class="fw-bold text-primary mb-1"><i class="fa-solid fa-microphone me-1"></i> Nội dung & Diễn giả:</div>
+                            <p class="mb-0 text-muted">{{ ai_summary.content_and_speakers or 'Chưa có đủ dữ liệu.' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            <div class="fw-bold text-info mb-1"><i class="fa-solid fa-qrcode me-1"></i> Check-in & Vận hành:</div>
+                            <p class="mb-0 text-muted">{{ ai_summary.checkin_and_operations or 'Chưa có đủ dữ liệu.' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            <div class="fw-bold text-success mb-1"><i class="fa-solid fa-building me-1"></i> Hội trường & Hậu cần:</div>
+                            <p class="mb-0 text-muted">{{ ai_summary.venue_and_logistics or 'Chưa có đủ dữ liệu.' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                            <div class="fw-bold text-warning mb-1"><i class="fa-solid fa-clock me-1"></i> Lịch trình & Thời lượng:</div>
+                            <p class="mb-0 text-muted">{{ ai_summary.schedule_and_timing or 'Chưa có đủ dữ liệu.' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {% if ai_summary.actionable_takeaways %}
+                <div class="mt-3 p-3 rounded-3" style="background: var(--accent-orange-subtle, #FFF8E6); border: 1px solid var(--border-hairline);">
+                    <div class="fw-bold text-warning-emphasis mb-2"><i class="fa-solid fa-lightbulb me-1"></i> Khuyến Nghị Hành Động Cho Sự Kiện Tới:</div>
+                    <ul class="mb-0 ps-3 text-muted">
+                        {% for item in ai_summary.actionable_takeaways %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <p class="text-muted small mb-0">Đang cập nhật phân tích AI cho các phản hồi sự kiện...</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Feedback Comments Table -->
+    <div class="apple-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h5 class="fw-bold mb-0" style="color: var(--text-primary);">Danh Sách Ý Kiến Nhận Xét ({{ total_feedbacks }})</h5>
+            <div class="small text-muted">Được bảo vệ quyền riêng tư theo tiêu chuẩn bảo mật dữ liệu</div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background: var(--surface-tertiary);">
+                    <tr>
+                        <th class="ps-3" style="width: 140px;">Thời gian</th>
+                        <th style="width: 180px;">Người tham dự</th>
+                        <th style="width: 130px;">Số sao</th>
+                        <th style="width: 120px;">Cảm xúc</th>
+                        <th>Nội dung nhận xét</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fb in feedbacks %}
+                    <tr>
+                        <td class="ps-3 small text-muted">
+                            {{ fb.feedback_submitted_at.strftime('%H:%M • %d/%m/%Y') if fb.feedback_submitted_at else 'N/A' }}
+                        </td>
+                        <td>
+                            <div class="fw-semibold text-truncate" style="max-width: 170px; color: var(--text-primary);">
+                                {{ fb.attendee.full_name }}
+                            </div>
+                            <div class="small text-muted">{{ fb.ticket.name if fb.ticket else 'Vé sự kiện' }}</div>
+                        </td>
+                        <td>
+                            <span class="text-warning">
+                                {% for s in range(1, 6) %}
+                                    {% if s <= fb.feedback_rating %}
+                                        <i class="fa-solid fa-star" style="font-size: 0.85rem;"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star" style="font-size: 0.85rem; color: var(--border);"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if fb.sentiment == 'positive' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Tích cực</span>
+                            {% elif fb.sentiment == 'negative' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Tiêu cực</span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">Trung tính</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <p class="mb-0 text-break" style="color: var(--text-primary); font-size: 0.95rem;">
+                                {{ fb.feedback_text or '<i class="text-muted small">Không để lại nhận xét bằng chữ</i>'|safe }}
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

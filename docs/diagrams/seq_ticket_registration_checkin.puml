@@ -1,0 +1,80 @@
+@startuml
+title Luồng Đăng Ký Vé & Soát Vé Điểm Danh Nguyên Tử (Sequence Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 8
+autonumber
+
+actor "Người Tham Dự\n(Attendee)" as Attendee #4A90E2
+actor "Nhân Viên Soát Vé\n(CheckInStaff)" as Staff #27AE60
+boundary "Giao Diện Người Dùng\n(Web Application)" as UI #5DADE2
+control "Registration Controller\n(/events/<id>/register)" as RegController #58D68D
+control "Check-in Controller\n(/checkin/process)" as CheckinController #F39C12
+database "Cơ Sở Dữ Liệu\n(SQLite / SQLAlchemy)" as DB #BB8FCE
+
+== GIAI ĐOẠN 1: ĐĂNG KÝ THAM GIA & CẤP PHÁT VÉ ĐIỆN TỬ ==
+
+Attendee -> UI : Chọn sự kiện, chọn hạng vé (0đ) & bấm "Đăng Ký Tham Gia"
+UI -> RegController : POST /events/<id>/register { ticket_id, attendee_info }
+
+group Kiểm tra sức chứa & Chống đăng ký trùng
+  RegController -> DB : SELECT * FROM registrations WHERE event_id = :e_id AND attendee_id = :a_id AND status != 'cancelled'
+  alt Đã đăng ký trước đó
+    DB --> RegController : Trả về bản ghi đã tồn tại
+    RegController --> UI : Báo lỗi: Bạn đã đăng ký sự kiện này rồi!
+  else Chưa từng đăng ký
+    RegController -> DB : SELECT remaining_quota FROM tickets WHERE id = :t_id FOR UPDATE
+    alt remaining_quota <= 0
+      RegController --> UI : Báo lỗi: Hạng vé này đã hết chỗ!
+    else Còn chỗ
+      RegController -> RegController : Sinh registration_code (UUID v4)
+      RegController -> RegController : Sinh ticket_number (TK-YYYYMMDD-XXXX)
+      RegController -> RegController : Sinh mã băm QR code cá nhân
+      RegController -> DB : INSERT INTO registrations (registration_code, checked_in=False, ...)
+      RegController -> DB : INSERT INTO issued_tickets (ticket_number, qr_code_hash, status='valid')
+      RegController -> DB : UPDATE tickets SET remaining_quota = remaining_quota - 1
+      RegController -> DB : UPDATE events SET current_registrations = current_registrations + 1
+      DB --> RegController : Commit Transaction thành công
+      RegController --> UI : Đăng ký thành công! Điều hướng tới /tickets/my-tickets
+      UI --> Attendee : Hiển thị Thẻ vé điện tử kèm Mã QR Check-in cá nhân
+    end
+  end
+end
+
+== GIAI ĐOẠN 2: SOÁT VÉ CHECK-IN NGUYÊN TỬ TẠI QUẦY ==
+
+Attendee -> Staff : Trình mã QR hoặc đọc Mã đăng ký tại quầy đón tiếp
+Staff -> UI : Dùng Camera quét mã QR hoặc nhập mã thủ công
+UI -> CheckinController : POST /checkin/process { ticket_code: "TK-..." }
+
+group Giao Dịch Check-in Nguyên Tử Chống Race Condition
+  CheckinController -> CheckinController : Kiểm tra quyền soát vé: is_checkin_staff
+  CheckinController -> DB : SELECT * FROM issued_tickets / registrations WHERE code = :code
+  
+  alt Không tìm thấy vé hoặc sai sự kiện
+    DB --> CheckinController : None
+    CheckinController --> UI : Lỗi 404: Mã vé không tồn tại hoặc sai sự kiện!
+  else Tìm thấy vé hợp lệ
+    note over CheckinController, DB
+      Thực thi truy vấn Atomic Update:
+      UPDATE registrations
+      SET checked_in = TRUE, checked_in_at = UTC_NOW(), checkin_by_staff_id = :staff_id
+      WHERE id = :reg_id AND checked_in = FALSE
+    end note
+    CheckinController -> DB : Registration.query.filter_by(id=reg.id, checked_in=False).update(...)
+    DB --> CheckinController : rows_updated (1 hoặc 0)
+    
+    alt rows_updated == 1 (Thao tác check-in lần đầu)
+      CheckinController -> DB : UPDATE issued_tickets SET status = 'used'
+      CheckinController -> DB : Commit Transaction
+      CheckinController --> UI : HTTP 200: Check-in THÀNH CÔNG! (+1 vào tỷ lệ tham dự)
+      UI --> Staff : Màn hình xanh lá + âm thanh Beep xác nhận cho khách vào
+    else rows_updated == 0 (Vé ĐÃ check-in từ trước, ngăn chặn lặp lại)
+      CheckinController -> DB : Rollback Transaction
+      CheckinController --> UI : HTTP 400: CẢNH BÁO - Vé đã được check-in trước đó lúc {time}!
+      UI --> Staff : Màn hình đỏ cảnh báo vé giả mạo hoặc quét lặp
+    end
+  end
+end
+
+@enduml

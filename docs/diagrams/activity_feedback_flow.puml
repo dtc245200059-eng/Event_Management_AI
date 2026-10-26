@@ -1,0 +1,56 @@
+@startuml
+title Quy Trình Thu Thập & AI Tóm Tắt Ý Kiến Phản Hồi (Activity Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 10
+skinparam conditionStyle insidediamond
+
+|Người Tham Dự (Attendee)|
+start
+:Tham dự xong sự kiện;
+:Truy cập mục Đánh giá Phản hồi (/events/<id>/feedback hoặc Vé của tôi);
+:Chọn số sao đánh giá (1 đến 5 sao);
+:Nhập nội dung nhận xét văn bản chi tiết;
+:Bấm nút 'Gửi Phản Hồi';
+
+|Hệ Thống (Backend API & Database)|
+:Tiếp nhận yêu cầu POST gửi feedback;
+:Kiểm tra người dùng đã check-in sự kiện chưa;
+if (Đã tham gia sự kiện?) then (Hợp lệ)
+  :Lọc bỏ thông tin cá nhân (PII: Email, Số điện thoại);
+  :Phân tích cảm xúc sơ bộ (Positive / Neutral / Negative);
+  :Lưu feedback_rating, feedback_text, sentiment vào bảng registrations;
+  :Cập nhật Thống kê Điểm TB và Tổng số phản hồi;
+  |Người Tham Dự (Attendee)|
+  #LightGreen:Nhận thông báo "Cảm ơn bạn đã đóng góp ý kiến!";
+else (Chưa check-in)
+  |Người Tham Dự (Attendee)|
+  #LightCoral:Thông báo: Bạn chỉ có thể đánh giá sau khi đã tham gia sự kiện!;
+  stop
+endif
+
+|Ban Tổ Chức (Organizer)|
+:Truy cập Bảng điều khiển Quản lý Sự kiện (/events/manage);
+:Bấm nút 'Ý Kiến Khách Hàng' tại sự kiện tương ứng;
+:Hệ thống truy xuất toàn bộ danh sách feedback từ CSDL;
+
+|Dịch Vụ AI & Phân Loại Cụm Ý Kiến|
+:Kiểm tra số lượng phản hồi có văn bản;
+if (Số lượng phản hồi >= 3?) then (Đủ mẫu phân tích)
+  :Khởi tạo prompt tóm tắt ý kiến (feedback_summary.txt);
+  :Chèn danh sách nhận xét đã được làm sạch PII;
+  :Gọi mô hình Gemini 2.5/3.8 Flash sinh bản tóm tắt 4 nhóm ý kiến;
+  :Trích xuất: Điểm tích cực lặp lại, Phàn nàn chung, Vấn đề tổ chức & Đề xuất cải tiến;
+else (Dưới 3 phản hồi)
+  :Kích hoạt Rule-based Sentiment Clustering;
+  :Hiển thị cảnh báo mẫu nhỏ (Sample Insufficient Warning);
+endif
+
+|Ban Tổ Chức (Organizer)|
+:Xem Dashboard tổng hợp phản hồi với 4 Card chỉ số;
+:Xem Phân bố số sao và Biểu đồ thanh tỷ lệ cảm xúc;
+:Đọc báo cáo AI Tóm tắt ý kiến & Danh sách Khuyến nghị hành động;
+:Duyệt bảng chi tiết từng ý kiến cá nhân để cải tiến sự kiện tiếp theo;
+
+stop
+@enduml

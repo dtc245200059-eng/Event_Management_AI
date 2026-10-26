@@ -1,0 +1,69 @@
+@startuml
+title Luồng Tuần Tự 8 Bước Hỏi Đáp Sự Kiện AI (Sequence Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 8
+autonumber
+
+actor "Người Dùng\n(User)" as User #4A90E2
+boundary "Giao Diện Web\n(Chat Widget UI)" as UI #5DADE2
+control "API Controller\n(/api/ai/chat)" as Controller #58D68D
+entity "Question Analyzer\n(Intent & Entities)" as Analyzer #F4D03F
+database "Cơ Sở Dữ Liệu\n(SQLite / SQLAlchemy)" as DB #BB8FCE
+entity "Context Builder\n(Token Budgeting)" as ContextBuilder #85C1E9
+entity "Prompt Builder\n(5-Part Template)" as PromptBuilder #F8C471
+boundary "Gemini AI Engine\n(Google / Fallback)" as AI #E59866
+control "Response Validation\n(Step 8 Guardrail)" as Validator #E74C3C
+
+User -> UI : 1. Nhập câu hỏi (Ví dụ: "Giá vé và lịch trình AI Summit?")
+UI -> Controller : Gửi POST /api/ai/chat { message: "..." }
+
+group Step 2 & 3: Question Analysis & Structured Intent
+  Controller -> Analyzer : analyze_question(user_message)
+  Analyzer -> Analyzer : Loại bỏ dấu tiếng Việt (NFKD + đ->d)
+  Analyzer -> Analyzer : Nhận diện Intent (Vé, Lịch trình, Miễn phí, Địa điểm)
+  Analyzer -> Analyzer : Trích xuất Entity (Hà Nội, Thái Nguyên, AI Summit)
+  Analyzer --> Controller : Trả về intent_data có cấu trúc
+end
+
+group Step 4: Event Retrieval (Parameterized Query)
+  Controller -> DB : retrieve_events(intent_data)
+  note right: Truy vấn an toàn chống SQLi qua SQLAlchemy ORM
+  DB --> Controller : Danh sách các Event, Ticket, Schedule khớp
+end
+
+group Step 5: Context Builder (Ground Truth)
+  Controller -> ContextBuilder : build_retrieved_context(query, events)
+  ContextBuilder -> ContextBuilder : Định dạng Markdown bảng vé, link mua vé, agenda
+  ContextBuilder --> Controller : Khối Grounded Context xác thực
+end
+
+group Step 6: Prompt Builder (5-Part Architecture)
+  Controller -> PromptBuilder : build_prompt(context, user_message, strategy='v3')
+  PromptBuilder -> PromptBuilder : Ghép: (1) Role (2) Context (3) Constraints (4) Few-shots (5) Format
+  PromptBuilder --> Controller : Prompt hoàn chỉnh & an toàn
+end
+
+group Step 7: Model Inference
+  Controller -> AI : call_gemini(prompt, system_instruction)
+  alt Kết nối Live API Google Cloud khả dụng
+    AI --> Controller : Phản hồi từ gemini-2.5-flash / gemini-3.8-flash
+  else Timeout hoặc Mạng ngoại tuyến
+    AI -> AI : Kích hoạt Local Grounded Knowledge Fallback Engine
+    AI --> Controller : Phản hồi xác thực từ tri thức CSDL cục bộ
+  end
+end
+
+group Step 8: Response Validation (Guardrail chống ảo giác & PII)
+  Controller -> Validator : validate_and_sanitize_response(raw_ans, query, events, context)
+  Validator -> Validator : Kiểm tra yêu cầu PII (SĐT, Email cá nhân)
+  Validator -> Validator : Kiểm tra phòng vệ Prompt Injection
+  Validator -> Validator : Kiểm chứng tính xác thực sự kiện (No-Match Guardrail)
+  Validator --> Controller : Phản hồi cuối cùng đã được kiểm duyệt an toàn 100%
+end
+
+Controller -> DB : Ghi log vào bảng ai_chat_histories (User, Latency, Mode)
+Controller --> UI : HTTP 200 { success: true, response: final_answer, mode: mode }
+UI --> User : Hiển thị câu trả lời Markdown đẹp mắt kèm Link đặt vé
+
+@enduml

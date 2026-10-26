@@ -23,17 +23,19 @@ def admin_required(f):
 @login_required
 @admin_required
 def dashboard():
-    # Overall metrics
-    total_events = Event.query.count()
-    total_registrations = Registration.query.filter_by(registration_status='confirmed').count()
-    total_revenue = db.session.query(func.sum(Registration.payment_amount)).filter_by(payment_status='paid').scalar() or 0.0
-    total_checked_in = Registration.query.filter_by(checked_in=True).count()
-    
-    # Check-in rate
-    checkin_rate = round((total_checked_in / total_registrations * 100), 1) if total_registrations > 0 else 0.0
-
-    # Events summary list
+    # 8 Official Instructor Required Metrics from Real Database
     events = Event.query.order_by(Event.start_date.desc()).all()
+    total_events = len(events)
+    total_registrations = Registration.query.filter(Registration.registration_status != 'cancelled').count()
+    total_issued_tickets = Registration.query.filter(Registration.registration_status.in_(['confirmed', 'pending'])).count()
+    total_successful_checkins = Registration.query.filter_by(checked_in=True).count()
+    attendance_rate = round((total_successful_checkins / total_registrations * 100), 1) if total_registrations > 0 else 0.0
+    remaining_capacity = sum(max(0, (e.max_attendees or 0) - e.total_registered) for e in events)
+    feedback_count = Registration.query.filter(Registration.feedback_rating.isnot(None)).count()
+    avg_feedback_rating = round(float(db.session.query(func.avg(Registration.feedback_rating)).filter(Registration.feedback_rating.isnot(None)).scalar() or 0.0), 1)
+    
+    total_revenue = db.session.query(func.sum(Registration.payment_amount)).filter_by(payment_status='paid').scalar() or 0.0
+    checkin_rate = attendance_rate
 
     # Feedback and sentiment breakdown
     feedbacks = Registration.query.filter(Registration.feedback_rating.isnot(None)).order_by(Registration.feedback_submitted_at.desc()).limit(10).all()
@@ -61,8 +63,13 @@ def dashboard():
         'admin/dashboard.html',
         total_events=total_events,
         total_registrations=total_registrations,
+        total_issued_tickets=total_issued_tickets,
+        total_successful_checkins=total_successful_checkins,
+        attendance_rate=attendance_rate,
+        remaining_capacity=remaining_capacity,
+        feedback_count=feedback_count,
+        avg_feedback_rating=avg_feedback_rating,
         total_revenue=total_revenue,
-        total_checked_in=total_checked_in,
         checkin_rate=checkin_rate,
         events=events,
         featured_event=featured_event,
@@ -83,7 +90,7 @@ def users_list():
     total_users = len(users)
     total_admins = sum(1 for u in users if u.role == 'admin')
     total_organizers = sum(1 for u in users if u.role == 'organizer')
-    total_staff = sum(1 for u in users if u.role in ('staff', 'checkin_staff'))
+    total_staff = sum(1 for u in users if u.role in ('staff', 'checkin_staff', 'CheckInStaff'))
     total_attendees = sum(1 for u in users if u.role == 'attendee')
 
     return render_template(
@@ -104,7 +111,7 @@ def create_user():
     email = request.form.get('email', '').strip().lower()
     full_name = request.form.get('full_name', '').strip()
     password = request.form.get('password', '').strip()
-    role = request.form.get('role', 'staff').strip().lower()
+    role = request.form.get('role', 'checkin_staff').strip().lower()
     phone = request.form.get('phone', '').strip()
     organization = request.form.get('organization', '').strip()
 
@@ -116,7 +123,7 @@ def create_user():
         flash('Mật khẩu khởi tạo phải có tối thiểu 6 ký tự!', 'danger')
         return redirect(url_for('admin.users_list'))
 
-    if role not in ['admin', 'organizer', 'staff', 'attendee']:
+    if role not in ['admin', 'organizer', 'staff', 'checkin_staff', 'attendee']:
         flash('Vai trò (Role) không hợp lệ!', 'danger')
         return redirect(url_for('admin.users_list'))
 
@@ -140,7 +147,7 @@ def create_user():
     db.session.add(new_user)
     db.session.flush()
 
-    code_prefix = 'STF' if role == 'staff' else ('ADM' if role == 'admin' else ('ORG' if role == 'organizer' else 'ATT'))
+    code_prefix = 'CIS' if role == 'checkin_staff' else ('STF' if role == 'staff' else ('ADM' if role == 'admin' else ('ORG' if role == 'organizer' else 'ATT')))
     attendee_code = f"{code_prefix}-2026-{new_user.id:04d}"
     attendee = Attendee(
         attendee_code=attendee_code,
@@ -148,12 +155,19 @@ def create_user():
         full_name=full_name,
         email=email,
         phone=phone or None,
-        organization=organization or ('Ban Tổ Chức / Staff' if role == 'staff' else ('Quản Trị Viên' if role == 'admin' else None))
+        organization=organization or ('Nhân Viên Check-in' if role in ('staff', 'checkin_staff') else ('Ban Tổ Chức' if role == 'organizer' else ('Quản Trị Viên' if role == 'admin' else None)))
     )
     db.session.add(attendee)
     db.session.commit()
 
-    role_vn = 'Nhân viên (Staff)' if role == 'staff' else ('Quản trị viên (Admin)' if role == 'admin' else 'Khách mời (Attendee)')
+    role_vn_map = {
+        'admin': 'Quản trị viên (Admin)',
+        'organizer': 'Ban tổ chức (Organizer)',
+        'staff': 'Nhân viên (Staff)',
+        'checkin_staff': 'Nhân viên Check-in (CheckInStaff)',
+        'attendee': 'Khách mời (Attendee)'
+    }
+    role_vn = role_vn_map.get(role, role)
     flash(f'Tạo thành công tài khoản {role_vn}: @{username} ({email})!', 'success')
     return redirect(url_for('admin.users_list'))
 
@@ -167,7 +181,7 @@ def change_user_role(user_id):
         return redirect(url_for('admin.users_list'))
 
     new_role = request.form.get('role', '').strip().lower()
-    if new_role not in ['admin', 'organizer', 'staff', 'attendee']:
+    if new_role not in ['admin', 'organizer', 'staff', 'checkin_staff', 'attendee']:
         flash('Vai trò phân quyền không hợp lệ!', 'danger')
         return redirect(url_for('admin.users_list'))
 
@@ -179,10 +193,12 @@ def change_user_role(user_id):
         'admin': 'Quản Trị Viên (Admin)',
         'organizer': 'Ban Tổ Chức (Organizer)',
         'staff': 'Nhân Viên Soát Vé (Staff)',
+        'checkin_staff': 'Nhân Viên Check-in (CheckInStaff)',
         'attendee': 'Khách Mời (Attendee)'
     }
     flash(f'Đã phân quyền thành công tài khoản @{user.username}: chuyển từ {role_names.get(old_role, old_role)} sang {role_names.get(new_role, new_role)}.', 'success')
     return redirect(url_for('admin.users_list'))
+
 
 @admin_bp.route('/users/<int:user_id>/toggle-status', methods=['POST'])
 @login_required

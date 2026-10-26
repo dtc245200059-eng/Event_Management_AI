@@ -1,0 +1,75 @@
+@startuml
+title Quy Trình Hoạt Động Soát Vé Check-in Nguyên Tử (Activity Diagram) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 10
+skinparam conditionStyle insidediamond
+
+start
+
+:Nhân viên CheckInStaff đăng nhập vào hệ thống;
+:Truy cập Màn hình Soát vé (/checkin);
+:Chọn sự kiện cần soát vé;
+
+repeat
+  if (Phương thức nhập dữ liệu?) then (Camera Quét QR)
+    :Bật camera thiết bị;
+    :Quét mã QR trên vé điện tử của khách;
+    :Trích xuất mã vé / Ticket Number;
+  else (Nhập Thủ Công)
+    :Yêu cầu khách đọc Mã vé hoặc Mã đăng ký;
+    :Nhập chuỗi ký tự vào ô tìm kiếm;
+  endif
+
+  :Gửi yêu cầu xác thực POST /checkin/process;
+  
+  partition "Tầng Máy Chủ Xác Thực & Xử Lý Giao Dịch Nguyên Tử" {
+    :Kiểm tra quyền hạn người thực hiện (is_checkin_staff);
+    if (Được cấp quyền CheckInStaff?) then (Hợp lệ)
+      :Truy vấn bản ghi Registration & IssuedTicket tương ứng;
+      if (Tìm thấy bản ghi vé trong hệ thống?) then (Tồn tại)
+        :Kiểm tra vé có thuộc đúng sự kiện đang chọn không;
+        if (Đúng sự kiện?) then (Khớp)
+          
+          note right
+            Thực hiện truy vấn UPDATE nguyên tử:
+            UPDATE registrations
+            SET checked_in = TRUE, checked_in_at = UTC_NOW()
+            WHERE id = :reg_id AND checked_in = FALSE
+          end note
+          
+          :Thực thi Transaction với điều kiện checked_in == False;
+          
+          if (Số dòng cập nhật thành công (rows_affected == 1)?) then (Thành công)
+            :Đánh dấu IssuedTicket trạng thái 'used';
+            :Commit Database Transaction;
+            :Ghi nhận checkin_by_staff_id và timestamp;
+            #LightGreen:Phản hồi HTTP 200: Check-in Thành Công!;
+            :Phát âm thanh thông báo thành công (Beep);
+            :Cập nhật số đếm điểm danh thực tế (+1);
+          else (Số dòng cập nhật == 0)
+            #Salmon:Phát hiện vé ĐÃ ĐƯỢC CHECK-IN trước đó!;
+            :Rollback Transaction;
+            #Pink:Phản hồi Cảnh báo: Vé đã được sử dụng!;
+            :Hiển thị chi tiết thời gian đã check-in lần đầu;
+          endif
+          
+        else (Sai sự kiện)
+          #LightCoral:Từ chối: Vé thuộc sự kiện khác!;
+        endif
+      else (Không tồn tại)
+        #Red:Từ chối: Mã vé không tồn tại hoặc không hợp lệ!;
+      endif
+    else (Không có quyền)
+      #Red:Lỗi 403: Không có quyền soát vé!;
+    endif
+  }
+
+  :Hiển thị thẻ kết quả soát vé trên giao diện;
+  :Cập nhật thanh tiến trình Thống kê Tỷ lệ Điểm danh;
+
+repeat while (Tiếp tục đón tiếp khách tiếp theo?) is (Có)
+
+stop
+
+@enduml

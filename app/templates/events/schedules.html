@@ -57,7 +57,10 @@
                         {% endif %}
                     </div>
                 </div>
-                <div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3 py-1.5" data-bs-toggle="modal" data-bs-target="#editScheduleModal{{ s.id }}" title="Chỉnh sửa phiên">
+                        <i class="fa-solid fa-pen-to-square me-1"></i> Sửa
+                    </button>
                     <form method="POST" action="{{ url_for('events.delete_schedule', schedule_id=s.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa phiên thảo luận này khỏi lịch trình?');">
                         <button type="submit" class="btn btn-sm btn-secondary text-danger rounded-pill px-3 py-1.5" title="Xóa phiên">
                             <i class="fa-solid fa-trash me-1"></i> Xóa
@@ -65,6 +68,65 @@
                     </form>
                 </div>
             </div>
+
+            <!-- MODAL SỬA PHIÊN THẢO LUẬN -->
+            <div class="modal fade" id="editScheduleModal{{ s.id }}" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content apple-card p-3 p-md-4">
+                        <div class="modal-header border-0 pb-2">
+                            <h5 class="modal-title fw-semibold">
+                                <i class="fa-solid fa-pen-to-square text-primary me-2"></i>Chỉnh Sửa Phiên Thảo Luận
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="{{ url_for('events.edit_schedule', schedule_id=s.id) }}">
+                            <div class="modal-body py-2">
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Tên phiên / Chủ đề thuyết trình *</label>
+                                    <input type="text" name="title" class="form-control" required value="{{ s.title }}">
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold">Giờ bắt đầu *</label>
+                                        <input type="datetime-local" name="start_at" class="form-control" required value="{{ s.start_at.strftime('%Y-%m-%dT%H:%M') }}">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label small fw-semibold">Giờ kết thúc *</label>
+                                        <input type="datetime-local" name="end_at" class="form-control" required value="{{ s.end_at.strftime('%Y-%m-%dT%H:%M') }}">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Diễn giả chủ trì</label>
+                                    <select name="speaker_id" class="form-select">
+                                        <option value="">-- Chọn diễn giả (hoặc để trống) --</option>
+                                        {% for spk in speakers %}
+                                        <option value="{{ spk.id }}" {% if s.speaker_id == spk.id %}selected{% endif %}>{{ spk.name }} ({{ spk.organization or spk.title }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Phòng họp / Địa điểm</label>
+                                    <select name="venue_id" class="form-select">
+                                        <option value="">-- Chọn phòng tổ chức (hoặc để trống) --</option>
+                                        {% for v in venues %}
+                                        <option value="{{ v.id }}" {% if s.venue_id == v.id %}selected{% endif %}>{{ v.name }} ({{ v.room_name or 'Hội trường' }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Tóm tắt nội dung phiên</label>
+                                    <textarea name="description" rows="3" class="form-control">{{ s.description or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0 pt-3">
+                                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary rounded-pill px-4">Cập Nhật Phiên</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             {% endfor %}
         </div>
         {% else %}

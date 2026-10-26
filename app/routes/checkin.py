@@ -15,7 +15,7 @@ def staff_required(f):
     from functools import wraps
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated or not current_user.is_staff:
+        if not current_user.is_authenticated or not (current_user.is_checkin_staff or current_user.is_organizer):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
@@ -47,12 +47,14 @@ def extract_ticket_code(raw_input):
         return ""
     text = str(raw_input).strip()
     
-    # Case 1: JSON payload (e.g. {"ticket_number": "TCK-..."})
+    # Case 1: JSON payload (e.g. {"ticket_number": "TCK-..."} or {"registration_code": "REG-..."})
     if text.startswith('{') and text.endswith('}'):
         try:
             parsed = json.loads(text)
             if 'ticket_number' in parsed:
                 return str(parsed['ticket_number']).strip().upper()
+            if 'registration_code' in parsed:
+                return str(parsed['registration_code']).strip().upper()
         except Exception:
             pass
 
@@ -60,6 +62,11 @@ def extract_ticket_code(raw_input):
     tck_match = re.search(r'(TCK-[A-Za-z0-9\-_]+)', text, re.IGNORECASE)
     if tck_match:
         return tck_match.group(1).upper()
+
+    # Case 3: Contains REG standard pattern (e.g. REG-001-...)
+    reg_match = re.search(r'(REG-[A-Za-z0-9\-_]+)', text, re.IGNORECASE)
+    if reg_match:
+        return reg_match.group(1).upper()
 
     return text.upper()
 
@@ -76,10 +83,14 @@ def verify_api():
     if not ticket_number:
         return jsonify({
             'success': False,
-            'message': 'Mã vé không được để trống.'
+            'message': 'Mã vé hoặc mã đăng ký không được để trống.'
         }), 400
 
-    query = Registration.query.filter_by(ticket_number=ticket_number)
+    # Support lookup via either ticket_number or registration_code
+    query = Registration.query.filter(
+        (Registration.ticket_number == ticket_number) | 
+        (Registration.registration_code == ticket_number)
+    )
     if event_id:
         query = query.filter_by(event_id=event_id)
     
@@ -89,7 +100,7 @@ def verify_api():
         return jsonify({
             'success': False,
             'status': 'invalid',
-            'message': f'❌ MÃ VÉ "{ticket_number}" KHÔNG HỢP LỆ HOẶC KHÔNG TỒN TẠI TRONG HỆ THỐNG.'
+            'message': f'❌ MÃ VÉ HOẶC MÃ ĐĂNG KÝ "{ticket_number}" KHÔNG HỢP LỆ HOẶC KHÔNG TỒN TẠI TRONG HỆ THỐNG.'
         }), 404
 
     # Check if ticket was cancelled
@@ -124,11 +135,26 @@ def verify_api():
             'checked_in_at': time_str
         }), 409
 
-    # Perform Check-in
-    registration.checked_in = True
-    registration.checked_in_at = utc_now()
-    registration.checked_in_by = current_user.username
+    # Perform Atomic Check-in on shared storage to prevent race conditions
+    now_time = utc_now()
+    rows_updated = Registration.query.filter(
+        Registration.id == registration.id,
+        Registration.checked_in == False
+    ).update({
+        'checked_in': True,
+        'checked_in_at': now_time,
+        'checked_in_by': current_user.username
+    })
     db.session.commit()
+
+    if rows_updated == 0:
+        return jsonify({
+            'success': False,
+            'status': 'duplicate',
+            'message': '⛔ CẢNH BÁO: VÉ NÀY VỪA ĐƯỢC CHECK-IN ĐỒNG THỜI BỞI THIẾT BỊ KHÁC.',
+            'attendee_name': registration.attendee.full_name,
+            'ticket_type': registration.ticket.name
+        }), 409
 
     return jsonify({
         'success': True,
@@ -136,6 +162,7 @@ def verify_api():
         'message': f'✅ CHECK-IN THÀNH CÔNG CHO KHÁCH HÀNG: {registration.attendee.full_name}',
         'reg_id': registration.id,
         'ticket_number': registration.ticket_number,
+        'registration_code': registration.registration_code,
         'attendee_name': registration.attendee.full_name,
         'email': registration.attendee.email,
         'phone': registration.attendee.phone or 'Chưa cập nhật',
@@ -143,8 +170,9 @@ def verify_api():
         'ticket_type': registration.ticket.name,
         'ticket_tier': registration.ticket.ticket_type,
         'event_title': registration.event.title,
-        'checked_in_at': registration.checked_in_at.strftime('%H:%M:%S • %d/%m/%Y')
+        'checked_in_at': now_time.strftime('%H:%M:%S • %d/%m/%Y')
     }), 200
+
 
 @checkin_bp.route('/api/event-attendees/<int:event_id>')
 @login_required

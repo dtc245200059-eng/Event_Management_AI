@@ -1,0 +1,81 @@
+@startuml
+title Kiến Trúc Hệ Thống Tổng Thể (Overall System Architecture) - EventAI Pro
+skinparam defaultFontName "Segoe UI"
+skinparam monochrome false
+skinparam roundcorner 8
+
+package "Tầng Người Dùng & Thiết Bị (Presentation Layer)" {
+  [Attendee Web Portal] as AttendeeUI
+  [Organizer Management Suite] as OrganizerUI
+  [Check-in Staff Mobile Scanner] as StaffUI
+  [System Admin Dashboard] as AdminUI
+}
+
+package "Tầng Giao Thức & Cổng Định Tuyến (Routing & Middleware Layer)" {
+  [Flask Routing Gateway] as Gateway
+  [RBAC Authorization Guard\n(Attendee, Organizer, CheckInStaff, Admin)] as RBAC
+  [Rate Limiter & Session Security] as SecMiddleware
+}
+
+package "Tầng Nghiệp Vụ Cốt Lõi (Core Business Domain Logic)" {
+  [Event & Capacity Manager] as EventDomain
+  [Schedule & Agenda Validator\n(start_at < end_at)] as ScheduleDomain
+  [Registration & Free Ticket Engine] as RegDomain
+  [Atomic Idempotent Check-in Engine] as CheckinDomain
+  [Feedback & Sentiment Aggregator] as FeedbackDomain
+  [Real Metrics Statistics Engine\n(8 Real System Indicators)] as StatsDomain
+}
+
+package "Tầng Trí Tuệ Nhân Tạo Kép (Dual-Engine AI Layer)" {
+  [8-Step Grounded RAG Pipeline] as RAGPipeline
+  [AI Notification / Email Generator\n(invitation, reminder, thank_you)] as EmailGen
+  [AI Feedback Opinion Summarizer\n(with untrusted data sanitization)] as FeedbackSummarizer
+  [Multi-Agent MessageBus System\n(7 Agents + Critic Guardrail)] as MultiAgentBus
+  [Response Validation Layer (Step 8)] as ResponseValidation
+}
+
+package "Tầng Tri Thức & Dịch Vụ AI (AI Inference Layer)" {
+  cloud "Google Cloud Gemini API" as GeminiCloud
+  [Local Grounded Knowledge Engine] as LocalEngine
+}
+
+package "Tầng Dữ Liệu & Lưu Trữ (Data Persistence Layer)" {
+  database "Authoritative SQLite Database\n(11 Tables, ACID Transactions)" as Database
+}
+
+AttendeeUI --> Gateway
+OrganizerUI --> Gateway
+StaffUI --> Gateway
+AdminUI --> Gateway
+
+Gateway --> SecMiddleware
+SecMiddleware --> RBAC
+
+RBAC --> EventDomain
+RBAC --> ScheduleDomain
+RBAC --> RegDomain
+RBAC --> CheckinDomain
+RBAC --> FeedbackDomain
+RBAC --> StatsDomain
+
+EventDomain --> Database
+ScheduleDomain --> Database
+RegDomain --> Database
+CheckinDomain --> Database
+FeedbackDomain --> Database
+StatsDomain --> Database
+
+Gateway --> RAGPipeline
+Gateway --> EmailGen
+Gateway --> FeedbackSummarizer
+Gateway --> MultiAgentBus
+
+RAGPipeline --> Database : Structured Context Retrieval
+RAGPipeline --> ResponseValidation
+EmailGen --> ResponseValidation
+FeedbackSummarizer --> ResponseValidation
+
+ResponseValidation --> GeminiCloud : Live Inference
+ResponseValidation --> LocalEngine : Offline / Fallback
+
+@enduml

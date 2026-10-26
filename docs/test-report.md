@@ -24,15 +24,15 @@
 
 ```
 =============================================================================
-                      TEST EXECUTION SUMMARY (PHASE 7)
+                      TEST EXECUTION SUMMARY (UPGRADE RELEASE)
 =============================================================================
- Tổng Số Test Cases Đã Chạy : 67 (36 Pytest + 31 Scenario Evaluations)
- Số Lượng Đạt (PASSED)       : 67 (100.0%)
+ Tổng Số Test Cases Đã Chạy : 87 (42 Pytest + 14 Prompt Benchmark + 31 Scenario Evals)
+ Số Lượng Đạt (PASSED)       : 87 (100.0%)
  Số Lượng Thất Bại (FAILED)  : 0  (0.0%)
  Số Lượng Bỏ Qua (SKIPPED)   : 0  (0.0%)
  Số Lượng Chập Chờn (FLAKY)  : 0  (0.0%)
  Cảnh Báo Trình Thông Dịch   : 0  (0 Warnings)
- Mức Độ Sẵn Sàng Vận Hành    : READY (100% SẴN SÀNG TRIỂN KHAI)
+ Mức Độ Sẵn Sàng Vận Hành    : READY (100% SẴN SÀNG TRIỂN KHAI & NGHIỆM THU)
 =============================================================================
 ```
 
@@ -78,10 +78,16 @@
 | 34 | `tests/test_tickets_and_quota.py::test_re_register_after_cancel_or_pending` | **PASSED** | Cho phép người dùng đăng ký lại sau khi đã hủy đơn vé cũ. | `FR-04`, `FR-05` |
 | 35 | `tests/test_tickets_and_quota.py::test_auto_qr_generation_and_download` | **PASSED** | Tự động sinh mã QR Vector SVG định danh khi đặt vé và tải xuống an toàn. | `FR-05`, `FR-06` |
 | 36 | `tests/test_tickets_and_quota.py::test_event_attendees_roster_and_quick_checkin` | **PASSED** | Hiển thị danh sách người tham dự và hỗ trợ soát vé nhanh qua giao diện nhân viên. | `FR-06` |
+| 37 | `tests/test_upgrade_requirements.py::test_checkin_staff_permissions` | **PASSED** | Phân quyền CheckInStaff: truy cập /checkin/, bị cấm vào /admin/dashboard (403). | `Task 2A`, `RBAC` |
+| 38 | `tests/test_upgrade_requirements.py::test_schedule_time_validation_and_edit` | **PASSED** | Ràng buộc start_at < end_at khi tạo và sửa phiên lịch trình, endpoint /schedules/<id>/edit. | `Task 2C`, `Schedule` |
+| 39 | `tests/test_upgrade_requirements.py::test_atomic_and_idempotent_checkin` | **PASSED** | Check-in nguyên tử (Atomic transaction): quét vé lặp lại trả về 409 Conflict. | `Task 2E`, `Check-in` |
+| 40 | `tests/test_upgrade_requirements.py::test_feedback_review_route` | **PASSED** | Endpoint /events/<id>/feedback cho Organizer xem tổng hợp và tóm tắt AI. | `Task 2F`, `Feedback` |
+| 41 | `tests/test_upgrade_requirements.py::test_pii_sanitization_and_email_placeholders` | **PASSED** | Khử khuẩn PII (email, phone), vô hiệu hóa injection, placeholder {attendee_name}. | `Task 3.1 & 3.2`, `Privacy` |
+| 42 | `tests/test_upgrade_requirements.py::test_rag_step_8_response_validation` | **PASSED** | Tầng Step 8 Guardrail: chặn hỏi PII danh sách khách, vô hiệu hóa injection, xử lý no-match. | `Task 3.3`, `RAG Step 8` |
 
 ---
 
-## 3. BẰNG CHỨNG THỰC THI PYTEST CHÍNH THỨC
+## 3. BẰNG CHỨNG THỰC THI PYTEST CHÍNH THỨC (42/42 PASSED)
 
 ```text
 ============================= test session starts =============================
