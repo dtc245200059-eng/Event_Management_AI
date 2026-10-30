@@ -19,6 +19,7 @@ htmlcov/
 
 # Database & SQLite Instances
 instance/
+instance_staging/
 *.db
 *.sqlite
 *.sqlite3

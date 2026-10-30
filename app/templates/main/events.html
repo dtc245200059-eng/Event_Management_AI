@@ -1,31 +1,33 @@
 {% extends 'base.html' %}
 
-{% block title %}Danh Sách Sự Kiện - EventAI Pro{% endblock %}
+{% block title %}Danh Sách Sự Kiện Công Nghệ & Hội Thảo | EventAI Pro{% endblock %}
+{% block meta_description %}Khám phá danh sách đầy đủ các sự kiện, hội thảo công nghệ, diễn đàn khoa học và workshop đào tạo kỹ năng tại EventAI Pro. Lọc theo chủ đề và đăng ký trực tuyến dễ dàng.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ canonical_url('/events') }}">{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <!-- Header & Search Filter Bar -->
     <div class="apple-card p-4 p-md-5 mb-5">
-        <h2 class="mb-2">Tất Cả Sự Kiện</h2>
+        <h1 class="h2 mb-2">Tất Cả Sự Kiện</h1>
         <p class="section-subtitle mb-4">Tìm kiếm hội thảo công nghệ, diễn đàn khoa học và workshop đào tạo kỹ năng</p>
         
-        <form method="GET" action="{{ url_for('main.event_list') }}" class="row g-3 align-items-center">
+        <form method="GET" action="{{ url_for('main.event_list') }}" class="row g-3 align-items-center" role="search">
             <div class="col-md-5">
                 <div class="apple-search-box">
-                    <i class="fa-solid fa-magnifying-glass apple-search-icon"></i>
-                    <input type="text" name="q" value="{{ q }}" class="apple-search-input" placeholder="Nhập tên sự kiện, diễn giả, từ khóa..." autocomplete="off">
+                    <i class="fa-solid fa-magnifying-glass apple-search-icon" aria-hidden="true"></i>
+                    <input type="text" name="q" value="{{ q }}" class="apple-search-input" placeholder="Nhập tên sự kiện, diễn giả, từ khóa..." autocomplete="off" aria-label="Tìm kiếm sự kiện, diễn giả, từ khóa">
                 </div>
             </div>
             <div class="col-md-4">
-                <select name="category" class="form-select">
+                <select name="category" class="form-select" aria-label="Lọc theo danh mục sự kiện">
                     {% for cat in categories %}
                     <option value="{{ cat if cat != 'Tất cả' else '' }}" {% if selected_category == cat or (not selected_category and cat == 'Tất cả') %}selected{% endif %}>{{ cat }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary flex-grow-1"><i class="fa-solid fa-filter me-1"></i> Lọc Kết Quả</button>
-                <a href="{{ url_for('main.event_list') }}" class="btn btn-secondary px-3" title="Đặt lại bộ lọc"><i class="fa-solid fa-rotate-left"></i></a>
+                <button type="submit" class="btn btn-primary flex-grow-1"><i class="fa-solid fa-filter me-1" aria-hidden="true"></i> Lọc Kết Quả</button>
+                <a href="{{ url_for('main.event_list') }}" class="btn btn-secondary px-3" title="Đặt lại bộ lọc" aria-label="Đặt lại bộ lọc"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i></a>
             </div>
         </form>
     </div>
@@ -37,14 +39,18 @@
             <div class="col-md-6 col-lg-4">
                 <div class="apple-card clickable-event-card h-100 d-flex flex-column" data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}" style="cursor: pointer;">
                     <div class="event-card-img-wrapper position-relative">
-                        <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}">
+                        {% if loop.first %}
+                        <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}" decoding="async" width="400" height="225">
+                        {% else %}
+                        <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}" loading="lazy" decoding="async" width="400" height="225">
+                        {% endif %}
                         <span class="event-badge-category">{{ evt.category }}</span>
                         <div class="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style="backdrop-filter: blur(8px);">
                             <i class="fa-solid fa-users me-1"></i> {{ evt.total_registered }} đã đăng ký
                         </div>
                     </div>
                     <div class="event-card-body d-flex flex-column flex-grow-1 p-4">
-                        <h5 class="event-card-title mb-2">{{ evt.title }}</h5>
+                        <h2 class="h5 event-card-title mb-2">{{ evt.title }}</h2>
                         <p class="event-card-desc mb-3">
                             {{ evt.description }}
                         </p>

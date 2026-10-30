@@ -151,6 +151,7 @@
 
                         <!-- Payment Form Submission -->
                         <form method="POST" action="{{ url_for('tickets.checkout', reg_id=registration.id) }}" class="mt-3">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="payment_method" value="vnpay">
 
                             <button type="submit" class="btn btn-primary w-100 py-3">

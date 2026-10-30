@@ -96,6 +96,7 @@
                         <div class="modal-footer">
                             <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Đóng</button>
                             <form method="POST" action="{{ url_for('tickets.cancel_ticket', reg_id=r.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                 <button type="submit" class="btn btn-sm btn-primary" style="background-color: var(--accent-red) !important; border-color: var(--accent-red) !important;">
                                     Xác Nhận Hủy Vé
                                 </button>

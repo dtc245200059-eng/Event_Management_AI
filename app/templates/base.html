@@ -21,13 +21,45 @@
     </script>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- CSRF Token for JavaScript Fetch & AJAX Requests -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}{{ app_title }}{% endblock %}</title>
     
-    <!-- Meta SEO & CSRF & Apple Mobile Web App -->
-    <meta name="description" content="Nền tảng Quản trị & Trải nghiệm Sự kiện Thông minh tích hợp Trí tuệ Nhân tạo EventAI Pro.">
+    <!-- Core SEO Meta Tags -->
+    <meta name="description" content="{% block meta_description %}{{ default_meta_desc }}{% endblock %}">
+    {% block meta_robots %}{% endblock %}
+    {% block canonical %}<link rel="canonical" href="{{ canonical_url() }}">{% endblock %}
+
+    <!-- Open Graph / Facebook Meta Tags -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:site_name" content="EventAI Pro">
+    <meta property="og:title" content="{% block og_title %}{{ self.title()|striptags|trim }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ self.meta_description()|striptags|trim }}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ canonical_url() }}{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{{ default_og_image() }}{% endblock %}">
+    <meta property="og:locale" content="vi_VN">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
+    <meta name="twitter:title" content="{% block twitter_title %}{{ self.title()|striptags|trim }}{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}{{ self.meta_description()|striptags|trim }}{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{{ self.og_image()|striptags|trim }}{% endblock %}">
+
+    <!-- Structured Data (Schema.org JSON-LD) -->
+    {% block structured_data %}{% endblock %}
+
+    <!-- CSRF & Apple Mobile Web App -->
     <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <!-- Preconnect & DNS-Prefetch for Critical CDNs and External Image Hosts -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://images.unsplash.com">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -126,7 +158,7 @@
                                 <li><a class="dropdown-item py-2 rounded-2" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-2 text-secondary"></i> Vé Của Tôi</a></li>
                                 <li><a class="dropdown-item py-2 rounded-2" href="{{ url_for('notifications.inbox') }}"><i class="fa-solid fa-bell me-2 text-secondary"></i> Hộp Thư Thông Báo</a></li>
                                 <li><hr class="dropdown-divider" style="border-color: var(--border-hairline);"></li>
-                                <li><a class="dropdown-item py-2 rounded-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a></li>
+                                <li><a class="dropdown-item py-2 rounded-2 text-danger" href="{{ url_for('auth.logout') }}" onclick="event.preventDefault(); document.getElementById('globalLogoutForm').submit();"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a></li>
                             </ul>
                         </div>
                     {% else %}
@@ -201,7 +233,7 @@
                         <div class="d-flex flex-column gap-1">
                             <a class="btn btn-sm btn-secondary text-start" href="{{ url_for('auth.profile') }}"><i class="fa-solid fa-user me-2 text-secondary"></i> Hồ Sơ Cá Nhân</a>
                             <a class="btn btn-sm btn-secondary text-start" href="{{ url_for('tickets.my_tickets') }}"><i class="fa-solid fa-ticket me-2 text-secondary"></i> Vé Của Tôi</a>
-                            <a class="btn btn-sm btn-secondary text-start text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a>
+                            <a class="btn btn-sm btn-secondary text-start text-danger" href="{{ url_for('auth.logout') }}" onclick="event.preventDefault(); document.getElementById('globalLogoutForm').submit();"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng Xuất</a>
                         </div>
                     {% else %}
                         <div class="d-flex gap-2">
@@ -497,7 +529,7 @@
             {% if current_user.is_authenticated %}
             <!-- Logout Button -->
             <div class="apple-drawer-footer">
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-secondary w-100 text-danger border-0 d-flex align-items-center justify-content-center gap-2" style="background: var(--surface-secondary);">
+                <a href="{{ url_for('auth.logout') }}" onclick="event.preventDefault(); document.getElementById('globalLogoutForm').submit();" class="btn btn-secondary w-100 text-danger border-0 d-flex align-items-center justify-content-center gap-2" style="background: var(--surface-secondary);">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     <span>Đăng Xuất</span>
                 </a>
@@ -564,7 +596,7 @@
     <div class="ai-chat-backdrop" id="aiChatBackdrop"></div>
 
     <!-- AI ASSISTANT CHAT WINDOW (Top-level Overlay Container) -->
-    <div class="ai-chat-window hidden" id="aiChatWindow" role="dialog" aria-modal="true" aria-label="Trợ lý EventAI">
+    <div class="ai-chat-window hidden" id="aiChatWindow" role="dialog" aria-modal="false" aria-label="Trợ lý EventAI">
         <div class="ai-chat-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-2">
                 <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green);"></div>
@@ -588,35 +620,41 @@
         </div>
 
         <!-- Quick Prompts Suggestions -->
-        <div class="px-3 py-2 d-flex gap-1.5 overflow-x-auto border-top" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important;">
-            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Lịch trình sự kiện AI Summit 2026 có những phiên nào?">📅 Lịch trình</button>
-            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Có những diễn giả nào nổi bật?">🎤 Diễn giả</button>
-            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Giá vé và quyền lợi vé VIP thế nào?">🎟️ Giá vé</button>
+        <div class="px-3 py-2 d-flex gap-1.5 overflow-x-auto border-top" style="background: var(--surface-secondary); border-color: var(--border-hairline) !important;" role="group" aria-label="Gợi ý câu hỏi nhanh">
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Lịch trình sự kiện AI Summit 2026 có những phiên nào?" aria-label="Gợi ý câu hỏi: Lịch trình sự kiện">📅 Lịch trình</button>
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Có những diễn giả nào nổi bật?" aria-label="Gợi ý câu hỏi: Diễn giả nổi bật">🎤 Diễn giả</button>
+            <button class="btn btn-xs quick-prompt-btn text-nowrap py-1 px-2.5" data-prompt="Giá vé và quyền lợi vé VIP thế nào?" aria-label="Gợi ý câu hỏi: Giá vé và quyền lợi">🎟️ Giá vé</button>
         </div>
 
         <!-- Chat Input -->
         <div class="ai-chat-input-area">
-            <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Nhập câu hỏi về sự kiện..." autocomplete="off">
-            <button class="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center" id="aiChatSendBtn" style="width: 36px; height: 36px; flex-shrink: 0;" aria-label="Send">
-                <i class="fa-solid fa-arrow-up" style="font-size: 0.85rem;"></i>
+            <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Nhập câu hỏi về sự kiện..." autocomplete="off" aria-label="Nhập câu hỏi về sự kiện cho Trợ lý AI">
+            <button class="btn btn-sm btn-primary rounded-circle p-2 d-flex align-items-center justify-content-center" id="aiChatSendBtn" style="width: 36px; height: 36px; flex-shrink: 0;" aria-label="Gửi câu hỏi cho Trợ lý AI">
+                <i class="fa-solid fa-arrow-up" style="font-size: 0.85rem;" aria-hidden="true"></i>
             </button>
         </div>
     </div>
 
     <!-- FLOATING AI ASSISTANT TRIGGER BUTTON (DESKTOP) -->
     <div class="ai-floating-widget" id="aiFloatingWidget">
-        <button class="ai-chat-btn" id="aiChatToggleBtn" title="Hỏi đáp cùng Trợ lý EventAI" aria-label="Open AI Assistant">
-            <i class="fa-solid fa-sparkles"></i>
+        <button class="ai-chat-btn" id="aiChatToggleBtn" title="Hỏi đáp cùng Trợ lý EventAI" aria-label="Mở Trợ lý Sự kiện AI">
+            <i class="fa-solid fa-sparkles" aria-hidden="true"></i>
         </button>
     </div>
 
     <!-- Bootstrap 5 Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
     <!-- Marked.js for rich Markdown & Table rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <!-- Custom Application JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/ai_chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/ai_chat.js') }}" defer></script>
     {% block extra_js %}{% endblock %}
+
+    {% if current_user.is_authenticated %}
+    <form id="globalLogoutForm" method="POST" action="{{ url_for('auth.logout') }}" style="display: none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
+    {% endif %}
 </body>
 </html>

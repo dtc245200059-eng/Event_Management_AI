@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 
 {% block title %}400 - Yêu Cầu Không Hợp Lệ - EventAI Pro{% endblock %}
+{% block meta_robots %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
 
 {% block content %}
 <div class="container py-5 text-center my-lg-5">
     <div class="apple-card p-5 d-inline-block text-center" style="max-width: 520px;">
         <div class="fw-bold mb-2 text-warning" style="font-size: 5rem; letter-spacing: -0.05em; line-height: 1; opacity: 0.85;">400</div>
         <h2 class="h3 fw-semibold mb-2" style="letter-spacing: -0.02em;">Yêu Cầu Không Hợp Lệ</h2>
-        <p class="text-secondary small mb-4 lh-base">Dữ liệu gửi lên máy chủ không đúng định dạng hoặc thiếu các trường bắt buộc.</p>
+        <p class="text-secondary small mb-4 lh-base">{{ reason if reason else 'Dữ liệu gửi lên máy chủ không đúng định dạng hoặc thiếu các trường bắt buộc.' }}</p>
         <div class="d-flex justify-content-center gap-2">
             <a href="{{ url_for('main.index') }}" class="btn btn-primary rounded-pill px-4">
                 <i class="fa-solid fa-house me-1.5"></i> Về Trang Chủ

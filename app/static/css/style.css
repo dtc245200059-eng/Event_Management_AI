@@ -2054,6 +2054,51 @@ textarea.form-control {
 }
 
 /* --------------------------------------------------------------------------
+   PHASE 3D: ACCESSIBILITY & PERFORMANCE OPTIMIZATIONS (WCAG 2.2 AA & CWV)
+   -------------------------------------------------------------------------- */
+/* High-visibility keyboard focus rings (WCAG 2.2 AA Focus Visible & Focus Not Obscured) */
+:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+}
+
+.btn:focus-visible,
+.apple-theme-btn:focus-visible,
+.ai-chat-btn:focus-visible,
+.clickable-event-card:focus-visible,
+.page-btn-circle:focus-visible,
+.page-btn-nav:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+.apple-search-input:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--input-focus-ring) !important;
+}
+
+/* GPU Compositing & Animation Performance */
+.hero-carousel-card .carousel-item {
+  will-change: transform, opacity;
+}
+
+.ai-slider-track {
+  will-change: scroll-position;
+  contain: layout style paint;
+}
+
+/* Mobile GPU Performance Optimization: lighter blur radius on small viewports */
+@media (max-width: 576px) {
+  .apple-nav,
+  .apple-bottom-nav,
+  .apple-mobile-drawer,
+  .ai-chat-window,
+  .notification-popover {
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
    17C. APPLE MINIMAL FOOTER
    -------------------------------------------------------------------------- */
 .app-footer {

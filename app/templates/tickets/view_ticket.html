@@ -100,6 +100,7 @@
                         </div>
                         {% if registration.registration_status != 'cancelled' %}
                         <form method="POST" action="{{ url_for('tickets.cancel_ticket', reg_id=registration.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đăng ký vé này không? Quota vé sẽ được hoàn trả cho sự kiện.');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn btn-sm btn-link text-danger p-0">
                                 <i class="fa-solid fa-xmark me-1"></i> Hủy Đăng Ký Vé
                             </button>

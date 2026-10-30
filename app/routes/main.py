@@ -1,7 +1,7 @@
 """
 Main Blueprint (Home, Event listing, Search, Filter, Event Details).
 """
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, abort, Response
 from flask_login import current_user
 from app.extensions import db
 from app.models import Event, Speaker, Venue, Ticket, Schedule
@@ -89,6 +89,16 @@ def event_list():
 @main_bp.route('/events/<int:event_id>')
 def event_detail(event_id):
     event = db.get_or_404(Event, event_id)
+    
+    # Enforce publication policy & preview permissions
+    is_draft_preview = False
+    if event.status == 'draft':
+        # Only event creator or system administrator can preview draft events
+        if current_user.is_authenticated and (current_user.is_admin or event.created_by == current_user.id):
+            is_draft_preview = True
+        else:
+            abort(404)
+
     schedules = event.schedules.order_by(Schedule.start_at.asc()).all()
     tickets = event.tickets.filter_by(status='active').all()
     
@@ -109,8 +119,68 @@ def event_detail(event_id):
         schedules=schedules,
         tickets=tickets,
         is_registered=is_registered,
-        user_registration=user_registration
+        user_registration=user_registration,
+        is_draft_preview=is_draft_preview
     )
+
+@main_bp.route('/sitemap.xml')
+def sitemap():
+    """
+    Dynamic XML Sitemap endpoint.
+    Returns valid XML containing publicly indexable URLs:
+    - Homepage
+    - Events listing
+    - Public published, ongoing, and completed events (excluding draft and cancelled)
+    """
+    from app.seo_helpers import (
+        get_trusted_canonical_origin,
+        build_sitemap_xml,
+        INDEXABLE_EVENT_STATUSES,
+        MAX_SITEMAP_URLS
+    )
+    try:
+        origin = get_trusted_canonical_origin()
+    except Exception:
+        abort(500)
+
+    # Query only needed fields for indexable events, ordered deterministically.
+    # Cap event query at (MAX_SITEMAP_URLS - 2) so that total URLs (including homepage and /events)
+    # never exceeds the strict 50,000 protocol boundary.
+    max_event_entries = max(0, MAX_SITEMAP_URLS - 2)
+    event_records = db.session.query(Event.id, Event.updated_at).filter(
+        Event.status.in_(INDEXABLE_EVENT_STATUSES)
+    ).order_by(Event.id.asc()).limit(max_event_entries).all()
+
+    xml_content = build_sitemap_xml(base_origin=origin, event_records=event_records)
+
+    response = Response(xml_content, mimetype='application/xml')
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Cache-Control'] = 'public, max-age=3600'
+    return response
+
+@main_bp.route('/robots.txt')
+def robots():
+    """
+    Robots.txt endpoint.
+    Returns plain text crawling directives and Sitemap reference.
+    """
+    from app.seo_helpers import (
+        get_trusted_canonical_origin,
+        build_robots_txt
+    )
+    try:
+        origin = get_trusted_canonical_origin()
+    except Exception:
+        origin = 'http://localhost:5000'
+
+    robots_content = build_robots_txt(base_origin=origin)
+
+    response = Response(robots_content, mimetype='text/plain')
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
 
 @main_bp.route('/health')
 def health_check():

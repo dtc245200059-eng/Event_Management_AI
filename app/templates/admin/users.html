@@ -120,6 +120,7 @@
 
                                 <!-- Form to Toggle Lock/Unlock Status -->
                                 <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=u.id) }}" class="d-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                     <button type="submit" class="btn btn-xs btn-secondary" title="{% if u.is_active %}Khóa tài khoản{% else %}Mở khóa tài khoản{% endif %}">
                                         {% if u.is_active %}<i class="fa-solid fa-lock text-danger"></i>{% else %}<i class="fa-solid fa-lock-open text-success"></i>{% endif %}
                                     </button>
@@ -141,6 +142,7 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <form method="POST" action="{{ url_for('admin.change_user_role', user_id=u.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                                             <div class="modal-body p-4">
                                                 <div class="p-3 rounded-3 mb-4" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
                                                     <div class="d-flex align-items-center gap-3">
@@ -221,6 +223,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="{{ url_for('admin.create_user') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body p-4 p-md-5">
                     <p class="small mb-4" style="color: var(--text-secondary);">
                         Khởi tạo tài khoản nhân viên phục vụ công tác soát vé, check-in hoặc phân quyền cho thành viên mới của Ban tổ chức.

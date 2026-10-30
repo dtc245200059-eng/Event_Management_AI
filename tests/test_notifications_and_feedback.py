@@ -24,8 +24,8 @@ def test_organizer_role_access(app, client, sample_users):
     res_att = client.get('/notifications/manage')
     assert res_att.status_code == 403
 
-    # Logout attendee
-    client.get('/auth/logout')
+    # Logout attendee via CSRF-protected POST
+    client.post('/auth/logout')
 
     # 2. Login as Organizer -> Accessing /notifications/manage should be ALLOWED (200)
     client.post('/auth/login', data={'username': 'org_tester', 'password': 'Org@123'})

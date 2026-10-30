@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Xác Nhận Đăng Xuất - EventAI Pro{% endblock %}
+{% block meta_robots %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-md-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5 col-xl-4">
+            <div class="apple-card p-4 p-md-5 text-center">
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 72px; height: 72px; background: rgba(255, 59, 48, 0.1); color: var(--apple-red, #ff3b30);">
+                        <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 1.8rem;"></i>
+                    </div>
+                    <h3 class="mb-2">Xác Nhận Đăng Xuất</h3>
+                    <p class="small" style="color: var(--text-secondary);">
+                        Bạn có chắc chắn muốn đăng xuất khỏi tài khoản <strong>{{ current_user.full_name or current_user.username }}</strong> không?
+                    </p>
+                </div>
+
+                <div class="p-3 mb-4 rounded-3 small text-start" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline);">
+                    <strong class="text-danger d-block mb-1"><i class="fa-solid fa-shield-halved me-1"></i> Bảo Mật Phiên Làm Việc</strong>
+                    <span style="color: var(--text-secondary);">
+                        Để phòng chống tấn công Logout CSRF, thao tác đăng xuất cần được xác thực rõ ràng bằng phương thức POST an toàn.
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.logout') }}" class="d-grid gap-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger py-2 rounded-3">
+                        <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Xác Nhận Đăng Xuất
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="btn btn-secondary py-2 rounded-3" style="background: var(--surface-secondary); border: 1px solid var(--border-hairline); color: var(--text-primary);">
+                        <i class="fa-solid fa-xmark me-2"></i> Hủy Bỏ / Quay Lại
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

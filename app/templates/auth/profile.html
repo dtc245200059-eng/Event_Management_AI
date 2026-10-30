@@ -197,6 +197,7 @@
                     <div class="tab-pane fade" id="tab-edit" role="tabpanel">
                         <h5 class="fw-semibold mb-3">Chỉnh Sửa Thông Tin Cá Nhân</h5>
                         <form method="POST" action="{{ url_for('auth.update_profile') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-semibold">Họ và Tên *</label>
@@ -277,6 +278,7 @@
                         <p class="text-secondary small mb-4">Để bảo mật tài khoản, vui lòng đặt mật khẩu có độ dài tối thiểu 6 ký tự kết hợp chữ cái và chữ số.</p>
 
                         <form method="POST" action="{{ url_for('auth.change_password') }}" style="max-width: 480px;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold">Mật Khẩu Hiện Tại *</label>
                                 <input type="password" name="current_password" class="form-control" required>

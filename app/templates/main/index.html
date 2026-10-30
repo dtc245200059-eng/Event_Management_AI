@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}Trang Chủ - Nền Tảng Quản Lý Sự Kiện Thông Minh EventAI Pro{% endblock %}
+{% block title %}EventAI Pro | Nền Tảng Quản Lý & Trải Nghiệm Sự Kiện Thông Minh{% endblock %}
+{% block meta_description %}Khám phá các sự kiện công nghệ, hội thảo AI đỉnh cao và workshop thực chiến tại EventAI Pro. Đăng ký vé QR Code bảo mật và trải nghiệm Cố vấn AI phản hồi thời gian thực.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ canonical_url('/') }}">{% endblock %}
 
 {% block content %}
 <!-- APPLE-INSPIRED HERO SECTION -->
@@ -57,7 +59,11 @@
                                 <div class="hero-slide-item clickable-event-card position-relative"
                                     data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}"
                                     title="Nhấp để xem chi tiết {{ evt.title }}" style="cursor: pointer;">
-                                    <img src="{{ evt.banner_url }}" class="hero-slide-img" alt="{{ evt.title }}">
+                                    {% if loop.first %}
+                                    <img src="{{ evt.banner_url }}" class="hero-slide-img" alt="{{ evt.title }}" fetchpriority="high" decoding="async" width="600" height="380">
+                                    {% else %}
+                                    <img src="{{ evt.banner_url }}" class="hero-slide-img" alt="{{ evt.title }}" loading="lazy" decoding="async" width="600" height="380">
+                                    {% endif %}
                                     <!-- Badges on top -->
                                     <span class="event-badge-category" title="{{ evt.category }}">
                                         {{ evt.category }}
@@ -71,7 +77,7 @@
                                     <!-- Bottom Overlay with Clear Hierarchy -->
                                     <div class="hero-slide-overlay text-white">
                                         <div class="hero-slide-label mb-1">SỰ KIỆN NỔI BẬT</div>
-                                        <h3 class="hero-slide-title fw-bold mb-2 text-white">{{ evt.title }}</h3>
+                                        <h2 class="h3 hero-slide-title fw-bold mb-2 text-white">{{ evt.title }}</h2>
                                         <div class="hero-slide-meta d-flex flex-wrap align-items-center gap-3 mb-2">
                                             <span><i class="fa-solid fa-calendar-day me-1"></i>{{ evt.start_date.strftime('%H:%M • %d/%m/%Y') }}</span>
                                             <span><i class="fa-solid fa-users me-1"></i>{{ evt.total_registered }} đã đăng ký</span>
@@ -94,16 +100,16 @@
                             <button type="button" data-bs-target="#heroEventsCarousel"
                                 data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}"
                                 aria-current="{% if loop.first %}true{% endif %}"
-                                aria-label="Slide {{ loop.index }}"></button>
+                                aria-label="Chuyển đến sự kiện nổi bật {{ loop.index }}: {{ evt.title|striptags|truncate(35) }}"></button>
                             {% endfor %}
                         </div>
 
                         <!-- Prev / Next Controls -->
-                        <button class="carousel-control-prev" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="prev">
+                        <button class="carousel-control-prev" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="prev" aria-label="Sự kiện nổi bật trước">
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                             <span class="visually-hidden">Trước</span>
                         </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="next">
+                        <button class="carousel-control-next" type="button" data-bs-target="#heroEventsCarousel" data-bs-slide="next" aria-label="Sự kiện nổi bật sau">
                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                             <span class="visually-hidden">Sau</span>
                         </button>
@@ -122,7 +128,7 @@
             <div>
                 <div class="d-flex align-items-center gap-2 mb-1">
                     <span class="badge bg-primary"><i class="fa-solid fa-sparkles me-1"></i> AI Powered</span>
-                    <h3 class="mb-0">Gợi Ý Riêng Cho Bạn</h3>
+                    <h2 class="h3 mb-0">Gợi Ý Riêng Cho Bạn</h2>
                 </div>
                 <p class="section-subtitle mb-0">Mô hình AI phân tích sở thích để đề xuất các sự kiện phù hợp nhất</p>
             </div>
@@ -143,7 +149,7 @@
                 <div class="ai-slider-item">
                     <div class="apple-card clickable-event-card h-100" data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}" style="cursor: pointer;">
                         <div class="event-card-img-wrapper position-relative">
-                            <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}">
+                            <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}" loading="lazy" decoding="async" width="400" height="225">
                             <span class="event-badge-category">{{ evt.category }}</span>
                             <div style="position: absolute; bottom: 8px; right: 8px; background: var(--accent); color: white; font-size: 0.72rem; font-weight: 600; padding: 4px 10px; border-radius: var(--radius-pill); backdrop-filter: blur(8px); box-shadow: 0 2px 6px rgba(0,0,0,0.15);">
                                 ✨ Phù hợp 85%
@@ -176,14 +182,14 @@
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
             <div>
-                <h3 class="mb-1">Sự Kiện Sắp Diễn Ra</h3>
+                <h2 class="h3 mb-1">Sự Kiện Sắp Diễn Ra</h2>
                 <p class="section-subtitle mb-0">Khám phá các hội thảo, diễn đàn công nghệ và workshop thực chiến</p>
             </div>
             <div style="min-width: 280px; width: 100%; max-width: 380px;">
-                <form method="GET" action="{{ url_for('main.event_list') }}">
+                <form method="GET" action="{{ url_for('main.event_list') }}" role="search">
                     <div class="apple-search-box">
-                        <i class="fa-solid fa-magnifying-glass apple-search-icon"></i>
-                        <input type="text" name="q" class="apple-search-input" placeholder="Tìm tên sự kiện, chủ đề..." autocomplete="off">
+                        <i class="fa-solid fa-magnifying-glass apple-search-icon" aria-hidden="true"></i>
+                        <input type="text" name="q" class="apple-search-input" placeholder="Tìm tên sự kiện, chủ đề..." autocomplete="off" aria-label="Tìm kiếm sự kiện, chủ đề">
                     </div>
                 </form>
             </div>
@@ -206,7 +212,7 @@
                 <div class="apple-card clickable-event-card h-100 d-flex flex-column"
                     data-event-url="{{ url_for('main.event_detail', event_id=evt.id) }}" style="cursor: pointer;">
                     <div class="event-card-img-wrapper position-relative">
-                        <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}">
+                        <img src="{{ evt.banner_url }}" class="event-card-img" alt="{{ evt.title }}" loading="lazy" decoding="async" width="400" height="225">
                         <span class="event-badge-category">{{ evt.category }}</span>
                         <div class="position-absolute bottom-0 end-0 m-2 badge bg-dark bg-opacity-75 text-white" style="backdrop-filter: blur(8px);">
                             <i class="fa-solid fa-users me-1"></i> {{ evt.total_registered }} đã đăng ký

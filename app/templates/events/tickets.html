@@ -113,6 +113,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('events.create_ticket', event_id=event.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body py-2">
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Tên hạng vé *</label>

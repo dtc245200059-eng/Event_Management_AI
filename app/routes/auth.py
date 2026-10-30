@@ -43,7 +43,7 @@ def login():
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
-    if current_user.is_authenticated:
+    if current_user.is_authenticated and request.method == 'GET':
         return redirect(url_for('main.index'))
 
     if request.method == 'POST':
@@ -103,12 +103,16 @@ def register():
 
     return render_template('auth/register.html')
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
-    logout_user()
-    flash('Bạn đã đăng xuất an toàn.', 'info')
-    return redirect(url_for('main.index'))
+    if request.method == 'POST':
+        logout_user()
+        flash('Bạn đã đăng xuất an toàn khỏi EventAI Pro.', 'info')
+        return redirect(url_for('main.index'))
+    # GET method must NEVER terminate the session (Anti-Logout-CSRF protection)
+    # Renders confirmation page with a secure POST form for progressive enhancement / no-JS
+    return render_template('auth/logout_confirm.html')
 
 @auth_bp.route('/profile')
 @login_required

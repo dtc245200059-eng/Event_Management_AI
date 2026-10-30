@@ -52,6 +52,7 @@
                     </div>
                     {% if current_user.is_admin %}
                     <form method="POST" action="{{ url_for('events.delete_speaker', speaker_id=spk.id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa hồ sơ diễn giả này?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                         <button type="submit" class="btn btn-sm btn-secondary text-danger rounded-pill px-2.5 py-1">
                             <i class="fa-solid fa-trash me-1"></i> Xóa
                         </button>
@@ -88,6 +89,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="{{ url_for('events.create_speaker') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="modal-body py-2">
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Họ và tên diễn giả *</label>

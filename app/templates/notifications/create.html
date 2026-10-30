@@ -21,6 +21,7 @@
                 </div>
 
                 <form method="POST" id="notificationForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="row g-3">
                         <!-- Chọn Sự Kiện -->
                         <div class="col-md-6">

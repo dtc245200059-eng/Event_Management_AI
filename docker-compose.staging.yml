@@ -1,0 +1,40 @@
+# ==============================================================================
+# EventAI Pro — Isolated Staging Docker Compose Specification
+# FILE: docker-compose.staging.yml
+# ==============================================================================
+# USAGE:
+#   docker compose -f docker-compose.staging.yml up --build -d
+#   docker compose -f docker-compose.staging.yml logs -f
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  eventai-staging:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eventai_staging_app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:5000"
+    environment:
+      - FLASK_ENV=staging
+      - SECRET_KEY=${STAGING_SECRET_KEY:-staging_secret_key_rehearsal_32bytes_hex}
+      - DATABASE_URI=sqlite:///instance/staging.db
+      - CANONICAL_DOMAIN=http://127.0.0.1:5001
+      - ENABLE_AI_FALLBACK_MOCK=True
+      - SESSION_COOKIE_SECURE=False
+    volumes:
+      # Isolated staging database mount (Separated from production instance/ directory)
+      - ./instance_staging:/app/instance
+      # Isolated asset directories for staging rehearsal
+      - ./app/static/qr_codes_staging:/app/app/static/qr_codes
+      - ./app/static/uploads_staging:/app/app/static/uploads
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+

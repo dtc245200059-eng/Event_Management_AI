@@ -37,6 +37,12 @@
       "skillPath": "skills/firebase-security-rules-auditor/SKILL.md",
       "computedHash": "c910ebaa427236f3b6d5e72112c85c44676dc9046787988dbd07c5573cca7f1b"
     },
+    "seo": {
+      "source": "Bhanunamikaze/Agentic-SEO-Skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "2fe38397a7e887205982261a2b027194d40ac90bb074427f64aa445a4441bf39"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",

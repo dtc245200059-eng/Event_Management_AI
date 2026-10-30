@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block title %}Đăng Ký Tài Khoản - EventAI Pro{% endblock %}
+{% block meta_robots %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
 
 {% block content %}
 <div class="container py-5 my-md-4">
@@ -13,6 +16,7 @@
                 </div>
 
                 <form method="POST" action="{{ url_for('auth.register') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Tên đăng nhập *</label>

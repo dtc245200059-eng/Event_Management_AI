@@ -42,8 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const chatBackdrop = document.getElementById('aiChatBackdrop');
+    let lastFocusedTrigger = null;
 
-    function openChatWindow() {
+    function openChatWindow(triggerEl) {
+        if (triggerEl instanceof HTMLElement) {
+            lastFocusedTrigger = triggerEl;
+        } else if (document.activeElement && document.activeElement !== document.body) {
+            lastFocusedTrigger = document.activeElement;
+        } else {
+            lastFocusedTrigger = chatBtn;
+        }
+
         if (typeof window.closeMobileDrawer === 'function') {
             window.closeMobileDrawer();
         }
@@ -64,6 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
             chatBackdrop.classList.remove('open', 'active');
         }
         document.body.classList.remove('mobile-chat-open');
+        if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === 'function') {
+            try {
+                lastFocusedTrigger.focus();
+            } catch (err) {}
+        }
     }
 
     // Expose globally so Mobile Bottom Navigation tab can open it
@@ -74,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (chatBtn) {
         chatBtn.addEventListener('click', () => {
             if (chatWindow.classList.contains('hidden')) {
-                openChatWindow();
+                openChatWindow(chatBtn);
             } else {
                 closeChatWindow();
             }

@@ -3,6 +3,98 @@
  * Features: Apple-style Light/Dark/System Theme Controller, AI Recommendations Slider, Rounded Pagination.
  */
 
+// Global CSRF Protection Interceptor for Fetch & AJAX Requests
+(function setupCsrfInterceptor() {
+    function getCsrfToken() {
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.getAttribute('content') : '';
+    }
+
+    function isSameOrigin(url) {
+        if (!url) return true;
+        try {
+            const parsed = new URL(url, window.location.origin);
+            return parsed.origin === window.location.origin;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    const unsafeMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
+
+    // 1. Intercept standard Fetch API
+    const originalFetch = window.fetch;
+    window.fetch = function(input, init) {
+        init = init || {};
+        let method = init.method;
+        let targetUrl = '';
+
+        if (typeof input === 'string') {
+            targetUrl = input;
+        } else if (input && typeof input === 'object') {
+            targetUrl = input.url || '';
+            if (!method && input.method) {
+                method = input.method;
+            }
+        }
+        method = (method || 'GET').toUpperCase();
+
+        if (unsafeMethods.includes(method) && isSameOrigin(targetUrl)) {
+            const token = getCsrfToken();
+            if (token) {
+                if (typeof Request !== 'undefined' && input instanceof Request && !init.headers) {
+                    init.headers = new Headers(input.headers);
+                }
+
+                if (init.headers instanceof Headers) {
+                    if (!init.headers.has('X-CSRFToken')) {
+                        init.headers.set('X-CSRFToken', token);
+                    }
+                } else if (Array.isArray(init.headers)) {
+                    const hasToken = init.headers.some(h => h[0].toLowerCase() === 'x-csrftoken');
+                    if (!hasToken) {
+                        init.headers.push(['X-CSRFToken', token]);
+                    }
+                } else {
+                    init.headers = init.headers || {};
+                    if (!init.headers['X-CSRFToken'] && !init.headers['x-csrftoken']) {
+                        init.headers['X-CSRFToken'] = token;
+                    }
+                }
+            }
+        }
+        return originalFetch.call(this, input, init);
+    };
+
+    // 2. Intercept legacy XMLHttpRequest if instantiated
+    if (typeof XMLHttpRequest !== 'undefined') {
+        const originalOpen = XMLHttpRequest.prototype.open;
+        const originalSend = XMLHttpRequest.prototype.send;
+
+        XMLHttpRequest.prototype.open = function(method, url) {
+            this._csrf_method = (method || 'GET').toUpperCase();
+            this._csrf_url = url;
+            return originalOpen.apply(this, arguments);
+        };
+
+        XMLHttpRequest.prototype.send = function() {
+            if (unsafeMethods.includes(this._csrf_method) && isSameOrigin(this._csrf_url)) {
+                const token = getCsrfToken();
+                if (token) {
+                    try {
+                        this.setRequestHeader('X-CSRFToken', token);
+                    } catch (e) {
+                        // Headers already sent or invalid state
+                    }
+                }
+            }
+            return originalSend.apply(this, arguments);
+        };
+    }
+
+    window.getCsrfToken = getCsrfToken;
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Apple-style Theme Controller (Light / Dark / Auto System)
     initThemeController();
@@ -111,7 +203,7 @@ async function loadAIRecommendations(container) {
                 card.innerHTML = `
                     <div class="apple-card clickable-event-card h-100" onclick="if(!window.aiSliderDragged) window.location.href='/events/${item.id}'" style="cursor: pointer;">
                         <div class="event-card-img-wrapper position-relative">
-                            <img src="${item.banner_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'}" class="event-card-img" alt="${item.title}" draggable="false">
+                            <img src="${item.banner_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600'}" class="event-card-img" alt="${item.title}" draggable="false" loading="lazy" decoding="async" width="400" height="225">
                             <span class="event-badge-category">${item.category}</span>
                             <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0, 113, 227, 0.92); color: white; font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-pill); backdrop-filter: blur(8px);">
                                 ✨ Phù hợp ${item.match_percentage}%
@@ -150,9 +242,12 @@ async function loadAIRecommendations(container) {
 function setupInfiniteSeamlessScroll(slider) {
     if (!slider) return;
 
-    // Clone items once for continuous infinite seamless looping
+    // Check user preference for reduced motion
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Clone items once for continuous infinite seamless looping (if motion allowed)
     const originalChildren = Array.from(slider.children);
-    if (originalChildren.length > 0 && !slider.dataset.infiniteReady) {
+    if (!prefersReducedMotion && originalChildren.length > 0 && !slider.dataset.infiniteReady) {
         originalChildren.forEach(child => {
             const clone = child.cloneNode(true);
             slider.appendChild(clone);
@@ -164,12 +259,27 @@ function setupInfiniteSeamlessScroll(slider) {
     let startX = 0;
     let scrollLeft = 0;
     let isHovered = false;
+    let isIntersecting = false;
     let animationFrameId = null;
     window.aiSliderDragged = false;
     const scrollSpeed = 0.85; // Pixels per frame (ultra smooth 60fps)
 
+    function startLoop() {
+        if (prefersReducedMotion) return;
+        if (!animationFrameId && isIntersecting && !document.hidden) {
+            animationFrameId = requestAnimationFrame(loopScroll);
+        }
+    }
+
+    function stopLoop() {
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+        }
+    }
+
     function loopScroll() {
-        if (!isDown && !isHovered) {
+        if (!isDown && !isHovered && isIntersecting && !document.hidden) {
             slider.scrollLeft += scrollSpeed;
 
             // Half width represents the exact length of the original item set
@@ -178,12 +288,39 @@ function setupInfiniteSeamlessScroll(slider) {
                 slider.scrollLeft -= halfWidth; // Seamless wrap with 0 glitch
             }
         }
-        animationFrameId = requestAnimationFrame(loopScroll);
+        if (isIntersecting && !document.hidden && !prefersReducedMotion) {
+            animationFrameId = requestAnimationFrame(loopScroll);
+        } else {
+            animationFrameId = null;
+        }
     }
 
-    // Start 60fps Loop
-    if (animationFrameId) cancelAnimationFrame(animationFrameId);
-    animationFrameId = requestAnimationFrame(loopScroll);
+    // 1. IntersectionObserver: Only animate when element is visible in viewport
+    if ('IntersectionObserver' in window && !prefersReducedMotion) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                isIntersecting = entry.isIntersecting;
+                if (isIntersecting) {
+                    startLoop();
+                } else {
+                    stopLoop();
+                }
+            });
+        }, { threshold: 0.1 });
+        observer.observe(slider);
+    } else if (!prefersReducedMotion) {
+        isIntersecting = true;
+        startLoop();
+    }
+
+    // 2. Page Visibility API: Stop loop when tab is backgrounded
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopLoop();
+        } else if (isIntersecting) {
+            startLoop();
+        }
+    });
 
     // Pause on Mouse Hover
     slider.addEventListener('mouseenter', () => {
